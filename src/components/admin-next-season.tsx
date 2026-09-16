@@ -201,6 +201,15 @@ export function NextSeasonAdmin() {
     });
   }
 
+  function moveTeam(division: number, position: number, direction: -1 | 1) {
+    const target = division + direction;
+    if (target < 1 || target > DIVISION_COUNT) return;
+    const teamName = teamAt(division, position);
+    if (!teamName) return;
+    // Reuses the swap logic: placing the team into the occupied slot swaps the two.
+    setSlot(target, position, teamName);
+  }
+
   return (
     <section className="mt-10 space-y-6 rounded-lg border border-border bg-card p-5">
       <div>
