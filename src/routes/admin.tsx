@@ -460,19 +460,19 @@ function BannerEditor() {
     <section className="mt-10 rounded-lg border border-border bg-card p-6">
       <h2 className="text-2xl font-bold uppercase tracking-wide">Weekly banner</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Shown at the top of every page with a trophy icon. Use it for weekly congratulations and
-        announcements.
+        Shown at the top of every page with a trophy icon. Enter the weekly champion on the left and
+        an announcement on the right.
       </p>
       <div className="mt-4 space-y-3">
         <label className="block space-y-1">
           <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Headline
+            Weekly champion
           </span>
           <input
             className={`${control} w-full`}
             value={currentTitle}
             maxLength={120}
-            placeholder="Congratulations to this week's winners!"
+            placeholder="e.g. Kerala"
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
