@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { ContactBar, WeeklyBanner } from "@/components/tournament-ui";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -127,6 +128,7 @@ const NAV = [
   { to: "/schedule", label: "Schedule" },
   { to: "/submit", label: "Submit score" },
   { to: "/progress", label: "Progress" },
+  { to: "/shuttles", label: "Shuttles" },
   { to: "/admin", label: "Admin" },
 ] as const;
 
@@ -166,8 +168,10 @@ function RootComponent() {
       <div className="min-h-screen">
         <SiteHeader />
         <main className="mx-auto max-w-6xl px-4 py-8">
+          <WeeklyBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+          <ContactBar />
         </main>
         <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-muted-foreground">
           Mondays · Divisions 1–5 at 19:00, Divisions 6–10 at 20:00 · Please arrive 10 minutes
