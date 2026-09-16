@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as ShuttlesRouteImport } from './routes/shuttles'
 import { Route as SubmitRouteImport } from './routes/submit'
@@ -29,6 +30,11 @@ const AdminRoute = AdminRouteImport.update({
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScheduleRoute = ScheduleRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/progress': typeof ProgressRoute
+  '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
   '/submit': typeof SubmitRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/progress': typeof ProgressRoute
+  '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
   '/submit': typeof SubmitRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/progress': typeof ProgressRoute
+  '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
   '/submit': typeof SubmitRoute
@@ -75,14 +84,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/admin' | '/progress' | '/schedule' | '/shuttles' | '/submit'
+    | '/'
+    | '/admin'
+    | '/progress'
+    | '/register'
+    | '/schedule'
+    | '/shuttles'
+    | '/submit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/progress' | '/schedule' | '/shuttles' | '/submit'
+  to:
+    | '/'
+    | '/admin'
+    | '/progress'
+    | '/register'
+    | '/schedule'
+    | '/shuttles'
+    | '/submit'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/progress'
+    | '/register'
     | '/schedule'
     | '/shuttles'
     | '/submit'
@@ -92,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ProgressRoute: typeof ProgressRoute
+  RegisterRoute: typeof RegisterRoute
   ScheduleRoute: typeof ScheduleRoute
   ShuttlesRoute: typeof ShuttlesRoute
   SubmitRoute: typeof SubmitRoute
@@ -118,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/progress'
       fullPath: '/progress'
       preLoaderRoute: typeof ProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedule': {
@@ -148,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ProgressRoute: ProgressRoute,
+  RegisterRoute: RegisterRoute,
   ScheduleRoute: ScheduleRoute,
   ShuttlesRoute: ShuttlesRoute,
   SubmitRoute: SubmitRoute,
