@@ -16,7 +16,8 @@ A new "Ask the General" section (own page, linked in the top navigation and from
 
 A new "Ask the General" inbox card:
 
-- Newest messages first, showing topic, email, name/team, message, and time sent
+- Newest messages first; each message is shown collapsed with topic, email, team/name, and time
+- Click a message to expand and read the full question, plus action buttons
 - Filter: New / Answered / All, with a count of new messages
 - Mark as answered / mark back as new, and delete a message
 - A "reply by email" link that opens your mail app with the sender's address prefilled
