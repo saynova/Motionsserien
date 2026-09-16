@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
@@ -542,6 +543,27 @@ function MatchCard({
         <StatusPill match={match} />
         {match.submitted_by ? (
           <span className="text-xs text-muted-foreground">by {match.submitted_by}</span>
+        ) : null}
+        {match.status === "scheduled" ? (
+          <span className="ml-auto flex items-center gap-2">
+            {lastReminder ? (
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                Reminded {new Date(lastReminder).toLocaleDateString("sv-SE")}
+              </span>
+            ) : null}
+            <button
+              className={btnGhost}
+              disabled={busy}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemind();
+              }}
+              title="Email both teams about the missing score"
+            >
+              <Mail className="mr-1.5 inline size-3.5" aria-hidden="true" />
+              Send reminder
+            </button>
+          </span>
         ) : null}
         <span className="text-xs font-semibold text-muted-foreground">{open ? "−" : "+"}</span>
       </div>
