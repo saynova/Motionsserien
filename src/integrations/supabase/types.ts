@@ -14,7 +14,190 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      matches: {
+        Row: {
+          approved_at: string | null
+          court: number
+          division: number
+          id: string
+          match_no: number
+          s1a: number | null
+          s1b: number | null
+          s2a: number | null
+          s2b: number | null
+          s3a: number | null
+          s3b: number | null
+          season_id: string
+          start_time: string
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          team_a_id: string
+          team_b_id: string
+          week_no: number
+        }
+        Insert: {
+          approved_at?: string | null
+          court: number
+          division: number
+          id?: string
+          match_no: number
+          s1a?: number | null
+          s1b?: number | null
+          s2a?: number | null
+          s2b?: number | null
+          s3a?: number | null
+          s3b?: number | null
+          season_id: string
+          start_time: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          team_a_id: string
+          team_b_id: string
+          week_no: number
+        }
+        Update: {
+          approved_at?: string | null
+          court?: number
+          division?: number
+          id?: string
+          match_no?: number
+          s1a?: number | null
+          s1b?: number | null
+          s2a?: number | null
+          s2b?: number | null
+          s3a?: number | null
+          s3b?: number | null
+          season_id?: string
+          start_time?: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          team_a_id?: string
+          team_b_id?: string
+          week_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team_a_id_fkey"
+            columns: ["team_a_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team_b_id_fkey"
+            columns: ["team_b_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          created_at: string
+          current_week: number
+          id: string
+          is_active: boolean
+          name: string
+          start_monday: string
+          total_weeks: number
+        }
+        Insert: {
+          created_at?: string
+          current_week?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          start_monday: string
+          total_weeks?: number
+        }
+        Update: {
+          created_at?: string
+          current_week?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          start_monday?: string
+          total_weeks?: number
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          start_division: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          start_division: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          start_division?: number
+        }
+        Relationships: []
+      }
+      week_slots: {
+        Row: {
+          division: number
+          id: string
+          position: number
+          season_id: string
+          team_id: string
+          tie_break_adj: number
+          week_no: number
+        }
+        Insert: {
+          division: number
+          id?: string
+          position: number
+          season_id: string
+          team_id: string
+          tie_break_adj?: number
+          week_no: number
+        }
+        Update: {
+          division?: number
+          id?: string
+          position?: number
+          season_id?: string
+          team_id?: string
+          tie_break_adj?: number
+          week_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "week_slots_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "week_slots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
