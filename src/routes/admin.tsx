@@ -345,6 +345,89 @@ type Score = {
   s3b: number | null;
 };
 
+function WeeklyProcedure({
+  week,
+  currentWeek,
+  totalWeeks,
+  pending,
+  missing,
+  notFinal,
+}: {
+  week: number;
+  currentWeek: number;
+  totalWeeks: number;
+  pending: number;
+  missing: number;
+  notFinal: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const steps = [
+    `Chase missing results — ${missing} match${missing === 1 ? "" : "es"} in week ${week} still have no score. Teams have 2 days; anything missing counts as a no-show 0–0.`,
+    `Approve submitted scores — ${pending} waiting for approval. Open a division below, click a match and approve, edit or reject it.`,
+    `Finalise week ${currentWeek} — this locks the results (${notFinal} not final yet) and applies promotion and relegation.`,
+    `Next week is generated automatically from the final standings. Use "Rebuild week ${currentWeek} from last week" if you corrected an earlier result.`,
+    `After week ${totalWeeks}, open registration and set up the seeding board for the next season.`,
+  ];
+
+  return (
+    <section className="mt-6 mb-6 rounded-lg border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left"
+      >
+        <span className="text-lg font-bold uppercase tracking-wide">Weekly procedure</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {open ? "Hide" : "Show"} · week {currentWeek} of {totalWeeks}
+        </span>
+      </button>
+      {open ? (
+        <ol className="list-decimal space-y-2 border-t border-border px-8 py-4 text-sm text-muted-foreground">
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      ) : null}
+    </section>
+  );
+}
+
+function DivisionGroup({
+  division,
+  waiting,
+  children,
+}: {
+  division: number;
+  waiting: number;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(waiting > 0);
+  return (
+    <section className="overflow-hidden rounded-lg border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 bg-secondary/50 px-4 py-2.5 text-left"
+      >
+        <span className="text-sm font-bold uppercase tracking-wider text-primary">
+          Division {division}
+        </span>
+        <span className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {waiting > 0 ? (
+            <span className="rounded bg-accent/20 px-2 py-0.5 text-accent-foreground">
+              {waiting} waiting
+            </span>
+          ) : (
+            <span>All final</span>
+          )}
+          <span>{open ? "−" : "+"}</span>
+        </span>
+      </button>
+      {open ? <div className="space-y-2 p-3">{children}</div> : null}
+    </section>
+  );
+}
+
 function MatchCard({
   match,
   nameA,
