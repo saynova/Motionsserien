@@ -572,6 +572,8 @@ function MatchCard({
           </button>
         </div>
       ) : null}
+      </>
+      )}
     </article>
   );
 }
