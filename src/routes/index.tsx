@@ -101,50 +101,62 @@ function StandingsPage() {
                 </span>
               </div>
 
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-7 sm:w-9" />
+                  <col />
+                  <col className="w-7 sm:w-9" />
+                  <col className="w-11 sm:w-14" />
+                  <col className="hidden w-10 sm:table-column" />
+                  <col className="hidden w-10 sm:table-column" />
+                  <col className="hidden w-10 sm:table-column" />
+                  <col className="w-[7.25rem] sm:w-[8.5rem]" />
+                </colgroup>
                 <thead>
                   <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <th className="px-3 py-2 text-left font-semibold">#</th>
+                    <th className="px-2 py-2 text-left font-semibold sm:px-3">#</th>
                     <th className="px-1 py-2 text-left font-semibold">Team</th>
-                    <th className="px-2 py-2 text-right font-semibold" title="Match wins">
+                    <th className="px-1 py-2 text-right font-semibold sm:px-2" title="Match wins">
                       W
                     </th>
-                    <th className="px-2 py-2 text-right font-semibold" title="Sets won / lost">
+                    <th className="px-1 py-2 text-right font-semibold sm:px-2" title="Sets won / lost">
                       Sets
                     </th>
-                    <th className="px-2 py-2 text-right font-semibold" title="Set difference">
+                    <th className="hidden px-2 py-2 text-right font-semibold sm:table-cell" title="Set difference">
                       ±S
                     </th>
-                    <th className="px-2 py-2 text-right font-semibold" title="Points for">
+                    <th className="hidden px-2 py-2 text-right font-semibold sm:table-cell" title="Points for">
                       Pts
                     </th>
-                    <th className="px-2 py-2 text-right font-semibold" title="Point difference">
+                    <th className="hidden px-2 py-2 text-right font-semibold sm:table-cell" title="Point difference">
                       ±P
                     </th>
-                    <th className="px-3 py-2 text-right font-semibold">Next</th>
+                    <th className="px-2 py-2 text-right font-semibold sm:px-3">Next</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row) => (
                     <tr key={row.teamId} className="border-b border-border/60 last:border-0">
-                      <td className="tabnum px-3 py-2.5 font-bold text-muted-foreground">
+                      <td className="tabnum px-2 py-2.5 font-bold text-muted-foreground sm:px-3">
                         {row.rank}
                       </td>
-                      <td className="px-1 py-2.5 font-semibold">{row.teamName}</td>
-                      <td className="tabnum px-2 py-2.5 text-right">{row.matchWins}</td>
-                      <td className="tabnum px-2 py-2.5 text-right text-muted-foreground">
+                      <td className="min-w-0 px-1 py-2.5 font-semibold">
+                        <span className="block truncate" title={row.teamName}>{row.teamName}</span>
+                      </td>
+                      <td className="tabnum px-1 py-2.5 text-right sm:px-2">{row.matchWins}</td>
+                      <td className="tabnum px-1 py-2.5 text-right text-muted-foreground sm:px-2">
                         {row.setsWon}–{row.setsLost}
                       </td>
-                      <td className="tabnum px-2 py-2.5 text-right">
+                      <td className="tabnum hidden px-2 py-2.5 text-right sm:table-cell">
                         {row.setDiff > 0 ? `+${row.setDiff}` : row.setDiff}
                       </td>
-                      <td className="tabnum px-2 py-2.5 text-right text-muted-foreground">
+                      <td className="tabnum hidden px-2 py-2.5 text-right text-muted-foreground sm:table-cell">
                         {row.pointsFor}
                       </td>
-                      <td className="tabnum px-2 py-2.5 text-right">
+                      <td className="tabnum hidden px-2 py-2.5 text-right sm:table-cell">
                         {row.pointDiff > 0 ? `+${row.pointDiff}` : row.pointDiff}
                       </td>
-                      <td className="px-3 py-2.5 text-right">
+                      <td className="px-2 py-2.5 text-right sm:px-3">
                         <MovementBadge movement={row.movement} nextDivision={row.nextDivision} />
                       </td>
                     </tr>
