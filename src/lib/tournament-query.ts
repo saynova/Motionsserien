@@ -8,6 +8,7 @@ import {
   getSeedBoard,
   listRegistrations,
 } from "./registration.functions";
+import { listMessages } from "./messages.functions";
 
 export const tournamentQueryOptions = queryOptions({
   queryKey: ["tournament"],
@@ -52,4 +53,9 @@ export const adminRegistrationsQueryOptions = queryOptions({
 export const seedBoardQueryOptions = queryOptions({
   queryKey: ["seed-board", "admin"],
   queryFn: () => getSeedBoard(),
+});
+
+export const messagesQueryOptions = queryOptions({
+  queryKey: ["messages", "admin"],
+  queryFn: () => listMessages(),
 });

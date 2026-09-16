@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-season";
+import { MessagesAdmin } from "@/components/messages-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
 import {
   adminShuttleOrdersQueryOptions,
@@ -232,6 +233,8 @@ function AdminConsole() {
         <BannerEditor />
         <ShuttleAdmin />
       </div>
+
+      <MessagesAdmin />
 
       <SeasonSettingsCard />
 

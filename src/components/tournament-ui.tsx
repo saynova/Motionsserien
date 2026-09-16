@@ -194,9 +194,17 @@ export function ContactBar() {
           <p className="text-sm font-bold uppercase tracking-wide">Md Rabiul Islam</p>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Questions about schedules, results or shuttles? Reach out to the General.
-      </p>
+      <div className="flex items-center gap-3">
+        <p className="text-xs text-muted-foreground">
+          Questions, feedback or a scoring issue?
+        </p>
+        <a
+          href="/ask"
+          className="rounded bg-primary px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          Ask the General
+        </a>
+      </div>
     </section>
   );
 }
