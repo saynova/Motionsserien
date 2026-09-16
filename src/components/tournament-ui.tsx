@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Minus, Sparkles, Trophy, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus, PartyPopper, Sparkles, Trophy, UserRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { bannerQueryOptions } from "@/lib/tournament-query";
@@ -112,26 +112,42 @@ export function WeeklyBanner() {
   return (
     <section
       aria-label="Weekly announcement"
-      className="weekly-banner relative mb-8 overflow-hidden rounded-lg border border-banner-border bg-banner px-5 py-5 shadow-lg sm:px-7 sm:py-6"
+      className="weekly-banner relative mb-8 min-h-32 overflow-hidden rounded-lg border border-banner-border bg-banner px-4 py-5 shadow-lg sm:min-h-36 sm:px-8"
     >
       <div className="weekly-banner-shine" aria-hidden="true" />
-      <div className="relative flex items-center gap-4 sm:gap-6">
-        <div className="weekly-trophy-wrap relative flex size-16 shrink-0 items-center justify-center sm:size-20" aria-hidden="true">
-          <span className="absolute inset-0 rounded-full border border-banner-gold/40 bg-banner-gold-soft" />
-          <span className="absolute inset-1.5 rounded-full border border-banner-gold/20" />
-          <Trophy className="weekly-trophy relative size-8 text-banner-gold sm:size-10" strokeWidth={1.7} />
-          <Sparkles className="weekly-sparkle absolute -right-1 top-0 size-5 text-banner-gold" strokeWidth={1.8} />
+      <div className="banner-court-lines" aria-hidden="true" />
+      <div className="banner-confetti" aria-hidden="true">
+        <i /><i /><i /><i /><i /><i /><i /><i />
+      </div>
+
+      <div className="banner-racket absolute -left-5 top-1/2 hidden -translate-y-1/2 sm:block" aria-hidden="true">
+        <span className="banner-racket-head" />
+        <span className="banner-racket-shaft" />
+        <span className="banner-racket-handle" />
+      </div>
+
+      <div className="banner-shuttle absolute -right-2 top-1/2 hidden -translate-y-1/2 sm:block" aria-hidden="true">
+        <span className="banner-shuttle-feathers" />
+        <span className="banner-shuttle-band" />
+        <span className="banner-shuttle-tip" />
+      </div>
+
+      <div className="relative mx-auto flex max-w-3xl items-center justify-center gap-3 text-center sm:gap-4">
+        <div className="weekly-trophy-wrap relative flex size-12 shrink-0 items-center justify-center sm:size-16" aria-hidden="true">
+          <span className="absolute inset-0 rounded-full bg-banner-gold-soft" />
+          <Trophy className="weekly-trophy relative size-7 text-banner-gold sm:size-9" strokeWidth={2} />
+          <Sparkles className="weekly-sparkle absolute -right-1 -top-1 size-4 text-banner-gold sm:size-5" strokeWidth={2} />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="mb-1 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-banner-gold">
-            <span className="h-px w-5 bg-banner-gold/60" aria-hidden="true" />
-            Weekly announcement
+        <div className="min-w-0">
+          <p className="mb-1 flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-banner-gold sm:text-sm">
+            <PartyPopper className="size-4" aria-hidden="true" />
+            Congratulations
           </p>
-          <h2 className="font-display text-3xl font-bold leading-none tracking-wide text-banner-foreground sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold leading-none text-banner-foreground sm:text-5xl">
             {data.title}
           </h2>
           {data.message.trim() !== "" ? (
-            <p className="mt-2 max-w-3xl whitespace-pre-line text-base font-medium leading-relaxed text-banner-muted sm:text-lg">
+            <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-relaxed text-banner-muted sm:text-lg">
               {data.message}
             </p>
           ) : null}

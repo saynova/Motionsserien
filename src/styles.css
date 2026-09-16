@@ -91,12 +91,12 @@
   --hold: oklch(0.72 0.02 165);
   --court: oklch(0.36 0.06 205);
   --court-line: oklch(0.92 0.02 160);
-  --banner: oklch(0.97 0.03 95);
-  --banner-border: oklch(0.9 0.05 95);
-  --banner-foreground: oklch(0.38 0.09 30);
-  --banner-muted: oklch(0.47 0.07 35);
-  --banner-gold: oklch(0.7 0.13 85);
-  --banner-gold-soft: oklch(0.93 0.05 90);
+  --banner: oklch(0.965 0.052 125);
+  --banner-border: oklch(0.84 0.11 136);
+  --banner-foreground: oklch(0.27 0.08 251);
+  --banner-muted: oklch(0.38 0.07 248);
+  --banner-gold: oklch(0.72 0.17 72);
+  --banner-gold-soft: oklch(0.93 0.11 91);
   --chart-1: oklch(0.85 0.19 128);
   --chart-2: oklch(0.8 0.15 68);
   --chart-3: oklch(0.68 0.14 205);
@@ -188,6 +188,10 @@
 
 @utility weekly-banner {
   animation: weekly-banner-enter 500ms ease-out both;
+  background-image:
+    radial-gradient(circle at 4% 10%, color-mix(in oklab, var(--primary) 26%, transparent) 0 5.5rem, transparent 5.6rem),
+    radial-gradient(circle at 96% 0%, color-mix(in oklab, var(--primary) 22%, transparent) 0 6rem, transparent 6.1rem),
+    linear-gradient(110deg, color-mix(in oklab, var(--banner) 88%, white), var(--banner));
 }
 
 @utility weekly-trophy {
@@ -208,11 +212,125 @@
   pointer-events: none;
 }
 
+@utility banner-court-lines {
+  position: absolute;
+  inset: auto 14% -1.4rem;
+  height: 2.5rem;
+  border-top: 3px solid color-mix(in oklab, var(--up) 72%, transparent);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+@utility banner-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  & i {
+    position: absolute;
+    width: 0.45rem;
+    height: 0.85rem;
+    border-radius: 2px;
+    background: var(--primary);
+    transform: rotate(34deg);
+  }
+
+  & i:nth-child(1) { left: 19%; top: 18%; background: var(--accent); transform: rotate(-28deg); }
+  & i:nth-child(2) { left: 25%; bottom: 15%; background: var(--up); transform: rotate(48deg); }
+  & i:nth-child(3) { left: 32%; top: 10%; background: var(--banner-gold); transform: rotate(25deg); }
+  & i:nth-child(4) { left: 39%; bottom: 8%; background: var(--up); transform: rotate(72deg); }
+  & i:nth-child(5) { right: 37%; top: 12%; background: var(--down); transform: rotate(-18deg); }
+  & i:nth-child(6) { right: 29%; bottom: 11%; background: var(--accent); transform: rotate(42deg); }
+  & i:nth-child(7) { right: 22%; top: 15%; background: var(--primary); transform: rotate(-38deg); }
+  & i:nth-child(8) { right: 16%; bottom: 14%; background: var(--up); transform: rotate(25deg); }
+}
+
+@utility banner-racket {
+  width: 9rem;
+  height: 8rem;
+  transform: translateY(-50%) rotate(-18deg);
+}
+
+@utility banner-racket-head {
+  position: absolute;
+  left: 1.5rem;
+  top: 0;
+  width: 4.6rem;
+  height: 6.2rem;
+  border: 0.35rem solid var(--banner-foreground);
+  border-radius: 50%;
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 7px, color-mix(in oklab, var(--up) 55%, transparent) 7px 9px),
+    repeating-linear-gradient(-45deg, transparent 0 7px, color-mix(in oklab, var(--up) 55%, transparent) 7px 9px);
+}
+
+@utility banner-racket-shaft {
+  position: absolute;
+  left: 5.7rem;
+  top: 5.1rem;
+  width: 3.3rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--banner-foreground);
+  transform: rotate(42deg);
+  transform-origin: left center;
+}
+
+@utility banner-racket-handle {
+  position: absolute;
+  left: 7.6rem;
+  top: 7.1rem;
+  width: 1.8rem;
+  height: 0.55rem;
+  border-radius: 3px;
+  background: var(--up);
+  transform: rotate(42deg);
+}
+
+@utility banner-shuttle {
+  width: 7rem;
+  height: 7rem;
+  transform: translateY(-50%) rotate(-38deg);
+}
+
+@utility banner-shuttle-feathers {
+  position: absolute;
+  right: 1.5rem;
+  top: 0.7rem;
+  width: 4.3rem;
+  height: 4.7rem;
+  clip-path: polygon(0 0, 100% 20%, 66% 100%, 38% 100%);
+  background: repeating-linear-gradient(90deg, var(--banner-foreground) 0 3px, color-mix(in oklab, white 88%, var(--banner)) 3px 12px);
+  opacity: 0.88;
+}
+
+@utility banner-shuttle-band {
+  position: absolute;
+  right: 2.65rem;
+  top: 4.8rem;
+  width: 2.1rem;
+  height: 0.65rem;
+  border-radius: 3px;
+  background: var(--up);
+}
+
+@utility banner-shuttle-tip {
+  position: absolute;
+  right: 2.85rem;
+  top: 5.3rem;
+  width: 1.7rem;
+  height: 1.15rem;
+  border-radius: 0 0 999px 999px;
+  background: var(--banner-gold-soft);
+  border: 2px solid var(--banner-gold);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .weekly-banner,
   .weekly-trophy,
   .weekly-sparkle,
-  .weekly-banner-shine {
+  .weekly-banner-shine,
+  .banner-confetti i {
     animation: none;
   }
 }
