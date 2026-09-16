@@ -1,4 +1,7 @@
-import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus, Trophy, UserRound } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+import { bannerQueryOptions } from "@/lib/tournament-query";
 
 import { cn } from "@/lib/utils";
 import type { MatchRow, Movement } from "@/lib/tournament";
@@ -100,5 +103,46 @@ export function PageHeader({
       ) : null}
       {children ? <div className="mt-5">{children}</div> : null}
     </header>
+  );
+}
+
+export function WeeklyBanner() {
+  const { data } = useQuery(bannerQueryOptions);
+  if (!data || !data.is_active || data.title.trim() === "") return null;
+  return (
+    <section
+      aria-label="Weekly announcement"
+      className="mb-8 flex items-start gap-4 rounded-lg border border-accent/50 bg-accent/10 px-4 py-4"
+    >
+      <Trophy className="mt-0.5 size-7 shrink-0 text-accent" aria-hidden="true" />
+      <div className="min-w-0">
+        <h2 className="text-lg font-bold uppercase tracking-wide text-accent">{data.title}</h2>
+        {data.message.trim() !== "" ? (
+          <p className="mt-1 whitespace-pre-line text-sm text-foreground/90">{data.message}</p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+export function ContactBar() {
+  return (
+    <section
+      aria-label="Contact"
+      className="mt-10 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
+    >
+      <div className="flex items-center gap-3">
+        <UserRound className="size-5 text-primary" aria-hidden="true" />
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Contact · The General
+          </p>
+          <p className="text-sm font-bold uppercase tracking-wide">Md Rabiul Islam</p>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Questions about schedules, results or shuttles? Reach out to the General.
+      </p>
+    </section>
   );
 }
