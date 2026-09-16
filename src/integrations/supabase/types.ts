@@ -136,6 +136,8 @@ export type Database = {
           email: string
           id: string
           name: string
+          replied_at: string | null
+          reply_body: string | null
           status: string
           team_name: string
           topic: string
@@ -147,6 +149,8 @@ export type Database = {
           email: string
           id?: string
           name?: string
+          replied_at?: string | null
+          reply_body?: string | null
           status?: string
           team_name?: string
           topic?: string
@@ -158,6 +162,8 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          replied_at?: string | null
+          reply_body?: string | null
           status?: string
           team_name?: string
           topic?: string
@@ -233,6 +239,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      score_reminders: {
+        Row: {
+          id: string
+          match_id: string
+          sent_at: string
+          sent_to: number
+        }
+        Insert: {
+          id?: string
+          match_id: string
+          sent_at?: string
+          sent_to?: number
+        }
+        Update: {
+          id?: string
+          match_id?: string
+          sent_at?: string
+          sent_to?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_reminders_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       season_seeds: {
         Row: {
