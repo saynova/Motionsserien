@@ -284,6 +284,11 @@ function SubmitPage() {
         >
           {busy ? "Submitting…" : "Submit result"}
         </button>
+
+        <p className="rounded border border-accent/40 bg-accent/10 p-3 text-sm">
+          You will have 2 days to submit the score. Any missing result will be treated as a no-show
+          and will be given 0–0.
+        </p>
       </form>
     </>
   );
