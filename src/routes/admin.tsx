@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
+import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-season";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
 import {
   adminShuttleOrdersQueryOptions,
@@ -214,6 +215,8 @@ function AdminConsole() {
 
       <BannerEditor />
 
+      <SeasonSettingsCard />
+
       {notFinal.length > 0 ? (
         <p className="mb-6 rounded border border-accent/40 bg-accent/10 p-4 text-sm">
           {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not final
@@ -243,6 +246,8 @@ function AdminConsole() {
       </div>
 
       <ShuttleAdmin />
+
+      <NextSeasonAdmin />
 
       <section className="mt-10 rounded-lg border border-border bg-card p-6">
         <h2 className="text-2xl font-bold uppercase tracking-wide">Start a new season</h2>

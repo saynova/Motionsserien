@@ -2,6 +2,12 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { getAdminStatus, getTournament } from "./tournament.functions";
 import { getAllShuttleOrders, getBanner, getShuttleOrders } from "./extras.functions";
+import {
+  getRegisteredTeams,
+  getRegistrationInfo,
+  getSeedBoard,
+  listRegistrations,
+} from "./registration.functions";
 
 export const tournamentQueryOptions = queryOptions({
   queryKey: ["tournament"],
@@ -26,4 +32,24 @@ export const shuttleOrdersQueryOptions = queryOptions({
 export const adminShuttleOrdersQueryOptions = queryOptions({
   queryKey: ["shuttle-orders", "admin"],
   queryFn: () => getAllShuttleOrders(),
+});
+
+export const registrationInfoQueryOptions = queryOptions({
+  queryKey: ["registration-info"],
+  queryFn: () => getRegistrationInfo(),
+});
+
+export const registeredTeamsQueryOptions = queryOptions({
+  queryKey: ["registered-teams"],
+  queryFn: () => getRegisteredTeams(),
+});
+
+export const adminRegistrationsQueryOptions = queryOptions({
+  queryKey: ["registrations", "admin"],
+  queryFn: () => listRegistrations(),
+});
+
+export const seedBoardQueryOptions = queryOptions({
+  queryKey: ["seed-board", "admin"],
+  queryFn: () => getSeedBoard(),
 });
