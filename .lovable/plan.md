@@ -16,6 +16,11 @@ Today the admin page starts a new season straight from the last week's final sta
 
 Registration stays open-but-closable; when closed, the public page shows "Registration is closed" instead of the form.
 
+## Season settings the admin controls
+
+- **Tournament name** — editable at any time from the admin page (e.g. "Motionsserien VT-27"); the new name shows across the site immediately.
+- **Payment details (optional)** — a free-text block (fee, bank/Swish details, deadline) you can leave empty now and fill in later. When filled, it appears on the registration page and on the shuttle page; when empty, nothing shows.
+
 ## Rules kept unchanged
 
 Promotion/relegation, 3-team divisions, scoring, tie-breakers, weekly courts and times, standings and progress views all stay exactly as they are. This only changes how a *new* season is seeded.
@@ -25,4 +30,5 @@ Promotion/relegation, 3-team divisions, scoring, tie-breakers, weekly courts and
 - **Migration** — `registrations` (season label, team name, player1/2 name + email, phone, `previous_division` smallint null = new team, status pending/accepted/waitlisted/rejected, timestamps). Public INSERT allowed; no public SELECT on this table (it holds personal data) — public listing comes from a `public.registered_teams` view or a `TO anon` policy exposing only accepted rows' team name and division. Admin reads/updates server-side. Plus `registration_settings` (or a flag on `seasons`) for open/closed; `season_seeds` (target season label, team name or team_id, division, position) for the draft board; `team_players` (team_id, player_no, name, email, unique per team+player_no) populated on lock.
 - **Server functions** — public: `submitRegistration` (zod-validated: names/emails, `previousDivision` null or 1–10, duplicate team-name check), `getRegistrationStatus`, `getRegisteredTeams` (accepted rows, team name + division only). Admin (`requireAdmin`): `listRegistrations`, `setRegistrationStatus`, `buildSeedSuggestion` (reuses `computeStandings` + `buildNextAssignment` from `src/lib/tournament.ts`, uses the declared previous division for teams with no history, then places new teams from the bottom), `saveSeedBoard`, `lockSeedingAndStartSeason` (creates teams that don't exist yet, writes Week 1 `week_slots` from the board, generates Week 1 matches, deactivates the old season, seeds `team_players`).
 - **UI** — new public route `src/routes/register.tsx`: form with previous-division select (New team, Div 1–10) + closed state + "Registered teams" table (name, division) below, linked in nav; admin page gains a "Next season" section: registration toggle, registration table with accept/waitlist actions, and the 10×3 seeding board with move/swap plus validation warnings, ending in "Lock seeding & start season".
+- **Season settings** — add `payment_details text` to `seasons` (nullable); admin fns `updateSeasonSettings({ name, paymentDetails })` (zod: name 3–60 chars, details ≤1000) and a settings card at the top of the admin page. `paymentDetails` is read publicly with the active season and rendered only when non-empty.
 - The existing `startNewSeason` stays available as a fallback for a straight carry-over season with no roster changes.
