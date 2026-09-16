@@ -212,6 +212,8 @@ function AdminConsole() {
         </div>
       </PageHeader>
 
+      <BannerEditor />
+
       {notFinal.length > 0 ? (
         <p className="mb-6 rounded border border-accent/40 bg-accent/10 p-4 text-sm">
           {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not final
@@ -239,8 +241,6 @@ function AdminConsole() {
           />
         ))}
       </div>
-
-      <BannerEditor />
 
       <ShuttleAdmin />
 
