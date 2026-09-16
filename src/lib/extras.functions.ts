@@ -93,14 +93,35 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     if (buyerName.length < 2 || buyerName.length > 60) {
       throw new Error("Enter the buyer's name (2–60 characters).");
     }
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 200) {
-      throw new Error("Number of shuttles must be a whole number between 1 and 200.");
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1) {
+      throw new Error("Maximum 1 shuttle box per team in two weeks.");
     }
     return { teamName, buyerName, quantity };
   })
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
-    const { error } = await adminClient().from("shuttle_orders").insert({
+    const supabase = adminClient();
+
+    if (data.quantity > 1) {
+      throw new Error("Maximum 1 shuttle box per team in two weeks.");
+    }
+
+    const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    const recent = await supabase
+      .from("shuttle_orders")
+      .select("id, quantity, created_at")
+      .ilike("team_name", data.teamName)
+      .in("status", ["pending", "approved"])
+      .gte("created_at", since);
+    if (recent.error) throw new Error(recent.error.message);
+    const boxes = (recent.data ?? []).reduce((sum, o) => sum + (o.quantity ?? 0), 0);
+    if (boxes >= 1) {
+      throw new Error(
+        "This team already ordered a shuttle box in the last two weeks. Maximum 1 box per team in two weeks.",
+      );
+    }
+
+    const { error } = await supabase.from("shuttle_orders").insert({
       team_name: data.teamName,
       buyer_name: data.buyerName,
       quantity: data.quantity,

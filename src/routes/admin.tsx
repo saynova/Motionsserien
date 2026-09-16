@@ -238,6 +238,15 @@ function AdminConsole() {
 
       <SeasonSettingsCard />
 
+      <WeeklyProcedure
+        week={week}
+        currentWeek={season.current_week}
+        totalWeeks={season.total_weeks}
+        pending={pending.length}
+        missing={weekMatches.filter((m) => m.status === "scheduled").length}
+        notFinal={notFinal.length}
+      />
+
       {notFinal.length > 0 ? (
         <p className="mb-6 rounded border border-accent/40 bg-accent/10 p-4 text-sm">
           {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not final
@@ -247,23 +256,35 @@ function AdminConsole() {
       ) : null}
 
       <div className="space-y-3">
-        {weekMatches.map((match) => (
-          <MatchCard
-            key={match.id}
-            match={match}
-            nameA={teamName(match.team_a_id)}
-            nameB={teamName(match.team_b_id)}
-            busy={busy}
-            onApprove={() =>
-              run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
-            }
-            onReject={() => run(() => reject({ data: { matchId: match.id } }), "Score cleared.")}
-            onNoShow={() => run(() => noShow({ data: { matchId: match.id } }), "Marked as 0–0.")}
-            onSave={(score) =>
-              run(() => saveScore({ data: { matchId: match.id, ...score } }), "Score saved.")
-            }
-          />
-        ))}
+        {[...new Set(weekMatches.map((m) => m.division))].map((division) => {
+          const group = weekMatches.filter((m) => m.division === division);
+          const waiting = group.filter((m) => m.status !== "final").length;
+          return (
+            <DivisionGroup key={division} division={division} waiting={waiting}>
+              {group.map((match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  nameA={teamName(match.team_a_id)}
+                  nameB={teamName(match.team_b_id)}
+                  busy={busy}
+                  onApprove={() =>
+                    run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
+                  }
+                  onReject={() =>
+                    run(() => reject({ data: { matchId: match.id } }), "Score cleared.")
+                  }
+                  onNoShow={() =>
+                    run(() => noShow({ data: { matchId: match.id } }), "Marked as 0–0.")
+                  }
+                  onSave={(score) =>
+                    run(() => saveScore({ data: { matchId: match.id, ...score } }), "Score saved.")
+                  }
+                />
+              ))}
+            </DivisionGroup>
+          );
+        })}
       </div>
 
       <NextSeasonAdmin />
@@ -324,6 +345,89 @@ type Score = {
   s3b: number | null;
 };
 
+function WeeklyProcedure({
+  week,
+  currentWeek,
+  totalWeeks,
+  pending,
+  missing,
+  notFinal,
+}: {
+  week: number;
+  currentWeek: number;
+  totalWeeks: number;
+  pending: number;
+  missing: number;
+  notFinal: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const steps = [
+    `Chase missing results — ${missing} match${missing === 1 ? "" : "es"} in week ${week} still have no score. Teams have 2 days; anything missing counts as a no-show 0–0.`,
+    `Approve submitted scores — ${pending} waiting for approval. Open a division below, click a match and approve, edit or reject it.`,
+    `Finalise week ${currentWeek} — this locks the results (${notFinal} not final yet) and applies promotion and relegation.`,
+    `Next week is generated automatically from the final standings. Use "Rebuild week ${currentWeek} from last week" if you corrected an earlier result.`,
+    `After week ${totalWeeks}, open registration and set up the seeding board for the next season.`,
+  ];
+
+  return (
+    <section className="mt-6 mb-6 rounded-lg border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left"
+      >
+        <span className="text-lg font-bold uppercase tracking-wide">Weekly procedure</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {open ? "Hide" : "Show"} · week {currentWeek} of {totalWeeks}
+        </span>
+      </button>
+      {open ? (
+        <ol className="list-decimal space-y-2 border-t border-border px-8 py-4 text-sm text-muted-foreground">
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      ) : null}
+    </section>
+  );
+}
+
+function DivisionGroup({
+  division,
+  waiting,
+  children,
+}: {
+  division: number;
+  waiting: number;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(waiting > 0);
+  return (
+    <section className="overflow-hidden rounded-lg border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 bg-secondary/50 px-4 py-2.5 text-left"
+      >
+        <span className="text-sm font-bold uppercase tracking-wider text-primary">
+          Division {division}
+        </span>
+        <span className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {waiting > 0 ? (
+            <span className="rounded bg-accent/20 px-2 py-0.5 text-accent-foreground">
+              {waiting} waiting
+            </span>
+          ) : (
+            <span>All final</span>
+          )}
+          <span>{open ? "−" : "+"}</span>
+        </span>
+      </button>
+      {open ? <div className="space-y-2 p-3">{children}</div> : null}
+    </section>
+  );
+}
+
 function MatchCard({
   match,
   nameA,
@@ -343,6 +447,7 @@ function MatchCard({
   onNoShow: () => void;
   onSave: (score: Score) => void;
 }) {
+  const [open, setOpen] = useState(match.status === "pending");
   const [editing, setEditing] = useState(false);
   const asText = (v: number | null) => (v == null ? "" : String(v));
   const [fields, setFields] = useState({
@@ -380,8 +485,19 @@ function MatchCard({
   }
 
   return (
-    <article className="rounded-lg border border-border bg-card px-4 py-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <article className="rounded-lg border border-border bg-background/40 px-4 py-3">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
+        className="flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-2"
+      >
         <span className="tabnum text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Div {match.division} · {match.start_time} · Court {match.court}
         </span>
@@ -396,8 +512,11 @@ function MatchCard({
         {match.submitted_by ? (
           <span className="text-xs text-muted-foreground">by {match.submitted_by}</span>
         ) : null}
+        <span className="text-xs font-semibold text-muted-foreground">{open ? "−" : "+"}</span>
       </div>
 
+      {!open ? null : (
+      <>
       <div className="mt-3 flex flex-wrap gap-2">
         {match.status === "pending" ? (
           <>
@@ -454,6 +573,8 @@ function MatchCard({
           </button>
         </div>
       ) : null}
+      </>
+      )}
     </article>
   );
 }
