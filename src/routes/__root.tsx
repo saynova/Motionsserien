@@ -120,13 +120,59 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const NAV = [
+  { to: "/", label: "Standings" },
+  { to: "/schedule", label: "Schedule" },
+  { to: "/submit", label: "Submit score" },
+  { to: "/progress", label: "Progress" },
+  { to: "/admin", label: "Admin" },
+] as const;
+
+function SiteHeader() {
+  return (
+    <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <Link to="/" className="flex items-baseline gap-2">
+          <span className="font-display text-2xl font-bold uppercase tracking-widest text-primary">
+            Motionsserien
+          </span>
+          <span className="font-display text-2xl font-bold uppercase tracking-widest">HT-26</span>
+        </Link>
+        <nav className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              activeOptions={{ exact: item.to === "/" }}
+              className="rounded px-3 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              activeProps={{ className: "bg-primary/15 text-primary hover:bg-primary/20" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </header>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="min-h-screen">
+        <SiteHeader />
+        <main className="mx-auto max-w-6xl px-4 py-8">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-muted-foreground">
+          Mondays · Divisions 1–5 at 19:00, Divisions 6–10 at 20:00 · Please arrive 10 minutes
+          before your start time.
+        </footer>
+      </div>
+      <Toaster position="top-center" />
     </QueryClientProvider>
   );
 }
