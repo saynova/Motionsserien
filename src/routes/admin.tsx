@@ -238,6 +238,15 @@ function AdminConsole() {
 
       <SeasonSettingsCard />
 
+      <WeeklyProcedure
+        week={week}
+        currentWeek={season.current_week}
+        totalWeeks={season.total_weeks}
+        pending={pending.length}
+        missing={weekMatches.filter((m) => m.status === "scheduled").length}
+        notFinal={notFinal.length}
+      />
+
       {notFinal.length > 0 ? (
         <p className="mb-6 rounded border border-accent/40 bg-accent/10 p-4 text-sm">
           {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not final
@@ -247,23 +256,35 @@ function AdminConsole() {
       ) : null}
 
       <div className="space-y-3">
-        {weekMatches.map((match) => (
-          <MatchCard
-            key={match.id}
-            match={match}
-            nameA={teamName(match.team_a_id)}
-            nameB={teamName(match.team_b_id)}
-            busy={busy}
-            onApprove={() =>
-              run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
-            }
-            onReject={() => run(() => reject({ data: { matchId: match.id } }), "Score cleared.")}
-            onNoShow={() => run(() => noShow({ data: { matchId: match.id } }), "Marked as 0–0.")}
-            onSave={(score) =>
-              run(() => saveScore({ data: { matchId: match.id, ...score } }), "Score saved.")
-            }
-          />
-        ))}
+        {[...new Set(weekMatches.map((m) => m.division))].map((division) => {
+          const group = weekMatches.filter((m) => m.division === division);
+          const waiting = group.filter((m) => m.status !== "final").length;
+          return (
+            <DivisionGroup key={division} division={division} waiting={waiting}>
+              {group.map((match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  nameA={teamName(match.team_a_id)}
+                  nameB={teamName(match.team_b_id)}
+                  busy={busy}
+                  onApprove={() =>
+                    run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
+                  }
+                  onReject={() =>
+                    run(() => reject({ data: { matchId: match.id } }), "Score cleared.")
+                  }
+                  onNoShow={() =>
+                    run(() => noShow({ data: { matchId: match.id } }), "Marked as 0–0.")
+                  }
+                  onSave={(score) =>
+                    run(() => saveScore({ data: { matchId: match.id, ...score } }), "Score saved.")
+                  }
+                />
+              ))}
+            </DivisionGroup>
+          );
+        })}
       </div>
 
       <NextSeasonAdmin />
