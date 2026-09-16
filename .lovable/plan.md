@@ -2,11 +2,15 @@
 
 ## 1. Shuttle purchase text
 
-On the shuttle purchase page, under the order form, add a payment line:
+On the shuttle purchase page, under the order form, add:
 
-> Please swish 135kr to 1234785069, Ludvika Badmintonklubb
+> Please swish 135kr to 1234785069, Ludvika Badmintonklubb  
+> Maximum 1 shuttle box per team in two weeks.
 
-Shown next to the existing delivery note so buyers see both before ordering.
+Enforce the two-week cap: block a new order if the same team already has an approved
+order within the last 14 days. Show the message next to the form instead of as an error
+toast when the limit is reached.
+
 
 ## 2. Submit a score note
 
