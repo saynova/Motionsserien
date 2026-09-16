@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -164,6 +165,15 @@ export function NextSeasonAdmin() {
   const accepted = rows.filter((r) => r.status === "accepted");
   const acceptedNames = accepted.map((r) => r.team_name);
   const issues = validateSeedBoard(entries, acceptedNames.slice(0, DIVISION_COUNT * TEAMS_PER_DIVISION));
+
+  const totalSlots = DIVISION_COUNT * TEAMS_PER_DIVISION;
+  const filledSlots = entries.length;
+  const placedLower = new Set(entries.map((e) => e.teamName.toLowerCase()));
+  const unplaced = acceptedNames.filter((n) => !placedLower.has(n.toLowerCase()));
+  const incompleteDivisions = Array.from(
+    { length: DIVISION_COUNT },
+    (_, i) => i + 1,
+  ).filter((d) => entries.filter((e) => e.division === d).length !== TEAMS_PER_DIVISION);
 
   function teamAt(division: number, position: number): string {
     return entries.find((e) => e.division === division && e.position === position)?.teamName ?? "";
