@@ -1,0 +1,121 @@
+import { createServerFn } from "@tanstack/react-start";
+
+const TOPICS = ["question", "feedback", "scoring", "other"] as const;
+export type MessageTopic = (typeof TOPICS)[number];
+
+export type Message = {
+  id: string;
+  topic: MessageTopic;
+  email: string;
+  name: string;
+  team_name: string;
+  body: string;
+  status: "new" | "answered";
+  created_at: string;
+};
+
+const MESSAGE_COLUMNS = "id, topic, email, name, team_name, body, status, created_at";
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function sanitizeTopic(value: unknown): MessageTopic {
+  const topic = typeof value === "string" ? value.toLowerCase().trim() : "question";
+  return TOPICS.includes(topic as MessageTopic) ? (topic as MessageTopic) : "question";
+}
+
+// ---------------------------------------------------------------- public submit
+
+export const sendMessage = createServerFn({ method: "POST" })
+  .inputValidator((data: { topic?: string; email?: string; name?: string; teamName?: string; body?: string }) => {
+    const email = (data?.email ?? "").trim();
+    const body = (data?.body ?? "").trim();
+    const name = (data?.name ?? "").trim();
+    const teamName = (data?.teamName ?? "").trim();
+
+    if (!isValidEmail(email) || email.length > 255) {
+      throw new Error("Enter a valid email address.");
+    }
+    if (body.length < 5 || body.length > 2000) {
+      throw new Error("Message must be between 5 and 2000 characters.");
+    }
+    if (name.length > 80) {
+      throw new Error("Name must be 80 characters or less.");
+    }
+    if (teamName.length > 80) {
+      throw new Error("Team name must be 80 characters or less.");
+    }
+
+    return {
+      topic: sanitizeTopic(data?.topic),
+      email,
+      name,
+      teamName,
+      body,
+    };
+  })
+  .handler(async ({ data }) => {
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient().from("messages").insert({
+      topic: data.topic,
+      email: data.email,
+      name: data.name,
+      team_name: data.teamName,
+      body: data.body,
+      status: "new",
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+// ---------------------------------------------------------------- admin inbox
+
+export const listMessages = createServerFn({ method: "POST" }).handler(async (): Promise<Message[]> => {
+  const { requireAdmin } = await import("./admin-session.server");
+  await requireAdmin();
+  const { adminClient } = await import("./tournament.server");
+  const { data, error } = await adminClient()
+    .from("messages")
+    .select(MESSAGE_COLUMNS)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Message[];
+});
+
+type StatusInput = { messageId: string; status: "new" | "answered" };
+
+export const setMessageStatus = createServerFn({ method: "POST" })
+  .inputValidator((data: StatusInput) => {
+    if (typeof data?.messageId !== "string" || data.messageId.length < 10) {
+      throw new Error("Message ID is required.");
+    }
+    if (data?.status !== "new" && data?.status !== "answered") {
+      throw new Error("Invalid status.");
+    }
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient().from("messages").update({ status: data.status }).eq("id", data.messageId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const deleteMessage = createServerFn({ method: "POST" })
+  .inputValidator((data: { messageId: string }) => {
+    if (typeof data?.messageId !== "string" || data.messageId.length < 10) {
+      throw new Error("Message ID is required.");
+    }
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient().from("messages").delete().eq("id", data.messageId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
