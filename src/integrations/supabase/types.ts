@@ -129,6 +129,105 @@ export type Database = {
           },
         ]
       }
+      registration_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_open: boolean
+          target_season: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          target_season?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          target_season?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string
+          player1_email: string
+          player1_name: string
+          player2_email: string
+          player2_name: string
+          previous_division: number | null
+          status: string
+          target_season: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone?: string
+          player1_email: string
+          player1_name: string
+          player2_email: string
+          player2_name: string
+          previous_division?: number | null
+          status?: string
+          target_season?: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string
+          player1_email?: string
+          player1_name?: string
+          player2_email?: string
+          player2_name?: string
+          previous_division?: number | null
+          status?: string
+          target_season?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      season_seeds: {
+        Row: {
+          created_at: string
+          division: number
+          id: string
+          position: number
+          target_season: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          division: number
+          id?: string
+          position: number
+          target_season?: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          division?: number
+          id?: string
+          position?: number
+          target_season?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       seasons: {
         Row: {
           created_at: string
@@ -136,6 +235,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          payment_details: string | null
           start_monday: string
           total_weeks: number
         }
@@ -145,6 +245,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          payment_details?: string | null
           start_monday: string
           total_weeks?: number
         }
@@ -154,6 +255,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          payment_details?: string | null
           start_monday?: string
           total_weeks?: number
         }
@@ -188,6 +290,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      team_players: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          player_no: number
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          player_no: number
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          player_no?: number
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teams: {
         Row: {
@@ -257,7 +397,14 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      registered_teams: {
+        Row: {
+          created_at: string | null
+          division: number | null
+          team_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
