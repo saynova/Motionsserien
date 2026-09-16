@@ -438,6 +438,50 @@ export const finalizeWeek = createServerFn({ method: "POST" }).handler(async () 
   return { seasonComplete: false as const, noShows: noShows.length, nextWeek: weekNo + 1 };
 });
 
+/**
+ * Rebuilds the current week's divisions and matches from the previous week's
+ * final results. Refuses when any match of the current week already has a score.
+ */
+export const regenerateCurrentWeek = createServerFn({ method: "POST" }).handler(async () => {
+  await requireAdmin();
+  const { adminClient } = await import("./tournament.server");
+  const admin = adminClient();
+
+  const seasonResult = await admin
+    .from("seasons")
+    .select(SEASON_COLUMNS)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (seasonResult.error) throw new Error(seasonResult.error.message);
+  const season = seasonResult.data as SeasonRow | null;
+  if (!season) throw new Error("No active season found.");
+
+  const weekNo = season.current_week;
+  if (weekNo <= 1) {
+    throw new Error("Week 1 has no previous week to rebuild from.");
+  }
+
+  const current = await loadWeek(season.id, weekNo);
+  const touched = current.matches.filter((m) => m.status !== "scheduled");
+  if (touched.length > 0) {
+    throw new Error(
+      `Week ${weekNo} already has ${touched.length} result${touched.length === 1 ? "" : "s"} entered, so it cannot be rebuilt.`,
+    );
+  }
+
+  const previous = await loadWeek(season.id, weekNo - 1);
+  const standings = computeStandings(previous.slots, previous.matches, previous.teams);
+  const assignment = buildNextAssignment(standings);
+  if (assignment.length === 0) {
+    throw new Error(`Week ${weekNo - 1} has no results to rebuild from.`);
+  }
+
+  await writeWeek(current.supabase, season.id, weekNo, assignment);
+  return { ok: true as const, weekNo };
+});
+
 export const startNewSeason = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string; startMonday: string }) => {
     const name = (data?.name ?? "").trim();

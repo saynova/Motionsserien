@@ -24,6 +24,7 @@ import {
   approveAllPending,
   approveMatches,
   finalizeWeek,
+  regenerateCurrentWeek,
   markNoShow,
   rejectMatch,
   setMatchScore,
@@ -126,6 +127,7 @@ function AdminConsole() {
   const noShow = useServerFn(markNoShow);
   const saveScore = useServerFn(setMatchScore);
   const finalize = useServerFn(finalizeWeek);
+  const regenerate = useServerFn(regenerateCurrentWeek);
   const newSeason = useServerFn(startNewSeason);
 
   const { season, teams, matches } = data;
@@ -202,6 +204,19 @@ function AdminConsole() {
             }
           >
             Finalise week {season.current_week} & generate next
+          </button>
+
+          <button
+            className={btnGhost}
+            disabled={busy || season.current_week <= 1}
+            onClick={() =>
+              run(
+                () => regenerate(),
+                `Week ${season.current_week} rebuilt from week ${season.current_week - 1} results.`,
+              )
+            }
+          >
+            Rebuild week {season.current_week} from last week
           </button>
 
           <button className={btnGhost} disabled={busy} onClick={() => run(async () => {
@@ -370,7 +385,10 @@ function MatchCard({
         <span className="flex-1 min-w-[14rem] font-semibold">
           {nameA} <span className="text-muted-foreground">v</span> {nameB}
         </span>
-        <ScoreText match={match} />
+        <ScoreText
+          match={match}
+          teamName={(id) => (id === match.team_a_id ? nameA : nameB)}
+        />
         <StatusPill match={match} />
         {match.submitted_by ? (
           <span className="text-xs text-muted-foreground">by {match.submitted_by}</span>
