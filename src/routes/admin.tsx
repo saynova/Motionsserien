@@ -268,6 +268,8 @@ function AdminConsole() {
                   nameA={teamName(match.team_a_id)}
                   nameB={teamName(match.team_b_id)}
                   busy={busy}
+                  lastReminder={lastReminderFor(match.id)}
+                  onRemind={() => sendReminder(match.id)}
                   onApprove={() =>
                     run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
                   }
