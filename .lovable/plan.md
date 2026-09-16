@@ -48,6 +48,17 @@ In the admin message inbox, each expanded message gets a **Reply** box.
   the message is marked as answered automatically.
 - The existing "Reply by email" mailto button stays as a fallback.
 
+## 6. Easier score approval and a clear weekly procedure
+
+- Score approval gets folding sections: each division folds open or closed, so you review
+  one division at a time instead of scrolling the whole week. Divisions with something
+  waiting are open by default and show a "waiting" count.
+- Each match inside is one compact line; clicking it opens the set scores, who reported it,
+  the winner, and the edit/approve controls — plus the reminder button from step 4.
+- A foldable **Weekly procedure** panel at the top of the admin console lists the steps in
+  order: send reminders for missing results, approve pending scores, finalize the week,
+  then generate next week's schedule — with the current week and what is still outstanding.
+
 ## Technical notes
 
 - Email domain via the email setup dialog, then scaffold the template registry and send
