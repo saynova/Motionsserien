@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -165,6 +166,15 @@ export function NextSeasonAdmin() {
   const acceptedNames = accepted.map((r) => r.team_name);
   const issues = validateSeedBoard(entries, acceptedNames.slice(0, DIVISION_COUNT * TEAMS_PER_DIVISION));
 
+  const totalSlots = DIVISION_COUNT * TEAMS_PER_DIVISION;
+  const filledSlots = entries.length;
+  const placedLower = new Set(entries.map((e) => e.teamName.toLowerCase()));
+  const unplaced = acceptedNames.filter((n) => !placedLower.has(n.toLowerCase()));
+  const incompleteDivisions = Array.from(
+    { length: DIVISION_COUNT },
+    (_, i) => i + 1,
+  ).filter((d) => entries.filter((e) => e.division === d).length !== TEAMS_PER_DIVISION);
+
   function teamAt(division: number, position: number): string {
     return entries.find((e) => e.division === division && e.position === position)?.teamName ?? "";
   }
@@ -189,6 +199,15 @@ export function NextSeasonAdmin() {
       }
       return result.sort((a, b) => a.division - b.division || a.position - b.position);
     });
+  }
+
+  function moveTeam(division: number, position: number, direction: -1 | 1) {
+    const target = division + direction;
+    if (target < 1 || target > DIVISION_COUNT) return;
+    const teamName = teamAt(division, position);
+    if (!teamName) return;
+    // Reuses the swap logic: placing the team into the occupied slot swaps the two.
+    setSlot(target, position, teamName);
   }
 
   return (
@@ -331,7 +350,7 @@ export function NextSeasonAdmin() {
           <h3 className="text-lg font-bold uppercase tracking-wide">Seeding board</h3>
           <button
             className={btnGhost}
-            disabled={busy}
+            disabled={busy || acceptedNames.length === 0}
             onClick={() =>
               run(
                 async () => {
@@ -357,45 +376,125 @@ export function NextSeasonAdmin() {
           >
             Save board
           </button>
+          <button
+            className={btnGhost}
+            disabled={busy || entries.length === 0}
+            onClick={() => {
+              setEntries([]);
+              toast.success("Board cleared.");
+            }}
+          >
+            Clear board
+          </button>
         </div>
 
-        {issues.length > 0 ? (
-          <ul className="space-y-1 rounded border border-down/40 bg-down/10 p-3 text-xs font-semibold text-down">
-            {issues.slice(0, 8).map((issue) => (
-              <li key={issue}>{issue}</li>
-            ))}
-          </ul>
+        <p className="text-xs text-muted-foreground">
+          Pick any team in a slot — if it is already placed elsewhere, the two teams swap. Use the
+          arrows to move a team one division up or down.
+        </p>
+
+        {acceptedNames.length === 0 ? (
+          <p className="rounded border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">
+            No accepted teams yet — accept teams above, then press Suggest divisions.
+          </p>
+        ) : issues.length > 0 ? (
+          <div className="rounded border border-down/40 bg-down/10 p-3">
+            <p className="text-xs font-bold text-down">
+              {filledSlots} of {totalSlots} slots filled — {incompleteDivisions.length} division
+              {incompleteDivisions.length === 1 ? "" : "s"} still need
+              {incompleteDivisions.length === 1 ? "s" : ""} teams.
+            </p>
+            <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto pr-1 text-xs font-semibold text-down">
+              {issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </div>
         ) : (
           <p className="text-xs font-semibold uppercase tracking-widest text-up">
             Board is complete — 10 divisions × 3 teams.
           </p>
         )}
 
+        {unplaced.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5 rounded border border-border bg-secondary/30 p-2">
+            <span className="mr-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Not placed yet
+            </span>
+            {unplaced.map((name) => (
+              <span
+                key={name}
+                className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: DIVISION_COUNT }, (_, i) => i + 1).map((division) => (
-            <div key={division} className="rounded border border-border bg-secondary/20 p-3">
-              <h4 className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">
-                Division {division}
-              </h4>
-              <div className="space-y-2">
-                {Array.from({ length: TEAMS_PER_DIVISION }, (_, i) => i + 1).map((position) => (
-                  <select
-                    key={position}
-                    className={`${control} w-full`}
-                    value={teamAt(division, position)}
-                    onChange={(e) => setSlot(division, position, e.target.value)}
+          {Array.from({ length: DIVISION_COUNT }, (_, i) => i + 1).map((division) => {
+            const count = entries.filter((e) => e.division === division).length;
+            return (
+              <div key={division} className="rounded border border-border bg-secondary/20 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-primary">
+                    Division {division}
+                  </h4>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold tabnum ${
+                      count === TEAMS_PER_DIVISION
+                        ? "bg-up/15 text-up"
+                        : "bg-accent/20 text-accent"
+                    }`}
                   >
-                    <option value="">— empty —</option>
-                    {acceptedNames.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                ))}
+                    {count}/{TEAMS_PER_DIVISION}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {Array.from({ length: TEAMS_PER_DIVISION }, (_, i) => i + 1).map((position) => {
+                    const placed = teamAt(division, position);
+                    return (
+                      <div key={position} className="flex items-center gap-1.5">
+                        <div className="flex flex-col">
+                          <button
+                            type="button"
+                            aria-label="Move up one division"
+                            className="rounded-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-20"
+                            disabled={!placed || division === 1}
+                            onClick={() => moveTeam(division, position, -1)}
+                          >
+                            <ChevronUp className="size-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Move down one division"
+                            className="rounded-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-20"
+                            disabled={!placed || division === DIVISION_COUNT}
+                            onClick={() => moveTeam(division, position, 1)}
+                          >
+                            <ChevronDown className="size-3.5" />
+                          </button>
+                        </div>
+                        <select
+                          className={`${control} min-w-0 flex-1`}
+                          value={placed}
+                          onChange={(e) => setSlot(division, position, e.target.value)}
+                        >
+                          <option value="">— pick a team —</option>
+                          {acceptedNames.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

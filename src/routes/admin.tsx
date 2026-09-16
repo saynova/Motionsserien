@@ -213,7 +213,10 @@ function AdminConsole() {
         </div>
       </PageHeader>
 
-      <BannerEditor />
+      <div className="mt-10 grid items-start gap-6 lg:grid-cols-2">
+        <BannerEditor />
+        <ShuttleAdmin />
+      </div>
 
       <SeasonSettingsCard />
 
@@ -244,8 +247,6 @@ function AdminConsole() {
           />
         ))}
       </div>
-
-      <ShuttleAdmin />
 
       <NextSeasonAdmin />
 
@@ -462,7 +463,7 @@ function BannerEditor() {
   }
 
   return (
-    <section className="mt-10 rounded-lg border border-border bg-card p-6">
+    <section className="rounded-lg border border-border bg-card p-6">
       <h2 className="text-2xl font-bold uppercase tracking-wide">Weekly banner</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Shown at the top of every page with a trophy icon. Enter the weekly champion on the left and
@@ -536,7 +537,7 @@ function ShuttleAdmin() {
   }
 
   return (
-    <section className="mt-10 rounded-lg border border-border bg-card p-6">
+    <section className="rounded-lg border border-border bg-card p-6">
       <h2 className="text-2xl font-bold uppercase tracking-wide">Shuttle purchases</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Orders appear in the public list only after approval. Approved so far: {approvedTotal}{" "}
