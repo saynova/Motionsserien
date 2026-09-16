@@ -126,7 +126,7 @@ function ShuttlesPage() {
               Approved purchases
             </h2>
             <span className="tabnum text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {data.orders.length} order{data.orders.length === 1 ? "" : "s"} · {data.total} shuttles
+              {data.orders.length} order{data.orders.length === 1 ? "" : "s"} · {data.total} boxes
               total
             </span>
           </div>
@@ -138,7 +138,7 @@ function ShuttlesPage() {
                 <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-2 text-left font-semibold">Team</th>
                   <th className="px-2 py-2 text-left font-semibold">Buyer</th>
-                  <th className="px-4 py-2 text-right font-semibold">Shuttles</th>
+                  <th className="px-4 py-2 text-right font-semibold">Boxes</th>
                 </tr>
               </thead>
               <tbody>
