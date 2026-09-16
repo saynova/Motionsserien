@@ -234,6 +234,8 @@ function AdminConsole() {
         <ShuttleAdmin />
       </div>
 
+      <MessagesAdmin />
+
       <SeasonSettingsCard />
 
       {notFinal.length > 0 ? (
