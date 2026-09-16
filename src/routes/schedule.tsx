@@ -180,7 +180,7 @@ function SchedulePage() {
                         <td className="px-2 py-3 font-medium">{teamName(match.team_a_id)}</td>
                         <td className="px-2 py-3 font-medium">{teamName(match.team_b_id)}</td>
                         <td className="px-2 py-3">
-                          <ScoreText match={match} />
+                          <ScoreText match={match} teamName={teamName} />
                         </td>
                         <td className="px-4 py-3 text-right">
                           <StatusPill match={match} />

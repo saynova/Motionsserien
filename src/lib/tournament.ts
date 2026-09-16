@@ -249,12 +249,14 @@ export function computeStandings(
       row.pointDiff = row.pointsFor - row.pointsAgainst;
     }
 
+    // Matches won decides first; teams level on wins are separated by the total
+    // points they scored across all sets that week, then by set/point difference.
     rows.sort(
       (x, y) =>
         y.matchWins - x.matchWins ||
+        y.pointsFor - x.pointsFor ||
         y.setDiff - x.setDiff ||
         y.pointDiff - x.pointDiff ||
-        y.pointsFor - x.pointsFor ||
         y.tieBreakAdj - x.tieBreakAdj ||
         x.position - y.position,
     );

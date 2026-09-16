@@ -370,7 +370,10 @@ function MatchCard({
         <span className="flex-1 min-w-[14rem] font-semibold">
           {nameA} <span className="text-muted-foreground">v</span> {nameB}
         </span>
-        <ScoreText match={match} />
+        <ScoreText
+          match={match}
+          teamName={(id) => (id === match.team_a_id ? nameA : nameB)}
+        />
         <StatusPill match={match} />
         {match.submitted_by ? (
           <span className="text-xs text-muted-foreground">by {match.submitted_by}</span>

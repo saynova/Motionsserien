@@ -178,7 +178,7 @@ function StandingsPage() {
                         {teamName(match.team_a_id)} <span className="text-muted-foreground">v</span>{" "}
                         {teamName(match.team_b_id)}
                       </span>
-                      <ScoreText match={match} />
+                      <ScoreText match={match} teamName={teamName} />
                       <StatusPill match={match} />
                     </li>
                   );
