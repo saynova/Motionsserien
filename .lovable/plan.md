@@ -7,6 +7,7 @@
 - Movement inside a division of three: 2 wins → up one division, 1 win → stay, 0 wins → down one division (Div 1 cannot go up, Div 10 cannot go down).
 - When teams are level on wins (for example all three on one win each, or two teams on zero wins after a walkover), the order is decided by **total points scored across all sets that week** — highest goes up, middle stays, lowest goes down.
 - The winner of each finished match is shown right next to the scores.
+- Every team that moves must appear in its new division in the next week's schedule and standings — a team relegated from Div 1 plays in Div 2 next week, a team promoted from Div 5 plays in Div 4, and so on for all divisions.
 
 ## What I found
 
