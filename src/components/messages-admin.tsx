@@ -45,6 +45,7 @@ export function MessagesAdmin() {
   }
 
   async function removeMessage(id: string) {
+    if (!window.confirm("Delete this message?")) return;
     setBusy(id);
     try {
       await remove({ data: { messageId: id } });
