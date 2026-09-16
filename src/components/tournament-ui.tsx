@@ -112,13 +112,26 @@ export function WeeklyBanner() {
   return (
     <section
       aria-label="Weekly announcement"
-      className="mb-8 flex items-start gap-4 rounded-lg border border-accent/50 bg-accent/10 px-4 py-4"
+      className="mb-8 flex items-center gap-5 rounded-xl border border-banner-border bg-banner px-6 py-5 shadow-sm"
     >
-      <Trophy className="mt-0.5 size-7 shrink-0 text-accent" aria-hidden="true" />
+      <span
+        className="flex size-16 shrink-0 items-center justify-center rounded-full border border-banner-gold/40 bg-banner-gold-soft"
+        aria-hidden="true"
+      >
+        <Trophy
+          className="size-8 text-banner-gold"
+          strokeWidth={1.8}
+          fill="color-mix(in oklab, var(--banner-gold) 25%, transparent)"
+        />
+      </span>
       <div className="min-w-0">
-        <h2 className="text-lg font-bold uppercase tracking-wide text-accent">{data.title}</h2>
+        <h2 className="font-display text-3xl font-bold tracking-wide text-banner-foreground">
+          {data.title}
+        </h2>
         {data.message.trim() !== "" ? (
-          <p className="mt-1 whitespace-pre-line text-sm text-foreground/90">{data.message}</p>
+          <p className="mt-1 whitespace-pre-line text-lg font-medium text-banner-muted">
+            {data.message}
+          </p>
         ) : null}
       </div>
     </section>
