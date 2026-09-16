@@ -16,6 +16,11 @@ Today the admin page starts a new season straight from the last week's final sta
 
 Registration stays open-but-closable; when closed, the public page shows "Registration is closed" instead of the form.
 
+## Season settings the admin controls
+
+- **Tournament name** — editable at any time from the admin page (e.g. "Motionsserien VT-27"); the new name shows across the site immediately.
+- **Payment details (optional)** — a free-text block (fee, bank/Swish details, deadline) you can leave empty now and fill in later. When filled, it appears on the registration page and on the shuttle page; when empty, nothing shows.
+
 ## Rules kept unchanged
 
 Promotion/relegation, 3-team divisions, scoring, tie-breakers, weekly courts and times, standings and progress views all stay exactly as they are. This only changes how a *new* season is seeded.
