@@ -26,16 +26,16 @@ The board is empty and the red box lists warnings because no teams have been acc
 
 Open registration, accept 30 teams, press Suggest divisions, adjust manually, Save board, then Lock seeding & start season. The lock button stays disabled until the board is exactly 10 divisions x 3 teams.
 
-## Shuttle purchase approval on the banner
+## Shuttle purchase approval moves beside the banner editor
 
-5. **Add an "Approve shuttle purchase" button on the right side of the weekly banner**
-   - Visible to everyone but approval stays admin-only (the server checks the admin session, as today).
-   - Clicking it jumps to the Shuttle purchases section on the Admin page, where pending orders can be approved in bulk or one by one. If you are not signed in, you land on the admin sign-in first.
+5. **Move the "Shuttle purchases" admin section so it sits on the right side of the "Weekly banner" editor at the top of the Admin page**
+   - On wide screens: banner editor on the left, shuttle approval on the right, side by side. On narrow screens they stack (banner first, then shuttles).
+   - The section keeps everything it has today — approve all pending, per-order Approve/Remove, and the approved total — just relocated; it is removed from its old spot further down the page.
 
 ## Technical notes
 
 - Seeding changes are in `src/components/admin-next-season.tsx`; no database or server-function changes.
 - Warning text still comes from `validateSeedBoard` in `src/lib/seeding.ts`; add a grouped count derived from `entries` rather than parsing strings.
 - Up/down move reuses the existing `setSlot` swap logic.
-- Banner change is in `src/components/tournament-ui.tsx` (WeeklyBanner) — a link styled as a small button on the banner's right side, pointing to `/admin` with an anchor to the shuttle section; add the anchor id to `ShuttleAdmin` in `src/routes/admin.tsx`.
+- The banner/shuttle move is in `src/routes/admin.tsx`: wrap `BannerEditor` and `ShuttleAdmin` in a two-column grid (`lg:grid-cols-2`) and remove `ShuttleAdmin` from its current position.
 - Verify with a typecheck and a browser pass at desktop and mobile widths.
