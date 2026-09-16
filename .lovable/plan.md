@@ -4,8 +4,8 @@ Today the admin page starts a new season straight from the last week's final sta
 
 ## How it will work
 
-1. **Open registration.** You open registration for the next season from the admin page. A public page lets a team sign up with: team name, both players' names and emails, phone (optional), whether they played last season, and their previous rank/division if any. They can also add a short note ("we played in another league at this level").
-2. **Review the list.** Admin sees all registrations with status Pending / Accepted / Waitlisted. You accept teams until 30 are confirmed; extras stay on a waitlist you can promote at any time.
+1. **Open registration.** You open registration for the next season from the admin page. A public page lets a team sign up with: team name, both players' names and emails, phone (optional), and a **previous division dropdown** — "New team" or Div 1–10 — instead of a free-text note.
+2. **Review the list.** Admin sees all registrations with status Pending / Accepted / Waitlisted. You accept teams until 30 are confirmed; extras stay on a waitlist you can promote at any time. Once a team is accepted, the public page shows it in a "Registered teams" list with **team name and division only** — never player names, emails or phone numbers.
 3. **Auto-suggested seeding.** Once 30 teams are accepted, the app proposes the starting divisions:
    - Returning teams get the division their final rank earned last season (winner up, third down, as now).
    - Teams that left the series leave gaps; you pick which accepted team fills each gap.
