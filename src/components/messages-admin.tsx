@@ -45,6 +45,7 @@ export function MessagesAdmin() {
   }
 
   async function removeMessage(id: string) {
+    if (!window.confirm("Delete this message?")) return;
     setBusy(id);
     try {
       await remove({ data: { messageId: id } });
@@ -113,43 +114,54 @@ export function MessagesAdmin() {
                     : "border-border bg-secondary/30"
                 }`}
               >
-                <button
-                  onClick={() => toggle(message.id)}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
-                  aria-expanded={isOpen}
-                >
-                  <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
-                    <span
-                      className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                        message.status === "new"
-                          ? "bg-accent text-accent-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {message.status}
-                    </span>
-                    <span className="text-xs font-semibold uppercase text-muted-foreground">
-                      {topicLabels[message.topic]}
-                    </span>
-                    <span className="min-w-0 truncate text-sm font-semibold text-foreground">
-                      {message.email}
-                      {message.name ? ` · ${message.name}` : ""}
-                    </span>
-                    {message.team_name ? (
-                      <span className="hidden text-xs text-muted-foreground sm:inline">
-                        ({message.team_name})
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => toggle(message.id)}
+                    className="flex min-w-0 flex-1 items-center justify-between gap-3 px-3 py-2 text-left"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+                      <span
+                        className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                          message.status === "new"
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {message.status}
                       </span>
-                    ) : null}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="hidden text-xs text-muted-foreground sm:inline">{date}</span>
-                    {isOpen ? (
-                      <ChevronUp className="size-4 text-muted-foreground" aria-hidden="true" />
-                    ) : (
-                      <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </div>
-                </button>
+                      <span className="text-xs font-semibold uppercase text-muted-foreground">
+                        {topicLabels[message.topic]}
+                      </span>
+                      <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+                        {message.email}
+                        {message.name ? ` · ${message.name}` : ""}
+                      </span>
+                      {message.team_name ? (
+                        <span className="hidden text-xs text-muted-foreground sm:inline">
+                          ({message.team_name})
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="hidden text-xs text-muted-foreground sm:inline">{date}</span>
+                      {isOpen ? (
+                        <ChevronUp className="size-4 text-muted-foreground" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => removeMessage(message.id)}
+                    disabled={busy === message.id}
+                    title="Delete"
+                    className="mr-2 rounded p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+                    aria-label="Delete message"
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
 
                 {isOpen ? (
                   <div className="border-t border-border px-3 py-3">
