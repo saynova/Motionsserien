@@ -9,6 +9,7 @@ import {
   listRegistrations,
 } from "./registration.functions";
 import { listMessages } from "./messages.functions";
+import { listReminders, listTeamContacts } from "./reminders.functions";
 
 export const tournamentQueryOptions = queryOptions({
   queryKey: ["tournament"],
@@ -58,4 +59,14 @@ export const seedBoardQueryOptions = queryOptions({
 export const messagesQueryOptions = queryOptions({
   queryKey: ["messages", "admin"],
   queryFn: () => listMessages(),
+});
+
+export const teamContactsQueryOptions = queryOptions({
+  queryKey: ["team-contacts", "admin"],
+  queryFn: () => listTeamContacts(),
+});
+
+export const remindersQueryOptions = queryOptions({
+  queryKey: ["score-reminders", "admin"],
+  queryFn: () => listReminders(),
 });
