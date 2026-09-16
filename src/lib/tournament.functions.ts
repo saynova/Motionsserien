@@ -154,7 +154,7 @@ export const submitScore = createServerFn({ method: "POST" })
 
 // ------------------------------------------------------------------ admin gate
 
-export const getAdminStatus = createServerFn({ method: "GET" }).handler(async () => {
+export const getAdminStatus = createServerFn({ method: "POST" }).handler(async () => {
   const session = await useSession<AdminSession>(sessionConfig());
   return { unlocked: session.data.unlocked === true };
 });
