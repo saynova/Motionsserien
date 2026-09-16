@@ -118,6 +118,7 @@ function AskPage() {
             <span className={label}>Name</span>
             <input
               type="text"
+              name="name"
               className={`${control} w-full`}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -128,6 +129,7 @@ function AskPage() {
             <span className={label}>Team name</span>
             <input
               type="text"
+              name="team"
               className={`${control} w-full`}
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
