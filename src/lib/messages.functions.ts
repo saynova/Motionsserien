@@ -12,9 +12,12 @@ export type Message = {
   body: string;
   status: "new" | "answered";
   created_at: string;
+  reply_body: string | null;
+  replied_at: string | null;
 };
 
-const MESSAGE_COLUMNS = "id, topic, email, name, team_name, body, status, created_at";
+const MESSAGE_COLUMNS =
+  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at";
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -102,6 +105,52 @@ export const setMessageStatus = createServerFn({ method: "POST" })
     const { error } = await adminClient().from("messages").update({ status: data.status }).eq("id", data.messageId);
     if (error) throw new Error(error.message);
     return { ok: true as const };
+  });
+
+type ReplyInput = { messageId: string; replyBody: string };
+
+export const replyToMessage = createServerFn({ method: "POST" })
+  .inputValidator((data: ReplyInput) => {
+    if (typeof data?.messageId !== "string" || data.messageId.length < 10) {
+      throw new Error("Message ID is required.");
+    }
+    const replyBody = (data?.replyBody ?? "").trim();
+    if (replyBody.length < 2 || replyBody.length > 4000) {
+      throw new Error("Reply must be between 2 and 4000 characters.");
+    }
+    return { messageId: data.messageId, replyBody };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { sendTemplateEmail } = await import("./email-templates/send-email");
+    const client = adminClient();
+
+    const message = await client
+      .from("messages")
+      .select("id, email, name, body")
+      .eq("id", data.messageId)
+      .maybeSingle();
+    if (message.error) throw new Error(message.error.message);
+    if (!message.data) throw new Error("Message not found.");
+
+    const result = await sendTemplateEmail("message-reply", message.data.email, {
+      templateData: {
+        name: message.data.name,
+        replyBody: data.replyBody,
+        originalBody: message.data.body,
+      },
+      idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}`,
+    });
+
+    const { error } = await client
+      .from("messages")
+      .update({ reply_body: data.replyBody, replied_at: new Date().toISOString(), status: "answered" })
+      .eq("id", data.messageId);
+    if (error) throw new Error(error.message);
+
+    return { ok: true as const, sent: result.sent };
   });
 
 export const deleteMessage = createServerFn({ method: "POST" })

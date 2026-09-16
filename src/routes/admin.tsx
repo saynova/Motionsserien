@@ -2,18 +2,22 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-season";
 import { MessagesAdmin } from "@/components/messages-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
+import { TeamContactsAdmin } from "@/components/team-contacts-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
   bannerQueryOptions,
+  remindersQueryOptions,
   tournamentQueryOptions,
 } from "@/lib/tournament-query";
+import { sendScoreReminder } from "@/lib/reminders.functions";
 import {
   approveShuttleOrders,
   deleteShuttleOrder,
@@ -130,6 +134,8 @@ function AdminConsole() {
   const finalize = useServerFn(finalizeWeek);
   const regenerate = useServerFn(regenerateCurrentWeek);
   const newSeason = useServerFn(startNewSeason);
+  const remind = useServerFn(sendScoreReminder);
+  const reminders = useQuery(remindersQueryOptions);
 
   const { season, teams, matches } = data;
   const [week, setWeek] = useState(season.current_week);
@@ -144,6 +150,26 @@ function AdminConsole() {
     .sort((a, b) => a.division - b.division || a.match_no - b.match_no);
   const pending = weekMatches.filter((m) => m.status === "pending");
   const notFinal = weekMatches.filter((m) => m.status !== "final");
+
+  const lastReminderFor = (matchId: string) =>
+    reminders.data?.find((r) => r.match_id === matchId)?.sent_at;
+
+  async function sendReminder(matchId: string) {
+    setBusy(true);
+    try {
+      const result = await remind({ data: { matchId } });
+      await queryClient.invalidateQueries({ queryKey: ["score-reminders", "admin"] });
+      toast.success(
+        result.sent > 0
+          ? `Reminder sent to ${result.sent} player${result.sent === 1 ? "" : "s"}.`
+          : "No reminder delivered — those addresses are blocked.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send the reminder.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true);
@@ -236,6 +262,8 @@ function AdminConsole() {
 
       <MessagesAdmin />
 
+      <TeamContactsAdmin />
+
       <SeasonSettingsCard />
 
       <WeeklyProcedure
@@ -268,6 +296,8 @@ function AdminConsole() {
                   nameA={teamName(match.team_a_id)}
                   nameB={teamName(match.team_b_id)}
                   busy={busy}
+                  lastReminder={lastReminderFor(match.id)}
+                  onRemind={() => sendReminder(match.id)}
                   onApprove={() =>
                     run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
                   }
@@ -433,6 +463,8 @@ function MatchCard({
   nameA,
   nameB,
   busy,
+  lastReminder,
+  onRemind,
   onApprove,
   onReject,
   onNoShow,
@@ -442,6 +474,8 @@ function MatchCard({
   nameA: string;
   nameB: string;
   busy: boolean;
+  lastReminder?: string | undefined;
+  onRemind: () => void;
   onApprove: () => void;
   onReject: () => void;
   onNoShow: () => void;
@@ -511,6 +545,27 @@ function MatchCard({
         <StatusPill match={match} />
         {match.submitted_by ? (
           <span className="text-xs text-muted-foreground">by {match.submitted_by}</span>
+        ) : null}
+        {match.status === "scheduled" ? (
+          <span className="ml-auto flex items-center gap-2">
+            {lastReminder ? (
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                Reminded {new Date(lastReminder).toLocaleDateString("sv-SE")}
+              </span>
+            ) : null}
+            <button
+              className={btnGhost}
+              disabled={busy}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemind();
+              }}
+              title="Email both teams about the missing score"
+            >
+              <Mail className="mr-1.5 inline size-3.5" aria-hidden="true" />
+              Send reminder
+            </button>
+          </span>
         ) : null}
         <span className="text-xs font-semibold text-muted-foreground">{open ? "−" : "+"}</span>
       </div>

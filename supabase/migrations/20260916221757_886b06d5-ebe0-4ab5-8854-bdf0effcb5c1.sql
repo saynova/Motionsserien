@@ -1,0 +1,1 @@
+CREATE POLICY "team players no client access" ON public.team_players FOR SELECT TO authenticated, anon USING (false);

@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Mail, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Mail, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { messagesQueryOptions } from "@/lib/tournament-query";
-import { deleteMessage, setMessageStatus } from "@/lib/messages.functions";
+import { deleteMessage, replyToMessage, setMessageStatus } from "@/lib/messages.functions";
 import type { Message, MessageTopic } from "@/lib/messages.functions";
 
 const topicLabels: Record<MessageTopic, string> = {
@@ -168,13 +168,33 @@ export function MessagesAdmin() {
                     <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
                       {message.body}
                     </p>
+
+                    {message.reply_body ? (
+                      <div className="mt-3 rounded border border-border bg-background/40 p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Your reply
+                          {message.replied_at
+                            ? ` · ${new Date(message.replied_at).toLocaleString("sv-SE", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}`
+                            : ""}
+                        </p>
+                        <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">
+                          {message.reply_body}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    <ReplyBox message={message} />
+
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <a
                         href={`mailto:${encodeURIComponent(message.email)}`}
                         className={btnGhost}
                       >
                         <Mail className="mr-1.5 size-3.5" aria-hidden="true" />
-                        Reply by email
+                        Reply in my mail app
                       </a>
                       {message.status === "new" ? (
                         <button
@@ -210,5 +230,51 @@ export function MessagesAdmin() {
         </ul>
       )}
     </section>
+  );
+}
+
+function ReplyBox({ message }: { message: Message }) {
+  const queryClient = useQueryClient();
+  const reply = useServerFn(replyToMessage);
+  const [body, setBody] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function send() {
+    setBusy(true);
+    try {
+      const result = await reply({ data: { messageId: message.id, replyBody: body } });
+      await queryClient.invalidateQueries({ queryKey: ["messages", "admin"] });
+      setBody("");
+      toast.success(
+        result.sent
+          ? "Reply sent from your own address."
+          : "This address is blocked, so no email was delivered.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send the reply.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      <label className="block space-y-1">
+        <span className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Reply from the website
+        </span>
+        <textarea
+          rows={3}
+          className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+          placeholder="Write your answer — it is emailed to the player with their question quoted."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+        />
+      </label>
+      <button className={btnGhost} disabled={busy || body.trim().length < 2} onClick={send}>
+        <Send className="mr-1.5 inline size-3.5" aria-hidden="true" />
+        {busy ? "Sending…" : "Send reply"}
+      </button>
+    </div>
   );
 }

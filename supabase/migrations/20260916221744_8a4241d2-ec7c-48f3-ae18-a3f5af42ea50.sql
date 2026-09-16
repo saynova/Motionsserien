@@ -1,0 +1,1 @@
+CREATE POLICY "score reminders no client access" ON public.score_reminders FOR SELECT TO authenticated, anon USING (false);
