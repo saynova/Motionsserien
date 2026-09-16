@@ -6,7 +6,17 @@ import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
-import { adminStatusQueryOptions, tournamentQueryOptions } from "@/lib/tournament-query";
+import {
+  adminShuttleOrdersQueryOptions,
+  adminStatusQueryOptions,
+  bannerQueryOptions,
+  tournamentQueryOptions,
+} from "@/lib/tournament-query";
+import {
+  approveShuttleOrders,
+  deleteShuttleOrder,
+  saveBanner,
+} from "@/lib/extras.functions";
 import {
   adminSignIn,
   adminSignOut,
@@ -418,5 +428,171 @@ function MatchCard({
         </div>
       ) : null}
     </article>
+  );
+}
+
+function BannerEditor() {
+  const queryClient = useQueryClient();
+  const banner = useQuery(bannerQueryOptions);
+  const save = useServerFn(saveBanner);
+  const [title, setTitle] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const currentTitle = title ?? banner.data?.title ?? "";
+  const currentMessage = message ?? banner.data?.message ?? "";
+  const isActive = banner.data?.is_active === true;
+
+  async function persist(nextActive: boolean) {
+    setBusy(true);
+    try {
+      await save({ data: { title: currentTitle, message: currentMessage, isActive: nextActive } });
+      await queryClient.invalidateQueries({ queryKey: ["banner"] });
+      toast.success(nextActive ? "Banner saved and shown." : "Banner hidden.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save the banner.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="mt-10 rounded-lg border border-border bg-card p-6">
+      <h2 className="text-2xl font-bold uppercase tracking-wide">Weekly banner</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Shown at the top of every page with a trophy icon. Use it for weekly congratulations and
+        announcements.
+      </p>
+      <div className="mt-4 space-y-3">
+        <label className="block space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Headline
+          </span>
+          <input
+            className={`${control} w-full`}
+            value={currentTitle}
+            maxLength={120}
+            placeholder="Congratulations to this week's winners!"
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </label>
+        <label className="block space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Announcement (optional)
+          </span>
+          <textarea
+            className={`${control} w-full`}
+            rows={3}
+            maxLength={600}
+            value={currentMessage}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <button className={btn} disabled={busy} onClick={() => persist(true)}>
+            Save &amp; show banner
+          </button>
+          <button className={btnGhost} disabled={busy || !isActive} onClick={() => persist(false)}>
+            Hide banner
+          </button>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">
+            {isActive ? "Currently visible" : "Currently hidden"}
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ShuttleAdmin() {
+  const queryClient = useQueryClient();
+  const orders = useQuery(adminShuttleOrdersQueryOptions);
+  const approve = useServerFn(approveShuttleOrders);
+  const remove = useServerFn(deleteShuttleOrder);
+  const [busy, setBusy] = useState(false);
+
+  const rows = orders.data ?? [];
+  const pending = rows.filter((o) => o.status === "pending");
+  const approvedTotal = rows
+    .filter((o) => o.status === "approved")
+    .reduce((sum, o) => sum + o.quantity, 0);
+
+  async function run(action: () => Promise<unknown>, success: string) {
+    setBusy(true);
+    try {
+      await action();
+      await queryClient.invalidateQueries({ queryKey: ["shuttle-orders"] });
+      toast.success(success);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="mt-10 rounded-lg border border-border bg-card p-6">
+      <h2 className="text-2xl font-bold uppercase tracking-wide">Shuttle purchases</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Orders appear in the public list only after approval. Approved so far: {approvedTotal}{" "}
+        shuttles.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          className={btn}
+          disabled={busy || pending.length === 0}
+          onClick={() =>
+            run(
+              () => approve({ data: { orderIds: null } }),
+              `Approved ${pending.length} order${pending.length === 1 ? "" : "s"}.`,
+            )
+          }
+        >
+          Approve all pending ({pending.length})
+        </button>
+      </div>
+
+      {rows.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">No shuttle orders yet.</p>
+      ) : (
+        <div className="mt-4 space-y-2">
+          {rows.map((order) => (
+            <div
+              key={order.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded border border-border bg-secondary/30 px-3 py-2 text-sm"
+            >
+              <div>
+                <span className="font-semibold">{order.team_name}</span>
+                <span className="text-muted-foreground"> · {order.buyer_name}</span>
+                <span className="tabnum font-semibold"> · {order.quantity} shuttles</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="rounded border border-border bg-card px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {order.status}
+                </span>
+                {order.status === "pending" ? (
+                  <button
+                    className={btnGhost}
+                    disabled={busy}
+                    onClick={() =>
+                      run(() => approve({ data: { orderIds: [order.id] } }), "Order approved.")
+                    }
+                  >
+                    Approve
+                  </button>
+                ) : null}
+                <button
+                  className={btnGhost}
+                  disabled={busy}
+                  onClick={() => run(() => remove({ data: { orderId: order.id } }), "Order removed.")}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
