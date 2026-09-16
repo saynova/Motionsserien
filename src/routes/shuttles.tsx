@@ -102,13 +102,22 @@ function ShuttlesPage() {
               className={`${field} tabnum`}
               type="number"
               min={1}
-              max={200}
+              max={1}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
             />
             <p className="mt-1 text-xs text-muted-foreground">
               Shuttle will be delivered each monday at 20:00 in the Rackethall.
+            </p>
+          </div>
+
+          <div className="rounded border border-primary/30 bg-primary/5 p-3 text-sm">
+            <p className="font-semibold">
+              Please swish 135kr to 1234785069, Ludvika Badmintonklubb
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Maximum 1 shuttle box per team in two weeks.
             </p>
           </div>
           <button
