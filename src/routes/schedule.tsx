@@ -30,7 +30,7 @@ export const Route = createFileRoute("/schedule")({
     team: typeof search.team === "string" ? search.team : undefined,
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(tournamentQueryOptions),
-  component: SchedulePage;
+  component: SchedulePage,
 });
 
 function SchedulePage() {
