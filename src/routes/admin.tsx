@@ -262,6 +262,8 @@ function AdminConsole() {
 
       <MessagesAdmin />
 
+      <TeamContactsAdmin />
+
       <SeasonSettingsCard />
 
       <WeeklyProcedure

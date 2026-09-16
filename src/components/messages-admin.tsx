@@ -168,13 +168,33 @@ export function MessagesAdmin() {
                     <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
                       {message.body}
                     </p>
+
+                    {message.reply_body ? (
+                      <div className="mt-3 rounded border border-border bg-background/40 p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Your reply
+                          {message.replied_at
+                            ? ` · ${new Date(message.replied_at).toLocaleString("sv-SE", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}`
+                            : ""}
+                        </p>
+                        <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">
+                          {message.reply_body}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    <ReplyBox message={message} />
+
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <a
                         href={`mailto:${encodeURIComponent(message.email)}`}
                         className={btnGhost}
                       >
                         <Mail className="mr-1.5 size-3.5" aria-hidden="true" />
-                        Reply by email
+                        Reply in my mail app
                       </a>
                       {message.status === "new" ? (
                         <button
