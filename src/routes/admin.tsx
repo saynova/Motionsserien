@@ -484,8 +484,19 @@ function MatchCard({
   }
 
   return (
-    <article className="rounded-lg border border-border bg-card px-4 py-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <article className="rounded-lg border border-border bg-background/40 px-4 py-3">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
+        className="flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-2"
+      >
         <span className="tabnum text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Div {match.division} · {match.start_time} · Court {match.court}
         </span>
@@ -500,8 +511,10 @@ function MatchCard({
         {match.submitted_by ? (
           <span className="text-xs text-muted-foreground">by {match.submitted_by}</span>
         ) : null}
+        <span className="text-xs font-semibold text-muted-foreground">{open ? "−" : "+"}</span>
       </div>
 
+      {!open ? null : (
       <div className="mt-3 flex flex-wrap gap-2">
         {match.status === "pending" ? (
           <>
