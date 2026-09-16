@@ -433,6 +433,8 @@ function MatchCard({
   nameA,
   nameB,
   busy,
+  lastReminder,
+  onRemind,
   onApprove,
   onReject,
   onNoShow,
@@ -442,6 +444,8 @@ function MatchCard({
   nameA: string;
   nameB: string;
   busy: boolean;
+  lastReminder?: string | undefined;
+  onRemind: () => void;
   onApprove: () => void;
   onReject: () => void;
   onNoShow: () => void;
