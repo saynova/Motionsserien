@@ -93,8 +93,8 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     if (buyerName.length < 2 || buyerName.length > 60) {
       throw new Error("Enter the buyer's name (2–60 characters).");
     }
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 200) {
-      throw new Error("Number of shuttles must be a whole number between 1 and 200.");
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1) {
+      throw new Error("Maximum 1 shuttle box per team in two weeks.");
     }
     return { teamName, buyerName, quantity };
   })
