@@ -129,6 +129,42 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          status: string
+          team_name: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          email: string
+          id?: string
+          name?: string
+          status?: string
+          team_name?: string
+          topic?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          status?: string
+          team_name?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       registration_settings: {
         Row: {
           created_at: string
