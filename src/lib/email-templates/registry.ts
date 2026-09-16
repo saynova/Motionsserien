@@ -1,5 +1,8 @@
 import type { ComponentType } from 'react'
 
+import { template as missingScoreReminder } from './missing-score-reminder'
+import { template as messageReply } from './message-reply'
+
 export interface TemplateEntry {
   component: ComponentType<any>
   subject: string | ((data: Record<string, any>) => string)
