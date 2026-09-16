@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Minus, PartyPopper, Sparkles, Trophy, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus, Sparkles, Trophy, UserRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { bannerQueryOptions } from "@/lib/tournament-query";
