@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Mail, Trash2 } from "lucide-react";
@@ -20,7 +20,7 @@ const btnGhost =
 
 export function MessagesAdmin() {
   const queryClient = useQueryClient();
-  const messages = useSuspenseQuery(messagesQueryOptions);
+  const messages = useQuery(messagesQueryOptions);
   const setStatus = useServerFn(setMessageStatus);
   const remove = useServerFn(deleteMessage);
   const [filter, setFilter] = useState<"all" | "new" | "answered">("all");
