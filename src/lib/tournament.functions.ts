@@ -24,7 +24,7 @@ function sessionConfig() {
     password: process.env["SESSION_SECRET"]!,
     name: "mssn-admin",
     maxAge: 60 * 60 * 12,
-    cookie: { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/" },
+    cookie: { httpOnly: true, secure: true, sameSite: "none" as const, path: "/" },
   };
 }
 
@@ -168,20 +168,10 @@ export const adminSignIn = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const expected = process.env["ADMIN_PASSWORD"];
-    if (!expected) {
-      console.warn("[admin-auth] password is not configured");
-      throw new Error("Admin password is not configured.");
-    }
-    const matches = passwordMatches(data.password, expected);
-    console.info("[admin-auth] sign-in attempt", {
-      inputLength: data.password.length,
-      expectedLength: expected.length,
-      matches,
-    });
-    if (!matches) return { ok: false as const };
+    if (!expected) throw new Error("Admin password is not configured.");
+    if (!passwordMatches(data.password, expected)) return { ok: false as const };
     const session = await useSession<AdminSession>(sessionConfig());
     await session.update({ unlocked: true });
-    console.info("[admin-auth] session unlocked");
     return { ok: true as const };
   });
 
