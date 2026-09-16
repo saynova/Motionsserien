@@ -245,6 +245,20 @@
   & i:nth-child(8) { right: 16%; bottom: 14%; background: var(--up); transform: rotate(25deg); }
 }
 
+@utility banner-confetti--slim {
+  & i {
+    width: 0.35rem;
+    height: 0.65rem;
+  }
+
+  & i:nth-child(1) { left: 8%; top: 22%; }
+  & i:nth-child(2) { left: 14%; bottom: 18%; }
+  & i:nth-child(3) { right: 12%; top: 20%; }
+  & i:nth-child(4) { right: 7%; bottom: 18%; }
+  & i:nth-child(5) { left: 50%; top: 12%; }
+  & i:nth-child(6) { right: 22%; bottom: 16%; }
+}
+
 @utility banner-racket {
   width: 9rem;
   height: 8rem;
