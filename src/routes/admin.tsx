@@ -8,12 +8,15 @@ import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-season";
 import { MessagesAdmin } from "@/components/messages-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
+import { TeamContactsAdmin } from "@/components/team-contacts-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
   bannerQueryOptions,
+  remindersQueryOptions,
   tournamentQueryOptions,
 } from "@/lib/tournament-query";
+import { sendScoreReminder } from "@/lib/reminders.functions";
 import {
   approveShuttleOrders,
   deleteShuttleOrder,
@@ -130,6 +133,8 @@ function AdminConsole() {
   const finalize = useServerFn(finalizeWeek);
   const regenerate = useServerFn(regenerateCurrentWeek);
   const newSeason = useServerFn(startNewSeason);
+  const remind = useServerFn(sendScoreReminder);
+  const reminders = useQuery(remindersQueryOptions);
 
   const { season, teams, matches } = data;
   const [week, setWeek] = useState(season.current_week);
@@ -144,6 +149,26 @@ function AdminConsole() {
     .sort((a, b) => a.division - b.division || a.match_no - b.match_no);
   const pending = weekMatches.filter((m) => m.status === "pending");
   const notFinal = weekMatches.filter((m) => m.status !== "final");
+
+  const lastReminderFor = (matchId: string) =>
+    reminders.data?.find((r) => r.match_id === matchId)?.sent_at;
+
+  async function sendReminder(matchId: string) {
+    setBusy(true);
+    try {
+      const result = await remind({ data: { matchId } });
+      await queryClient.invalidateQueries({ queryKey: ["score-reminders", "admin"] });
+      toast.success(
+        result.sent > 0
+          ? `Reminder sent to ${result.sent} player${result.sent === 1 ? "" : "s"}.`
+          : "No reminder delivered — those addresses are blocked.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send the reminder.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true);
