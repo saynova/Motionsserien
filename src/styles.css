@@ -44,6 +44,12 @@
   --color-hold: var(--hold);
   --color-court: var(--court);
   --color-court-line: var(--court-line);
+  --color-banner: var(--banner);
+  --color-banner-border: var(--banner-border);
+  --color-banner-foreground: var(--banner-foreground);
+  --color-banner-muted: var(--banner-muted);
+  --color-banner-gold: var(--banner-gold);
+  --color-banner-gold-soft: var(--banner-gold-soft);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -85,6 +91,12 @@
   --hold: oklch(0.72 0.02 165);
   --court: oklch(0.36 0.06 205);
   --court-line: oklch(0.92 0.02 160);
+  --banner: oklch(0.97 0.03 95);
+  --banner-border: oklch(0.9 0.05 95);
+  --banner-foreground: oklch(0.38 0.09 30);
+  --banner-muted: oklch(0.47 0.07 35);
+  --banner-gold: oklch(0.7 0.13 85);
+  --banner-gold-soft: oklch(0.93 0.05 90);
   --chart-1: oklch(0.85 0.19 128);
   --chart-2: oklch(0.8 0.15 68);
   --chart-3: oklch(0.68 0.14 205);
