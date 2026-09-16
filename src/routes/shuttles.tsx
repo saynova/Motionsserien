@@ -96,7 +96,7 @@ function ShuttlesPage() {
           </div>
           <div>
             <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">
-              Number of shuttles
+              Number of shuttle Box
             </label>
             <input
               className={`${field} tabnum`}
@@ -107,6 +107,9 @@ function ShuttlesPage() {
               onChange={(e) => setQuantity(e.target.value)}
               required
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Shuttle will be delivered each monday at 20:00 in the Rackethall.
+            </p>
           </div>
           <button
             type="submit"
