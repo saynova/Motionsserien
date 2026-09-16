@@ -5,7 +5,12 @@ import { DivisionBanner, PageHeader, ScoreText, StatusPill } from "@/components/
 import { courtForDivision, formatWeekDate, sessionForDivision } from "@/lib/tournament";
 import { tournamentQueryOptions } from "@/lib/tournament-query";
 
-type Search = { week?: number; court?: number; division?: number; team?: string };
+type Search = {
+  week: number | undefined;
+  court: number | undefined;
+  division: number | undefined;
+  team: string | undefined;
+};
 
 export const Route = createFileRoute("/schedule")({
   head: () => ({
@@ -24,10 +29,10 @@ export const Route = createFileRoute("/schedule")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>): Search => ({
-    week: search.week ? Number(search.week) : undefined,
-    court: search.court ? Number(search.court) : undefined,
-    division: search.division ? Number(search.division) : undefined,
-    team: typeof search.team === "string" ? search.team : undefined,
+    week: search["week"] ? Number(search["week"]) : undefined,
+    court: search["court"] ? Number(search["court"]) : undefined,
+    division: search["division"] ? Number(search["division"]) : undefined,
+    team: typeof search["team"] === "string" ? search["team"] : undefined,
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(tournamentQueryOptions),
   component: SchedulePage,
