@@ -1,34 +1,28 @@
-# Email reminders for missing results
+# Next-season methodology: registration, seeding, manual adjustment
 
-Add player contacts from your sheet and let you email a reminder from the Admin page whenever a match has no result yet.
+Today the admin page starts a new season straight from the last week's final standings — every team carries over, and there is no way to register a new team or move a strong newcomer into a high division. This plan adds a registration round and a seeding board you control before the season goes live.
 
-## What you get
+## How it will work
 
-**Player contacts**
-- All 30 teams get their two players (name + email) loaded from your sheet. Team names match the ones already in the app (Kir, Punjab Power, Side by Side matched after trimming spaces).
-- A small "Team contacts" section in Admin lets you fix an email or a name later without re-uploading anything.
+1. **Open registration.** You open registration for the next season from the admin page. A public page lets a team sign up with: team name, both players' names and emails, phone (optional), whether they played last season, and their previous rank/division if any. They can also add a short note ("we played in another league at this level").
+2. **Review the list.** Admin sees all registrations with status Pending / Accepted / Waitlisted. You accept teams until 30 are confirmed; extras stay on a waitlist you can promote at any time.
+3. **Auto-suggested seeding.** Once 30 teams are accepted, the app proposes the starting divisions:
+   - Returning teams get the division their final rank earned last season (winner up, third down, as now).
+   - Teams that left the series leave gaps; you pick which accepted team fills each gap.
+   - New teams are proposed at the bottom, filling remaining places from Div 10 upward.
+4. **Manual adjustment.** A seeding board shows Div 1–10 with 3 slots each. You can move any team to any slot (swap with whoever is there) — so a strong newcomer goes straight into a high division. The board flags problems: a division with the wrong number of teams, a team placed twice, or an unassigned team.
+5. **Lock and launch.** "Lock seeding & start season" creates the new season, saves the Week 1 divisions exactly as you arranged them, and generates the Week 1 schedule with the existing court/time rules. Nothing goes live until you press this.
+6. **Contacts carried over.** Player names and emails from the registrations become the team contact list for the new season, so score reminders and announcements have current addresses.
 
-**Reminder buttons in Admin**
-- Every match still waiting for a result shows a "Remind" button. One click emails both players of both teams in that match.
-- A "Remind all missing results" button at the top of the week sends one reminder per waiting match.
-- After sending, the match shows when the last reminder went out, so nobody gets spammed by accident.
+Registration stays open-but-closable; when closed, the public page shows "Registration is closed" instead of the form.
 
-**The email**
-- Subject and text name the week, division, the two teams, and the court/time, with a direct link to the score submission page.
-- Sent from your own domain so it lands in inboxes and looks official.
+## Rules kept unchanged
 
-## One thing needed from you
+Promotion/relegation, 3-team divisions, scoring, tie-breakers, weekly courts and times, standings and progress views all stay exactly as they are. This only changes how a *new* season is seeded.
 
-Emails can only be sent from a domain you own. You already have motionsserien.se, so we set it up as the sender (for example results@motionsserien.se). This is a one-time step with a couple of settings at your domain provider; after that sending works everywhere.
+## Technical outline
 
-<presentation-actions>
-<presentation-open-email-setup>Set up email domain</presentation-open-email-setup>
-</presentation-actions>
-
-## Technical notes
-
-- Migration: `team_players` (team_id FK, player_no, name, email, unique per team+player_no) with RLS — public read of name only via a view is unnecessary, so keep reads server-side; grants for `authenticated`/`service_role`, server writes via service role. Add `last_reminder_at` to `matches`.
-- Seed all 60 player rows as literal INSERTs in the same migration, joined to teams by trimmed name.
-- Email domain, then `scaffold_transactional_email_templates`; new template `src/lib/email-templates/result-reminder.tsx` (props: week, division, teams, court, time, submit URL) registered in the registry.
-- New admin server fns in `src/lib/extras.functions.ts` (or a new `reminders.functions.ts`), gated by `requireAdmin`: `getTeamPlayers`, `saveTeamPlayer`, `sendResultReminder({ matchId })`, `sendAllResultReminders({ weekNo })`. Each send loops per recipient with an idempotency key of `reminder-${matchId}-${email}-${date}`; treat `recipient_suppressed` as a skip and report counts back.
-- Admin UI: reminder buttons on scheduled matches in `src/routes/admin.tsx`, plus a collapsible contacts editor; toast reports sent/skipped counts.
+- **Migration** — `registrations` (season label, team name, player1/2 name + email, phone, returning flag, previous division, note, status pending/accepted/waitlisted/rejected, timestamps) with public insert allowed, reads/updates server-side only; `registration_settings` (or a flag on `seasons`) for open/closed; `season_seeds` (target season label, team name or team_id, division, position) to hold the draft board before launch; `team_players` (team_id, player_no, name, email, unique per team+player_no) populated on lock.
+- **Server functions** — public: `submitRegistration` (zod-validated, duplicate team-name check), `getRegistrationStatus`. Admin (`requireAdmin`): `listRegistrations`, `setRegistrationStatus`, `buildSeedSuggestion` (reuses `computeStandings` + `buildNextAssignment` from `src/lib/tournament.ts`, then places new teams from the bottom), `saveSeedBoard`, `lockSeedingAndStartSeason` (replaces the current unconditional `startNewSeason` path: creates teams that don't exist yet, writes Week 1 `week_slots` from the board, generates Week 1 matches, deactivates the old season, seeds `team_players`).
+- **UI** — new public route `src/routes/register.tsx` (form + closed state, linked in nav); admin page gains a "Next season" section: registration toggle, registration table with accept/waitlist actions, and the 10×3 seeding board with move/swap plus validation warnings, ending in "Lock seeding & start season".
+- The existing `startNewSeason` stays available as a fallback for a straight carry-over season with no roster changes.
