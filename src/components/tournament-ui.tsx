@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Minus, Trophy, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus, Sparkles, Trophy, UserRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { bannerQueryOptions } from "@/lib/tournament-query";
@@ -112,27 +112,30 @@ export function WeeklyBanner() {
   return (
     <section
       aria-label="Weekly announcement"
-      className="mb-8 flex items-center gap-5 rounded-xl border border-banner-border bg-banner px-6 py-5 shadow-sm"
+      className="weekly-banner relative mb-8 overflow-hidden rounded-lg border border-banner-border bg-banner px-5 py-5 shadow-lg sm:px-7 sm:py-6"
     >
-      <span
-        className="flex size-16 shrink-0 items-center justify-center rounded-full border border-banner-gold/40 bg-banner-gold-soft"
-        aria-hidden="true"
-      >
-        <Trophy
-          className="size-8 text-banner-gold"
-          strokeWidth={1.8}
-          fill="color-mix(in oklab, var(--banner-gold) 25%, transparent)"
-        />
-      </span>
-      <div className="min-w-0">
-        <h2 className="font-display text-3xl font-bold tracking-wide text-banner-foreground">
-          {data.title}
-        </h2>
-        {data.message.trim() !== "" ? (
-          <p className="mt-1 whitespace-pre-line text-lg font-medium text-banner-muted">
-            {data.message}
+      <div className="weekly-banner-shine" aria-hidden="true" />
+      <div className="relative flex items-center gap-4 sm:gap-6">
+        <div className="weekly-trophy-wrap relative flex size-16 shrink-0 items-center justify-center sm:size-20" aria-hidden="true">
+          <span className="absolute inset-0 rounded-full border border-banner-gold/40 bg-banner-gold-soft" />
+          <span className="absolute inset-1.5 rounded-full border border-banner-gold/20" />
+          <Trophy className="weekly-trophy relative size-8 text-banner-gold sm:size-10" strokeWidth={1.7} />
+          <Sparkles className="weekly-sparkle absolute -right-1 top-0 size-5 text-banner-gold" strokeWidth={1.8} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="mb-1 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-banner-gold">
+            <span className="h-px w-5 bg-banner-gold/60" aria-hidden="true" />
+            Weekly announcement
           </p>
-        ) : null}
+          <h2 className="font-display text-3xl font-bold leading-none tracking-wide text-banner-foreground sm:text-4xl">
+            {data.title}
+          </h2>
+          {data.message.trim() !== "" ? (
+            <p className="mt-2 max-w-3xl whitespace-pre-line text-base font-medium leading-relaxed text-banner-muted sm:text-lg">
+              {data.message}
+            </p>
+          ) : null}
+        </div>
       </div>
     </section>
   );
