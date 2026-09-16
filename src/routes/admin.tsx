@@ -230,6 +230,10 @@ function AdminConsole() {
         ))}
       </div>
 
+      <BannerEditor />
+
+      <ShuttleAdmin />
+
       <section className="mt-10 rounded-lg border border-border bg-card p-6">
         <h2 className="text-2xl font-bold uppercase tracking-wide">Start a new season</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
