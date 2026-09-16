@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          message: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           approved_at: string | null
@@ -129,6 +156,36 @@ export type Database = {
           name?: string
           start_monday?: string
           total_weeks?: number
+        }
+        Relationships: []
+      }
+      shuttle_orders: {
+        Row: {
+          buyer_name: string
+          created_at: string
+          id: string
+          quantity: number
+          status: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_name: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          status?: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_name?: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          status?: string
+          team_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
