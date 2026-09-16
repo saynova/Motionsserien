@@ -109,49 +109,47 @@ export function PageHeader({
 export function WeeklyBanner() {
   const { data } = useQuery(bannerQueryOptions);
   if (!data || !data.is_active || data.title.trim() === "") return null;
+  const hasAnnouncement = data.message.trim() !== "";
   return (
     <section
       aria-label="Weekly announcement"
-      className="weekly-banner relative mb-8 min-h-32 overflow-hidden rounded-lg border border-banner-border bg-banner px-4 py-5 shadow-lg sm:min-h-36 sm:px-8"
+      className="weekly-banner relative mb-6 overflow-hidden rounded-lg border border-banner-border bg-banner px-4 py-3 shadow-lg sm:px-6"
     >
       <div className="weekly-banner-shine" aria-hidden="true" />
-      <div className="banner-court-lines" aria-hidden="true" />
-      <div className="banner-confetti" aria-hidden="true">
-        <i /><i /><i /><i /><i /><i /><i /><i />
+      <div className="banner-confetti banner-confetti--slim" aria-hidden="true">
+        <i /><i /><i /><i /><i /><i />
       </div>
 
-      <div className="banner-racket absolute -left-5 top-1/2 hidden -translate-y-1/2 sm:block" aria-hidden="true">
-        <span className="banner-racket-head" />
-        <span className="banner-racket-shaft" />
-        <span className="banner-racket-handle" />
-      </div>
-
-      <div className="banner-shuttle absolute -right-2 top-1/2 hidden -translate-y-1/2 sm:block" aria-hidden="true">
-        <span className="banner-shuttle-feathers" />
-        <span className="banner-shuttle-band" />
-        <span className="banner-shuttle-tip" />
-      </div>
-
-      <div className="relative mx-auto flex max-w-3xl items-center justify-center gap-3 text-center sm:gap-4">
-        <div className="weekly-trophy-wrap relative flex size-12 shrink-0 items-center justify-center sm:size-16" aria-hidden="true">
-          <span className="absolute inset-0 rounded-full bg-banner-gold-soft" />
-          <Trophy className="weekly-trophy relative size-7 text-banner-gold sm:size-9" strokeWidth={2} />
-          <Sparkles className="weekly-sparkle absolute -right-1 -top-1 size-4 text-banner-gold sm:size-5" strokeWidth={2} />
-        </div>
-        <div className="min-w-0">
-          <p className="mb-1 flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-banner-gold sm:text-sm">
-            <PartyPopper className="size-4" aria-hidden="true" />
-            Congratulations
-          </p>
-          <h2 className="font-display text-3xl font-bold leading-none text-banner-foreground sm:text-5xl">
-            {data.title}
-          </h2>
-          {data.message.trim() !== "" ? (
-            <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-relaxed text-banner-muted sm:text-lg">
-              {data.message}
+      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="weekly-trophy-wrap relative flex size-11 shrink-0 items-center justify-center" aria-hidden="true">
+            <span className="absolute inset-0 rounded-full bg-banner-gold-soft" />
+            <Trophy className="weekly-trophy relative size-6 text-banner-gold" strokeWidth={2} />
+            <Sparkles className="weekly-sparkle absolute -right-1 -top-1 size-3.5 text-banner-gold" strokeWidth={2} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-banner-gold sm:text-xs">
+              Weekly Champion
             </p>
-          ) : null}
+            <h2 className="font-display text-2xl font-bold leading-tight text-banner-foreground sm:text-3xl">
+              {data.title}
+            </h2>
+          </div>
         </div>
+
+        {hasAnnouncement ? (
+          <div className="flex min-w-0 items-start gap-2 border-t border-banner-border/60 pt-2.5 sm:border-t-0 sm:border-l sm:pl-5 sm:pt-0">
+            <div className="mt-0.5 hidden h-5 w-1 shrink-0 rounded-full bg-banner-gold sm:block" aria-hidden="true" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-banner-gold sm:text-xs">
+                Announcement
+              </p>
+              <p className="whitespace-pre-line text-sm font-medium leading-snug text-banner-muted">
+                {data.message}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
