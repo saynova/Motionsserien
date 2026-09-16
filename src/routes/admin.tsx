@@ -447,6 +447,7 @@ function MatchCard({
   onNoShow: () => void;
   onSave: (score: Score) => void;
 }) {
+  const [open, setOpen] = useState(match.status === "pending");
   const [editing, setEditing] = useState(false);
   const asText = (v: number | null) => (v == null ? "" : String(v));
   const [fields, setFields] = useState({
