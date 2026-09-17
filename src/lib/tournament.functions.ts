@@ -105,7 +105,7 @@ function toScore(input: SubmitInput | AdminScoreInput): ScoreInput {
 }
 
 export const ALREADY_SUBMITTED_MESSAGE =
-  "This match score has already been submitted and is awaiting approval. If you need to make changes, please contact the General through contact form from this website only";
+  "This match score has been submitted and is awaiting approval. If you need to make changes, please contact the General through contact form from this website only";
 
 export const submitScore = createServerFn({ method: "POST" })
   .inputValidator((data: SubmitInput) => {

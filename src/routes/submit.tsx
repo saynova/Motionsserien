@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
-import { formatWeekDate, validateScore } from "@/lib/tournament";
+import { formatScore, formatWeekDate, validateScore } from "@/lib/tournament";
 import { tournamentQueryOptions } from "@/lib/tournament-query";
 import { submitScore } from "@/lib/tournament.functions";
 
@@ -223,16 +223,19 @@ function SubmitPage() {
 
         {awaitingMatches.length > 0 ? (
           <div className="rounded border border-primary/25 bg-primary/5 p-3 text-sm">
-            <p className="font-semibold text-primary">Already submitted — awaiting approval</p>
+            <p className="font-semibold text-primary">Submitted — awaiting approval</p>
             <ul className="mt-1 space-y-0.5 text-muted-foreground">
               {awaitingMatches.map((m) => (
-                <li key={m.id}>
-                  Div {m.division} · {teamName(m.team_a_id)} v {teamName(m.team_b_id)}
+                <li key={m.id} className="flex flex-wrap justify-between gap-x-3">
+                  <span>
+                    Div {m.division} · {teamName(m.team_a_id)} v {teamName(m.team_b_id)}
+                  </span>
+                  <span className="font-semibold text-foreground">{formatScore(m)}</span>
                 </li>
               ))}
             </ul>
             <p className="mt-2">
-              This match score has already been submitted and is awaiting approval. If you need to
+              This match score has been submitted and is awaiting approval. If you need to
               make changes, please contact the General through{" "}
               <Link to="/ask" className="font-semibold text-primary underline">
                 contact form
