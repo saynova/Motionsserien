@@ -42,7 +42,28 @@ import {
   startNewSeason,
 } from "@/lib/tournament.functions";
 
+const SECTIONS = [
+  { id: "matches", label: "Match scores" },
+  { id: "banner", label: "Weekly banner" },
+  { id: "shuttles", label: "Shuttle purchases" },
+  { id: "support", label: "Donation & sponsor" },
+  { id: "messages", label: "Questions" },
+  { id: "email", label: "Send email" },
+  { id: "contacts", label: "Team contacts" },
+  { id: "season", label: "Season settings" },
+  { id: "procedure", label: "Weekly procedure" },
+  { id: "next-season", label: "Registration & seeding" },
+  { id: "new-season", label: "Start new season" },
+] as const;
+
+type SectionId = (typeof SECTIONS)[number]["id"];
+
 export const Route = createFileRoute("/admin")({
+  validateSearch: (search: Record<string, unknown>): { section: SectionId } => {
+    const raw = String(search.section ?? "matches");
+    const match = SECTIONS.find((s) => s.id === raw);
+    return { section: match ? match.id : "matches" };
+  },
   head: () => ({
     meta: [
       { title: "Admin — Motionsserien HT-26" },
@@ -63,6 +84,7 @@ export const Route = createFileRoute("/admin")({
     ]),
   component: AdminPage,
 });
+
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
