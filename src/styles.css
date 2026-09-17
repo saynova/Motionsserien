@@ -119,9 +119,20 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   body {
+    min-height: 100dvh;
+    margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);

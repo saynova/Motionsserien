@@ -85,13 +85,13 @@ function StandingsPage() {
 
   return (
     <>
-      <section className="submit-score-hero relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-card px-5 py-8 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
+      <section className="submit-score-hero relative mb-8 w-full overflow-hidden rounded-lg border border-primary/10 bg-card px-4 py-6 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
         <div className="absolute inset-0 -translate-x-full animate-submit-shimmer bg-gradient-to-r from-transparent via-primary/5 to-transparent" aria-hidden="true" />
         <div className="relative flex items-start gap-4 sm:items-center">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
             <Trophy className="size-6 sm:size-7" aria-hidden="true" />
           </span>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Week {week} scores
             </p>
@@ -219,15 +219,15 @@ function StandingsPage() {
                   return (
                     <li
                       key={match.id}
-                      className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-xs"
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 text-xs sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
                     >
                       <span className="tabnum text-muted-foreground">{match.start_time}</span>
-                      <span className="flex-1 font-medium">
+                      <span className="min-w-0 break-words font-medium">
                         {teamName(match.team_a_id)} <span className="text-muted-foreground">v</span>{" "}
                         {teamName(match.team_b_id)}
                       </span>
-                      <ScoreText match={match} teamName={teamName} />
-                      <StatusPill match={match} />
+                      <span className="col-span-2 min-w-0 sm:col-span-1"><ScoreText match={match} teamName={teamName} /></span>
+                      <span className="col-span-2 justify-self-start sm:col-span-1 sm:justify-self-end"><StatusPill match={match} /></span>
                     </li>
                   );
                 })}

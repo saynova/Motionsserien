@@ -137,7 +137,7 @@ export function WeeklyBanner() {
   return (
     <section
       aria-label="Weekly announcement"
-      className="weekly-banner glass-surface relative mb-4 overflow-hidden rounded-lg border border-banner-border bg-banner px-4 py-3 sm:px-6"
+      className="weekly-banner glass-surface relative mb-4 w-full overflow-hidden rounded-lg border border-banner-border bg-banner px-3 py-3 sm:px-6"
     >
       <div className="weekly-banner-shine" aria-hidden="true" />
       <div className="banner-confetti banner-confetti--slim" aria-hidden="true">
@@ -155,7 +155,7 @@ export function WeeklyBanner() {
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-banner-gold sm:text-xs">
               Weekly Champion
             </p>
-            <h2 className="font-display text-2xl font-bold leading-tight text-banner-foreground sm:text-3xl">
+            <h2 className="break-words font-display text-xl font-bold leading-tight text-banner-foreground sm:text-3xl">
               {data.title}
             </h2>
           </div>
@@ -168,7 +168,7 @@ export function WeeklyBanner() {
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-banner-gold sm:text-xs">
                 Announcement
               </p>
-              <p className="whitespace-pre-line text-sm font-medium leading-snug text-banner-muted">
+               <p className="whitespace-pre-line break-words text-sm font-medium leading-snug text-banner-muted">
                 {data.message}
               </p>
             </div>
@@ -183,7 +183,7 @@ export function ContactBar() {
   return (
     <section
       aria-label="Contact"
-      className="glass-surface mt-10 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
+      className="glass-surface mt-10 grid w-full grid-cols-1 items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto]"
     >
       <div className="flex items-center gap-3">
         <UserRound className="size-5 text-primary" aria-hidden="true" />
@@ -194,8 +194,8 @@ export function ContactBar() {
           <p className="text-sm font-bold">Md Rabiul Islam</p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <p className="text-xs text-muted-foreground">
+       <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
+         <p className="min-w-0 text-xs text-muted-foreground">
           Questions, feedback or a scoring issue?
         </p>
         <a
