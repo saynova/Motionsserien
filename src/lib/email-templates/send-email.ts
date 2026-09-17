@@ -7,7 +7,7 @@ import { TEMPLATES } from './registry'
 
 // Configuration baked in at scaffold time
 const SITE_NAME = "Md Rabiul Islam"
-const FROM_USER = "rabiul.islam"
+const FROM_USER = "rabiul"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
 const SENDER_DOMAIN = "notify.motionsserien.se"
