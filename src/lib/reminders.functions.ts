@@ -335,7 +335,7 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
 
     let recipients: { email: string; name: string }[] = [];
     if (data.mode === "address") {
-      recipients = [{ email: data.email, name: "" }];
+      recipients = data.emails.map((one) => ({ email: one, name: "" }));
     } else {
       const all = await listDivisionPlayers();
       recipients =
