@@ -137,15 +137,18 @@ const NAV = [
 function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-6">
-        <Link to="/" className="flex items-baseline gap-2">
-          <span className="font-display text-xl font-bold text-primary sm:text-2xl">
-            Motionsserien
-          </span>
-          <span className="font-display text-xl font-bold text-foreground sm:text-2xl">HT-26</span>
-        </Link>
-        <div className="flex flex-wrap items-center gap-2">
-          <nav className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto">
+      <div className="mx-auto max-w-7xl px-4 py-3 lg:px-6">
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/" className="flex items-baseline gap-2">
+            <span className="font-display text-xl font-bold text-primary sm:text-2xl">
+              Motionsserien
+            </span>
+            <span className="font-display text-xl font-bold text-foreground sm:text-2xl">HT-26</span>
+          </Link>
+          <DonationButton />
+        </div>
+        <div className="mt-2 sm:absolute sm:left-1/2 sm:top-3 sm:mt-0 sm:-translate-x-1/2">
+          <nav className="-mx-1 flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
             {NAV.map((item) => (
               <Link
                 key={item.to}
@@ -158,7 +161,6 @@ function SiteHeader() {
               </Link>
             ))}
           </nav>
-          <DonationButton />
         </div>
       </div>
     </header>
