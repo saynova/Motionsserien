@@ -84,7 +84,6 @@ function StandingsPage() {
 
   return (
     <>
-      <TermsNotice />
       <PageHeader
         eyebrow={`${season.name} · Week ${week} of ${season.total_weeks}`}
         title="Current standings"
