@@ -70,19 +70,31 @@ export function ComposeEmailAdmin() {
     body.trim().length >= 2 &&
     (mode === "division" ||
       (mode === "player" && email.length > 0) ||
-      (mode === "address" && address.trim().length > 3));
+      (mode === "address" && parsedAddresses.length > 0));
 
   return (
-    <section className="rounded-lg border border-border bg-card p-6">
-      <h2 className="text-2xl font-bold uppercase tracking-wide">Send an email</h2>
-      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Write to one player, everyone in a division, or any address. Emails go out as{" "}
-        <strong>Md Rabiul Islam &lt;rabiul@motionsserien.se&gt;</strong>. Use it for tournament
-        matters only — reminders, schedule changes, answers. Newsletters and promotional mail are
-        not supported and would hurt delivery of the important emails.
-      </p>
+    <section className="rounded-lg border border-border bg-card">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full flex-wrap items-center justify-between gap-3 p-6 text-left"
+      >
+        <div>
+          <h2 className="text-2xl font-bold uppercase tracking-wide">Send an email</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Write to one player, everyone in a division, or one or many pasted addresses. Emails go
+            out as <strong>Md Rabiul Islam &lt;rabiul@motionsserien.se&gt;</strong>. Use it for
+            tournament matters only.
+          </p>
+        </div>
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {open ? "Hide" : "Show"}
+        </span>
+      </button>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      {!open ? null : (
+        <div className="border-t border-border p-6">
+      <div className="flex flex-wrap gap-2">
         {(
           [
             ["player", "One player"],
