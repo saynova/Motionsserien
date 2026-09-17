@@ -120,8 +120,8 @@ export function PageHeader({
 }) {
   return (
     <header className="mb-8 border-b border-border pb-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">{eyebrow}</p>
-      <h1 className="mt-1 text-4xl font-bold uppercase tracking-wide sm:text-5xl">{title}</h1>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
+      <h1 className="mt-2 text-4xl font-bold text-foreground sm:text-5xl">{title}</h1>
       {description ? (
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{description}</p>
       ) : null}
@@ -137,7 +137,7 @@ export function WeeklyBanner() {
   return (
     <section
       aria-label="Weekly announcement"
-      className="weekly-banner relative mb-6 overflow-hidden rounded-lg border border-banner-border bg-banner px-4 py-3 shadow-lg sm:px-6"
+      className="weekly-banner glass-surface relative mb-4 overflow-hidden rounded-lg border border-banner-border bg-banner px-4 py-3 sm:px-6"
     >
       <div className="weekly-banner-shine" aria-hidden="true" />
       <div className="banner-confetti banner-confetti--slim" aria-hidden="true">
@@ -183,7 +183,7 @@ export function ContactBar() {
   return (
     <section
       aria-label="Contact"
-      className="mt-10 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
+      className="glass-surface mt-10 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
     >
       <div className="flex items-center gap-3">
         <UserRound className="size-5 text-primary" aria-hidden="true" />
@@ -191,7 +191,7 @@ export function ContactBar() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Contact · The General
           </p>
-          <p className="text-sm font-bold uppercase tracking-wide">Md Rabiul Islam</p>
+          <p className="text-sm font-bold">Md Rabiul Islam</p>
         </div>
       </div>
       <div className="flex items-center gap-3">

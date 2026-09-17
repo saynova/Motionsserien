@@ -19,14 +19,14 @@ export function DonationButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1.5 bg-accent px-2.5 text-xs font-bold uppercase text-accent-foreground shadow hover:bg-accent/90">
+        <Button size="sm" variant="outline" className="h-8 gap-1.5 border-primary/20 bg-primary/5 px-2.5 text-xs font-bold text-primary shadow-none hover:bg-primary/10 hover:text-primary">
           <HandHeart className="size-3.5" aria-hidden="true" />
           Donate
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md border-accent/50 bg-card text-center">
+      <DialogContent className="glass-surface max-w-md border-primary/15 bg-card text-center">
         <DialogHeader className="items-center text-center">
-          <DialogTitle className="font-display text-3xl font-bold uppercase text-accent">
+          <DialogTitle className="font-display text-3xl font-bold text-primary">
             Support this website
           </DialogTitle>
         </DialogHeader>
@@ -60,10 +60,10 @@ export function SponsorBanner() {
   return (
     <section
       aria-label="Session sponsor"
-      className="mb-6 flex flex-col items-center justify-center gap-1 rounded-md border border-accent/50 bg-accent/10 px-4 py-3 text-center sm:flex-row sm:gap-2"
+      className="glass-surface mb-6 flex flex-col items-center justify-center gap-1 rounded-md border border-primary/15 bg-primary/5 px-4 py-3 text-center sm:flex-row sm:gap-2"
     >
-      <Gift className="size-5 shrink-0 text-accent" aria-hidden="true" />
-      <span className="text-xs font-bold uppercase text-accent">
+      <Gift className="size-5 shrink-0 text-primary" aria-hidden="true" />
+      <span className="text-xs font-bold uppercase text-primary">
         {data.sponsor_label.trim() || "This session is sponsored by:"}
       </span>
       <span className="font-semibold text-foreground">
