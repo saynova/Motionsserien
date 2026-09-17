@@ -70,8 +70,9 @@ function cleanDivision(value: unknown): number | null {
 
 export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
   async (): Promise<RegistrationInfo> => {
-    const { readClient } = await import("./tournament.server");
-    const supabase = readClient();
+    // payment_details is not publicly readable, so read it server-side.
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
     const [settings, season] = await Promise.all([
       supabase
         .from("registration_settings")
@@ -100,8 +101,9 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
 
 export const getRegisteredTeams = createServerFn({ method: "GET" }).handler(
   async (): Promise<RegisteredTeam[]> => {
-    const { readClient } = await import("./tournament.server");
-    const { data, error } = await readClient()
+    // Only team name + division are exposed; applicant contact data stays private.
+    const { adminClient } = await import("./tournament.server");
+    const { data, error } = await adminClient()
       .from("registered_teams")
       .select("team_name, division")
       .order("division", { ascending: true });
