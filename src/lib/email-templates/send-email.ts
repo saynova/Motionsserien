@@ -10,10 +10,10 @@ const SITE_NAME = "Md Rabiul Islam"
 const FROM_USER = "rabiul"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.motionsserien.se"
+const SENDER_DOMAIN = "noreply.motionsserien.se"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "motionsserien.se"
+const FROM_DOMAIN = "noreply.motionsserien.se"
 
 export type SendTemplateEmailResult =
   | { sent: true }
