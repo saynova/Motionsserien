@@ -137,30 +137,30 @@ const NAV = [
 function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-4 py-3 lg:px-6">
-        <div className="flex items-center justify-between gap-3">
-          <Link to="/" className="flex items-baseline gap-2">
+      <div className="mx-auto w-full max-w-[96rem] px-3 py-3 sm:px-5 lg:px-8">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <Link to="/" className="col-start-1 row-start-1 flex min-w-0 items-baseline gap-1.5 sm:gap-2 lg:col-start-1">
             <span className="font-display text-xl font-bold text-primary sm:text-2xl">
               Motionsserien
             </span>
-            <span className="font-display text-xl font-bold text-foreground sm:text-2xl">HT-26</span>
+            <span className="shrink-0 font-display text-xl font-bold text-foreground sm:text-2xl">HT-26</span>
           </Link>
-          <DonationButton />
-        </div>
-        <div className="mt-2 sm:absolute sm:left-1/2 sm:top-3 sm:mt-0 sm:-translate-x-1/2">
-          <nav className="-mx-1 flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+          <nav className="col-span-2 row-start-2 flex min-w-0 flex-wrap items-center justify-center gap-1 lg:col-span-1 lg:col-start-2 lg:row-start-1">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.to === "/" }}
-                className="rounded-md px-2.5 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="rounded-md px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:px-2.5 sm:text-sm"
                 activeProps={{ className: "bg-primary/10 text-primary hover:bg-primary/15" }}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
+          <div className="col-start-2 row-start-1 shrink-0 lg:col-start-3">
+            <DonationButton />
+          </div>
         </div>
       </div>
     </header>
@@ -172,16 +172,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
+      <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
         <SiteHeader />
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 lg:px-6">
+        <main className="mx-auto w-full max-w-[96rem] flex-1 px-3 py-5 sm:px-5 sm:py-8 lg:px-8">
           <WeeklyBanner />
           <SponsorBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <ContactBar />
         </main>
-        <footer className="mx-auto max-w-7xl px-4 pb-10 text-xs text-muted-foreground lg:px-6">
+        <footer className="mx-auto w-full max-w-[96rem] px-3 pb-8 text-xs leading-relaxed text-muted-foreground sm:px-5 lg:px-8">
           Mondays · Divisions 1–5 at 19:00, Divisions 6–10 at 20:00 · Please arrive 10 minutes
           before your start time. ·{" "}
           <Link to="/terms" className="font-semibold text-primary underline">
