@@ -7,6 +7,15 @@ export type Banner = {
   is_active: boolean;
 };
 
+export type SupportSettings = {
+  id: string;
+  donation_visible: boolean;
+  sponsor_visible: boolean;
+  sponsor_details: string;
+  qr_image_path: string | null;
+  qr_image_url: string | null;
+};
+
 export type ShuttleOrder = {
   id: string;
   team_name: string;
@@ -29,6 +38,7 @@ export type PublicShuttleOrder = {
 const BANNER_COLUMNS = "id, title, message, is_active";
 const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
 const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
+const SUPPORT_COLUMNS = "id, donation_visible, sponsor_visible, sponsor_details, qr_image_path";
 
 // ------------------------------------------------------------------- banner
 
@@ -73,6 +83,107 @@ export const saveBanner = createServerFn({ method: "POST" })
     const result = existing.data
       ? await supabase.from("announcements").update(payload).eq("id", existing.data.id)
       : await supabase.from("announcements").insert(payload);
+    if (result.error) throw new Error(result.error.message);
+    return { ok: true as const };
+  });
+
+// ----------------------------------------------------- donation and sponsor
+
+export const getSupportSettings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<SupportSettings | null> => {
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const { data, error } = await supabase
+      .from("site_support_settings")
+      .select(SUPPORT_COLUMNS)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+
+    let qrImageUrl: string | null = null;
+    if (data.qr_image_path) {
+      const signed = await supabase.storage
+        .from("donation-assets")
+        .createSignedUrl(data.qr_image_path, 60 * 60 * 24 * 7);
+      if (!signed.error) qrImageUrl = signed.data.signedUrl;
+    }
+
+    return { ...data, qr_image_url: qrImageUrl } as SupportSettings;
+  },
+);
+
+type SupportSettingsInput = {
+  donationVisible: boolean;
+  sponsorVisible: boolean;
+  sponsorDetails: string;
+  qrImage?: { base64: string; mimeType: string } | null;
+  removeQr?: boolean;
+};
+
+export const saveSupportSettings = createServerFn({ method: "POST" })
+  .inputValidator((data: SupportSettingsInput) => {
+    const sponsorDetails = (data?.sponsorDetails ?? "").trim().slice(0, 300);
+    if (data?.sponsorVisible && sponsorDetails.length < 2) {
+      throw new Error("Add sponsor details before showing the sponsor banner.");
+    }
+    if (data?.qrImage) {
+      const allowed = ["image/png", "image/jpeg", "image/webp"];
+      if (!allowed.includes(data.qrImage.mimeType)) {
+        throw new Error("Use a PNG, JPEG or WebP image.");
+      }
+      if (data.qrImage.base64.length > 2_800_000) {
+        throw new Error("The QR image must be smaller than 2 MB.");
+      }
+    }
+    return {
+      donationVisible: data?.donationVisible === true,
+      sponsorVisible: data?.sponsorVisible === true,
+      sponsorDetails,
+      qrImage: data?.qrImage ?? null,
+      removeQr: data?.removeQr === true,
+    };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const existing = await supabase
+      .from("site_support_settings")
+      .select("id, qr_image_path")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (existing.error) throw new Error(existing.error.message);
+
+    let qrImagePath = existing.data?.qr_image_path ?? null;
+    if ((data.removeQr || data.qrImage) && qrImagePath) {
+      const removed = await supabase.storage.from("donation-assets").remove([qrImagePath]);
+      if (removed.error) throw new Error(removed.error.message);
+      qrImagePath = null;
+    }
+    if (data.qrImage) {
+      const extension = data.qrImage.mimeType === "image/png" ? "png" : data.qrImage.mimeType === "image/webp" ? "webp" : "jpg";
+      qrImagePath = `swish-qr-${Date.now()}.${extension}`;
+      const bytes = Uint8Array.from(atob(data.qrImage.base64), (character) => character.charCodeAt(0));
+      const uploaded = await supabase.storage.from("donation-assets").upload(qrImagePath, bytes, {
+        contentType: data.qrImage.mimeType,
+        upsert: false,
+      });
+      if (uploaded.error) throw new Error(uploaded.error.message);
+    }
+
+    const payload = {
+      donation_visible: data.donationVisible,
+      sponsor_visible: data.sponsorVisible,
+      sponsor_details: data.sponsorDetails,
+      qr_image_path: qrImagePath,
+    };
+    const result = existing.data
+      ? await supabase.from("site_support_settings").update(payload).eq("id", existing.data.id)
+      : await supabase.from("site_support_settings").insert(payload);
     if (result.error) throw new Error(result.error.message);
     return { ok: true as const };
   });

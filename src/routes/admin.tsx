@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Mail } from "lucide-react";
+import { ChevronDown, Mail, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
@@ -11,18 +11,23 @@ import { MessagesAdmin } from "@/components/messages-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
 import { TeamContactsAdmin } from "@/components/team-contacts-admin";
 import { ComposeEmailAdmin } from "@/components/compose-email-admin";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Switch } from "@/components/ui/switch";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
   bannerQueryOptions,
   remindersQueryOptions,
   tournamentQueryOptions,
+  supportSettingsQueryOptions,
 } from "@/lib/tournament-query";
 import { sendScoreReminder } from "@/lib/reminders.functions";
 import {
   approveShuttleOrders,
   deleteShuttleOrder,
   saveBanner,
+  saveSupportSettings,
 } from "@/lib/extras.functions";
 import {
   adminSignIn,
@@ -260,6 +265,8 @@ function AdminConsole() {
         <BannerEditor />
         <ShuttleAdmin />
       </div>
+
+      <SupportSettingsEditor />
 
       <MessagesAdmin />
 
@@ -707,6 +714,154 @@ function BannerEditor() {
         </div>
       </div>
     </section>
+  );
+}
+
+function SupportSettingsEditor() {
+  const queryClient = useQueryClient();
+  const settings = useQuery(supportSettingsQueryOptions);
+  const save = useServerFn(saveSupportSettings);
+  const [open, setOpen] = useState(false);
+  const [donationVisible, setDonationVisible] = useState<boolean | null>(null);
+  const [sponsorVisible, setSponsorVisible] = useState<boolean | null>(null);
+  const [sponsorDetails, setSponsorDetails] = useState<string | null>(null);
+  const [qrImage, setQrImage] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [removeQr, setRemoveQr] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const donation = donationVisible ?? settings.data?.donation_visible ?? false;
+  const sponsor = sponsorVisible ?? settings.data?.sponsor_visible ?? false;
+  const details = sponsorDetails ?? settings.data?.sponsor_details ?? "";
+
+  function chooseImage(file: File | undefined) {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("The QR image must be smaller than 2 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = typeof reader.result === "string" ? reader.result : "";
+      const base64 = value.split(",")[1];
+      if (!base64) return;
+      setQrImage({ base64, mimeType: file.type });
+      setRemoveQr(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function persist() {
+    setBusy(true);
+    try {
+      await save({
+        data: {
+          donationVisible: donation,
+          sponsorVisible: sponsor,
+          sponsorDetails: details,
+          qrImage,
+          removeQr,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["support-settings"] });
+      setQrImage(null);
+      setRemoveQr(false);
+      toast.success("Donation and sponsor settings saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save these settings.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const hasStoredQr = Boolean(settings.data?.qr_image_url) && !removeQr;
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="mt-6 rounded-lg border border-border bg-card">
+      <CollapsibleTrigger asChild>
+        <Button variant="ghost" className="h-auto w-full justify-between rounded-lg px-6 py-4 text-left">
+          <span>
+            <span className="block text-xl font-bold uppercase">Donation &amp; sponsor</span>
+            <span className="mt-1 block text-xs font-normal text-muted-foreground">
+              Control the donation button, Swish QR code and sponsor banner.
+            </span>
+          </span>
+          <ChevronDown className={`size-5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="border-t border-border p-6">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-4">
+            <label className="flex items-center justify-between gap-4 rounded border border-border bg-secondary/30 p-3">
+              <span>
+                <span className="block font-semibold">Show donation button</span>
+                <span className="block text-xs text-muted-foreground">Visible in the header on every page.</span>
+              </span>
+              <Switch checked={donation} onCheckedChange={setDonationVisible} />
+            </label>
+            <div className="rounded border border-border bg-secondary/30 p-3">
+              <p className="font-semibold">Swish QR code</p>
+              <p className="mt-1 text-xs text-muted-foreground">PNG, JPEG or WebP. Maximum 2 MB.</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                {(qrImage || hasStoredQr) && !removeQr ? (
+                  <div className="flex size-20 items-center justify-center overflow-hidden rounded border border-border bg-background p-1">
+                    <img
+                      src={qrImage ? `data:${qrImage.mimeType};base64,${qrImage.base64}` : settings.data?.qr_image_url ?? ""}
+                      alt="Current Swish QR code"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex size-20 items-center justify-center rounded border border-dashed border-border text-muted-foreground">
+                    <QrCode className="size-8" aria-hidden="true" />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild variant="outline" size="sm">
+                    <label>
+                      {hasStoredQr || qrImage ? "Replace image" : "Upload image"}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="sr-only"
+                        onChange={(event) => chooseImage(event.target.files?.[0])}
+                      />
+                    </label>
+                  </Button>
+                  {hasStoredQr || qrImage ? (
+                    <Button variant="outline" size="sm" onClick={() => { setQrImage(null); setRemoveQr(true); }}>
+                      Remove
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="flex items-center justify-between gap-4 rounded border border-border bg-secondary/30 p-3">
+              <span>
+                <span className="block font-semibold">Show sponsor banner</span>
+                <span className="block text-xs text-muted-foreground">Shown below the weekly champion banner.</span>
+              </span>
+              <Switch checked={sponsor} onCheckedChange={setSponsorVisible} />
+            </label>
+            <label className="block space-y-1">
+              <span className="block text-xs font-semibold uppercase text-muted-foreground">Sponsor details</span>
+              <textarea
+                className={`${control} w-full`}
+                rows={4}
+                maxLength={300}
+                value={details}
+                placeholder="Sponsor name and short details"
+                onChange={(event) => setSponsorDetails(event.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+        <Button className="mt-5" disabled={busy} onClick={persist}>
+          {busy ? "Saving…" : "Save settings"}
+        </Button>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
