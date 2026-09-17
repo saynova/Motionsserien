@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { DonationButton, SponsorBanner } from "@/components/support-ui";
 import { ContactBar, WeeklyBanner } from "@/components/tournament-ui";
-import { adminStatusQueryOptions } from "@/lib/tournament-query";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -135,50 +134,6 @@ const NAV = [
   { to: "/admin", label: "Admin" },
 ] as const;
 
-const ADMIN_NAV = [
-  { id: "matches", label: "Match scores" },
-  { id: "banner", label: "Weekly banner" },
-  { id: "shuttles", label: "Shuttle purchases" },
-  { id: "support", label: "Donation & sponsor" },
-  { id: "messages", label: "Questions" },
-  { id: "email", label: "Send email" },
-  { id: "contacts", label: "Team contacts" },
-  { id: "season", label: "Season settings" },
-  { id: "procedure", label: "Weekly procedure" },
-  { id: "next-season", label: "Registration & seeding" },
-  { id: "new-season", label: "Start new season" },
-] as const;
-
-function AdminNavigation() {
-  const status = useQuery(adminStatusQueryOptions);
-  if (!status.data?.unlocked) return null;
-
-  return (
-    <div className="border-t border-border/70 bg-card/85">
-      <nav
-        aria-label="Admin menu navigation"
-        className="mx-auto flex w-full max-w-[96rem] gap-1.5 overflow-x-auto px-3 py-2 sm:px-5 lg:px-8"
-      >
-        <span className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">
-          Admin menu
-        </span>
-        {ADMIN_NAV.map((item) => (
-          <Link
-            key={item.id}
-            to="/admin"
-            search={{ section: item.id }}
-            className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
-            activeProps={{ className: "border-primary/40 bg-primary/10 text-primary" }}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-    </div>
-  );
-}
-
-
 function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
@@ -208,7 +163,6 @@ function SiteHeader() {
           </div>
         </div>
       </div>
-      <AdminNavigation />
     </header>
   );
 }
