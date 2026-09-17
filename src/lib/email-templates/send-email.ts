@@ -10,7 +10,7 @@ const SITE_NAME = "Md Rabiul Islam"
 const FROM_USER = "rabiul"
 // SENDER_DOMAIN is the delegated sending subdomain verified with Lovable.
 // FROM_DOMAIN is what recipients see in the From: header (can be the root domain).
-const SENDER_DOMAIN = "mail.motionsserien.se"
+const SENDER_DOMAIN = "notify.mail.motionsserien.se"
 const FROM_DOMAIN = "motionsserien.se"
 
 export type SendTemplateEmailResult =
