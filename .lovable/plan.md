@@ -1,35 +1,30 @@
-# Fix the "API error 409" when sending emails
+# Terms & Conditions page + consent on forms
 
-## What's actually happening
+## What you'll see
 
-The 409 is not a bug in your app. It means the email service refused the send because your sending address `notify.motionsserien.se` is not marked **Active** yet.
+### 1. New "Terms" page (`/terms`)
+A clean, readable page in the site's existing style, covering four sections:
 
-Good news: your DNS is done and correct.
+1. **Tournament & scoring rules** — fair play and honest score entry, the 2-day submission deadline, missing results count as no-show 0–0, walkovers, and that the organizer's (The General's) decisions on rankings, movement, and disputes are final.
+2. **Shuttle purchases** — swish 135 kr to 1234785069 (Ludvika Badmintonklubb), maximum 1 shuttle box per team per two weeks, delivery every Monday 20:00 in the Rackethall, orders are binding once approved and not refundable after delivery.
+3. **Privacy & data use** — what we collect (team name, player names, emails, optional phone), why (schedules, reminders, contact), who can see it (only team names/divisions are public; personal details are admin-only), that messages and orders are stored until removed, and how to ask for correction or deletion via the Contact page (GDPR-style rights).
+4. **Liability & contact** — the site is provided as-is, the organizer is not liable for injuries, losses, or technical errors, terms may be updated (date shown), and questions go through the Contact page.
 
-- The verification record on `motionsserien.se` is present and matches.
-- The two name servers for `notify.motionsserien.se` are correctly pointing to Lovable.
+The page gets its own SEO title/description and a "Last updated" line, and a **"Terms" link is added to the site navigation and footer/contact bar** so it's reachable from everywhere.
 
-So nothing more is needed from you at Strato. The setup is in its final step on Lovable's side and will flip to Active on its own — usually minutes, occasionally longer while DNS spreads worldwide. Once it does, reminders and replies will send with no further changes.
+### 2. "Read before using" notice
+A slim, dismissible one-line notice at the top of the home page: **"Please read the Terms & Conditions before using this site."** with a link. Once dismissed it stays hidden (remembered in the browser).
 
-## What I'll change in the app
+### 3. Required consent checkbox — shuttle purchase & registration only
+- **Shuttle order form** and **season registration form** each get a required checkbox: *"I have read and accept the Terms & Conditions"* (linked). The submit button stays disabled until it's ticked.
+- **Submit score page: no checkbox** — only the existing 2-day note stays as it is.
 
-Right now a failed send shows a raw technical error. I'll make it clear and calm instead:
+No changes to scoring logic, schedules, admin tools, or any existing data.
 
-1. **Friendly message instead of "API error 409"**
-   - Clicking **Send reminder** or **Send reply** while the domain is still being set up shows:
-     "Email sending isn't active yet — your sending address is still being verified. Try again shortly."
-   - Other email failures (blocked address, too many sends at once) each get their own plain-language message.
+## Technical details
 
-2. **A small status line in the admin panel**
-   - Above the questions inbox and team contacts, a one-line note appears while email is not yet active: "Email sending is being set up — reminders and replies will start working once it's active."
-   - It disappears automatically once sending works, so you always know whether a failed send was your app or the setup.
-
-3. **No email is lost**
-   - When a reply can't be sent, the text you typed stays in the box so you can send it again in a moment instead of retyping it.
-
-## Technical notes
-
-- `sendScoreReminder` (`src/lib/reminders.functions.ts`) and `replyToMessage` (`src/lib/messages.functions.ts`) will catch `EmailAPIError`, and return a typed outcome (`domain_not_verified`, `emails_disabled`, `rate_limited`, `recipient_suppressed`, `unknown`) instead of throwing a raw error.
-- Callers in `src/routes/admin.tsx` and `src/components/messages-admin.tsx` map those outcomes to toast copy; the reply textarea only clears on success.
-- The status line reads a small server function that reports whether the last send attempt failed with `domain_not_verified`; no new tables.
-- No DNS changes, no migrations.
+- New route `src/routes/terms.tsx` with `head()` (unique title/description); content as styled sections reusing existing card/typography tokens.
+- Nav entry added in `src/routes/__root.tsx` (Terms link, and in ContactBar/footer).
+- Dismissible notice: small component on `src/routes/index.tsx`, dismissal stored in `localStorage`, rendered after hydration to avoid SSR mismatch.
+- Checkbox state in `src/routes/shuttles.tsx` and `src/routes/register.tsx`; button `disabled` until checked; no server-side change needed (consent implied by submission).
+- Verified with typecheck + browser checks on desktop (1280px) and mobile (390px).
