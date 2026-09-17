@@ -25,6 +25,16 @@ export function ComposeEmailAdmin() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const parsedAddresses = Array.from(
+    new Set(
+      address
+        .split(/[,;\s]+/)
+        .map((part) => part.trim().replace(/^<|>$/g, ""))
+        .filter((part) => part.length > 0),
+    ),
+  );
 
   const rows = players.data ?? [];
   const divisions = Array.from(new Set(rows.map((r) => r.division))).sort((a, b) => a - b);
