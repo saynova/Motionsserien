@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { DonationButton, SponsorBanner } from "@/components/support-ui";
 import { ContactBar, WeeklyBanner } from "@/components/tournament-ui";
 
 import appCss from "../styles.css?url";
@@ -144,19 +145,22 @@ function SiteHeader() {
           </span>
           <span className="font-display text-2xl font-bold uppercase tracking-widest">HT-26</span>
         </Link>
-        <nav className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              activeOptions={{ exact: item.to === "/" }}
-              className="rounded px-3 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              activeProps={{ className: "bg-primary/15 text-primary hover:bg-primary/20" }}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center gap-2">
+          <nav className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto">
+            {NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                activeOptions={{ exact: item.to === "/" }}
+                className="rounded px-3 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                activeProps={{ className: "bg-primary/15 text-primary hover:bg-primary/20" }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <DonationButton />
+        </div>
       </div>
     </header>
   );
@@ -171,6 +175,7 @@ function RootComponent() {
         <SiteHeader />
         <main className="mx-auto max-w-6xl px-4 py-8">
           <WeeklyBanner />
+          <SponsorBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <ContactBar />
