@@ -87,24 +87,22 @@ function StandingsPage() {
     <>
       <section className="submit-score-hero relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-card px-5 py-8 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
         <div className="absolute inset-0 -translate-x-full animate-submit-shimmer bg-gradient-to-r from-transparent via-primary/5 to-transparent" aria-hidden="true" />
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
-              <Trophy className="size-6 sm:size-7" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Week {week} scores
-              </p>
-              <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">
-                Submit your score
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
-            </div>
+        <div className="relative flex items-start gap-4 sm:items-center">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
+            <Trophy className="size-6 sm:size-7" aria-hidden="true" />
+          </span>
+          <div className="flex-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              Week {week} scores
+            </p>
+            <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">
+              Submit your score
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
+            <Button size="default" className="mt-4 h-10 shadow-md shadow-primary/15" asChild>
+              <Link to="/submit">Submit your score</Link>
+            </Button>
           </div>
-          <Button size="lg" className="h-12 px-6 text-base shadow-lg shadow-primary/20" asChild>
-            <Link to="/submit">Submit your score</Link>
-          </Button>
         </div>
 
         <dl className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
