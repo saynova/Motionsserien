@@ -149,6 +149,22 @@
     outline: 2px solid color-mix(in oklab, var(--primary) 22%, transparent);
     outline-offset: 1px;
   }
+
+  :where(section, form, div)[class~="bg-card"] {
+    backdrop-filter: blur(16px);
+  }
+
+  :where(section, form)[class~="border-border"][class~="bg-card"] {
+    box-shadow: 0 10px 30px oklch(0.208 0.042 266 / 5%);
+  }
+
+  tbody tr {
+    transition: background-color 160ms ease;
+  }
+
+  tbody tr:hover {
+    background-color: color-mix(in oklab, var(--secondary) 72%, transparent);
+  }
 }
 
 @utility glass-surface {
@@ -339,6 +355,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
   .weekly-banner,
   .weekly-trophy,
   .weekly-sparkle,

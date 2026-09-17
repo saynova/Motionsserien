@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ScrollText, X } from "lucide-react";
+import { ArrowRight, CalendarRange, Layers3, ScrollText, Users, X } from "lucide-react";
 
 import { MovementBadge, PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
+import { Button } from "@/components/ui/button";
 import {
   computeStandings,
   courtForDivision,
@@ -84,39 +85,56 @@ function StandingsPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow={`${season.name} · Week ${week} of ${season.total_weeks}`}
-        title="Current standings"
-        description="Rank 1 moves up a division, rank 2 stays, rank 3 moves down. Division 1 winners and Division 10 bottom teams hold their place. Only approved scores count."
-      >
-        <dl className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
-          <div>
-            <dt className="text-xs uppercase tracking-widest text-muted-foreground">Play date</dt>
-            <dd className="tabnum font-semibold">{formatWeekDate(season.start_monday, week)}</dd>
+      <section className="relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-card px-5 py-8 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
+        <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-primary/5 lg:block" aria-hidden="true" />
+        <div className="relative max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            {season.name} · Week {week} of {season.total_weeks}
+          </p>
+          <h1 className="mt-3 font-display text-4xl font-bold leading-tight text-foreground sm:text-6xl">
+            Motionsserien HT-26
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Follow the live standings, find your next Monday match, and register a team for the next badminton season.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button size="lg" asChild>
+              <Link to="/schedule">
+                Se Spelschema <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/register">Anmäl Lag</Link>
+            </Button>
           </div>
-          <div>
-            <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-              Results counted
-            </dt>
-            <dd className="tabnum font-semibold">
-              {finalCount} of {weekMatches.length}
-            </dd>
+        </div>
+
+        <dl className="relative mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:max-w-3xl">
+          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+            <Users className="size-5 text-primary" aria-hidden="true" />
+            <div><dd className="tabnum text-lg font-bold">{teams.length}</dd><dt className="text-xs text-muted-foreground">Active teams</dt></div>
           </div>
-          <div>
-            <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-              Awaiting approval
-            </dt>
-            <dd className="tabnum font-semibold">{pendingCount}</dd>
+          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+            <CalendarRange className="size-5 text-accent" aria-hidden="true" />
+            <div><dd className="tabnum text-lg font-bold">{week} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
-          <div className="self-end">
-            <Link
-              to="/submit"
-              className="inline-flex rounded bg-primary px-3 py-1.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Submit a score
-            </Link>
+          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+            <Layers3 className="size-5 text-primary" aria-hidden="true" />
+            <div><dd className="tabnum text-lg font-bold">{divisions.length}</dd><dt className="text-xs text-muted-foreground">Divisions</dt></div>
           </div>
         </dl>
+      </section>
+
+      <PageHeader
+        eyebrow={`Play date · ${formatWeekDate(season.start_monday, week)}`}
+        title="Current standings"
+        description="Rank 1 moves up, rank 2 stays, and rank 3 moves down. Only approved scores count."
+      >
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
+          <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
+          <Button size="sm" variant="outline" asChild><Link to="/submit">Submit a score</Link></Button>
+        </div>
       </PageHeader>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -128,10 +146,10 @@ function StandingsPage() {
           return (
             <section
               key={division}
-              className="overflow-hidden rounded-lg border border-border bg-card"
+              className="glass-surface overflow-hidden rounded-lg border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-secondary/50 px-4 py-2.5">
-                <h2 className="text-xl font-bold uppercase tracking-wider text-primary">
+                <h2 className="text-xl font-bold text-primary">
                   Division {division}
                 </h2>
                 <span className="tabnum text-xs font-semibold uppercase tracking-widest text-muted-foreground">
