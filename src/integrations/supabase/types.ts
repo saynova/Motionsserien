@@ -369,6 +369,7 @@ export type Database = {
           id: string
           qr_image_path: string | null
           sponsor_details: string
+          sponsor_label: string
           sponsor_visible: boolean
           updated_at: string
         }
@@ -378,6 +379,7 @@ export type Database = {
           id?: string
           qr_image_path?: string | null
           sponsor_details?: string
+          sponsor_label?: string
           sponsor_visible?: boolean
           updated_at?: string
         }
@@ -387,6 +389,7 @@ export type Database = {
           id?: string
           qr_image_path?: string | null
           sponsor_details?: string
+          sponsor_label?: string
           sponsor_visible?: boolean
           updated_at?: string
         }
