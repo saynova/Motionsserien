@@ -99,7 +99,10 @@ function StandingsPage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button size="lg" asChild>
-              <Link to="/schedule">
+              <Link
+                to="/schedule"
+                search={{ week: undefined, court: undefined, division: undefined, team: undefined }}
+              >
                 Se Spelschema <ArrowRight aria-hidden="true" />
               </Link>
             </Button>
