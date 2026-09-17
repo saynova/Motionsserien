@@ -42,7 +42,28 @@ import {
   startNewSeason,
 } from "@/lib/tournament.functions";
 
+const SECTIONS = [
+  { id: "matches", label: "Match scores" },
+  { id: "banner", label: "Weekly banner" },
+  { id: "shuttles", label: "Shuttle purchases" },
+  { id: "support", label: "Donation & sponsor" },
+  { id: "messages", label: "Questions" },
+  { id: "email", label: "Send email" },
+  { id: "contacts", label: "Team contacts" },
+  { id: "season", label: "Season settings" },
+  { id: "procedure", label: "Weekly procedure" },
+  { id: "next-season", label: "Registration & seeding" },
+  { id: "new-season", label: "Start new season" },
+] as const;
+
+type SectionId = (typeof SECTIONS)[number]["id"];
+
 export const Route = createFileRoute("/admin")({
+  validateSearch: (search: Record<string, unknown>): { section: SectionId } => {
+    const raw = String(search["section"] ?? "matches");
+    const match = SECTIONS.find((s) => s.id === raw);
+    return { section: match ? match.id : "matches" };
+  },
   head: () => ({
     meta: [
       { title: "Admin — Motionsserien HT-26" },
@@ -63,6 +84,7 @@ export const Route = createFileRoute("/admin")({
     ]),
   component: AdminPage,
 });
+
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
@@ -150,17 +172,9 @@ function AdminConsole() {
   const [seasonStart, setSeasonStart] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const ADMIN_SECTIONS = [
-    { id: "admin-matches", label: "Matches" },
-    { id: "admin-banner", label: "Weekly banner" },
-    { id: "admin-shuttles", label: "Shuttles" },
-    { id: "admin-support", label: "Support" },
-    { id: "admin-messages", label: "Questions" },
-    { id: "admin-email", label: "Send email" },
-    { id: "admin-contacts", label: "Team contacts" },
-    { id: "admin-season", label: "Season" },
-    { id: "admin-next-season", label: "Next season" },
-  ];
+  const { section } = Route.useSearch();
+  const navigate = Route.useNavigate();
+
 
   const toggleSelect = (id: string) =>
     setSelected((prev) => {
@@ -285,184 +299,187 @@ function AdminConsole() {
 
       <nav
         aria-label="Admin sections"
-        className="sticky top-[4.5rem] z-20 mt-6 flex flex-wrap gap-1.5 rounded-lg border border-border bg-card/90 px-2 py-2 backdrop-blur"
+        className="glass-surface mt-6 flex gap-1.5 overflow-x-auto rounded-xl border border-border p-2"
       >
-        {ADMIN_SECTIONS.map((section) => (
-          <a key={section.id} href={`#${section.id}`} className={btnGhost}>
-            {section.label}
-          </a>
-        ))}
-      </nav>
-
-      <div className="mt-10 grid items-start gap-6 lg:grid-cols-2">
-        <div id="admin-banner">
-          <BannerEditor />
-        </div>
-        <div id="admin-shuttles">
-          <ShuttleAdmin />
-        </div>
-      </div>
-
-      <div id="admin-support">
-        <SupportSettingsEditor />
-      </div>
-
-      <div id="admin-messages">
-        <MessagesAdmin />
-      </div>
-
-      <div id="admin-email">
-        <ComposeEmailAdmin />
-      </div>
-
-      <div id="admin-contacts">
-        <TeamContactsAdmin />
-      </div>
-
-      <div id="admin-season">
-        <SeasonSettingsCard />
-      </div>
-
-      <div id="admin-procedure">
-        <WeeklyProcedure
-          week={week}
-          currentWeek={season.current_week}
-          totalWeeks={season.total_weeks}
-          pending={pending.length}
-          missing={weekMatches.filter((m) => m.status === "scheduled").length}
-          notFinal={notFinal.length}
-        />
-      </div>
-
-      {notFinal.length > 0 ? (
-        <p className="mb-6 rounded border border-accent/40 bg-accent/10 p-4 text-sm">
-          {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not final
-          yet. Pending submissions must be approved or rejected; matches with no score at all become
-          0–0 when you finalise the week.
-        </p>
-      ) : null}
-
-      <div
-        id="admin-matches"
-        className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-4 py-3"
-      >
-        <span className="text-sm font-semibold">
-          {selected.size} selected for approval
-        </span>
-        <button
-          className={btn}
-          disabled={busy || selected.size === 0}
-          onClick={() =>
-            run(async () => {
-              await approveOne({ data: { matchIds: [...selected] } });
-              setSelected(new Set());
-            }, "Selected scores approved.")
-          }
-        >
-          Approve selected
-        </button>
-        <button
-          className={btnGhost}
-          disabled={pending.length === 0}
-          onClick={() => setSelected(new Set(pending.map((m) => m.id)))}
-        >
-          Select all waiting ({pending.length})
-        </button>
-        <button
-          className={btnGhost}
-          disabled={selected.size === 0}
-          onClick={() => setSelected(new Set())}
-        >
-          Clear
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {[...new Set(weekMatches.map((m) => m.division))].map((division) => {
-          const group = weekMatches.filter((m) => m.division === division);
-          const waiting = group.filter((m) => m.status !== "final").length;
+        {SECTIONS.map((item) => {
+          const active = item.id === section;
           return (
-            <DivisionGroup key={division} division={division} waiting={waiting}>
-              {group.map((match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  nameA={teamName(match.team_a_id)}
-                  nameB={teamName(match.team_b_id)}
-                  busy={busy}
-                  selected={selected.has(match.id)}
-                  onToggleSelect={() => toggleSelect(match.id)}
-                  lastReminder={lastReminderFor(match.id)}
-                  onRemind={() => sendReminder(match.id)}
-                  onApprove={() =>
-                    run(() => approveOne({ data: { matchIds: [match.id] } }), "Score approved.")
-                  }
-                  onReject={() =>
-                    run(() => reject({ data: { matchId: match.id } }), "Score cleared.")
-                  }
-                  onNoShow={() =>
-                    run(() => noShow({ data: { matchId: match.id } }), "Marked as 0–0.")
-                  }
-                  onSave={(score) =>
-                    run(() => saveScore({ data: { matchId: match.id, ...score } }), "Score saved.")
-                  }
-                />
-              ))}
-            </DivisionGroup>
+            <button
+              key={item.id}
+              type="button"
+              aria-current={active ? "page" : undefined}
+              onClick={() => navigate({ search: { section: item.id }, resetScroll: false })}
+              className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              {item.label}
+              {item.id === "matches" && pending.length > 0 ? (
+                <span className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-[0.65rem] font-bold text-accent-foreground">
+                  {pending.length}
+                </span>
+              ) : null}
+            </button>
           );
         })}
-      </div>
+      </nav>
 
-      <div id="admin-next-season">
-        <NextSeasonAdmin />
-      </div>
+      <div className="mt-6 space-y-6">
+        {section === "banner" ? <BannerEditor /> : null}
+        {section === "shuttles" ? <ShuttleAdmin /> : null}
+        {section === "support" ? <SupportSettingsEditor /> : null}
+        {section === "messages" ? <MessagesAdmin /> : null}
+        {section === "email" ? <ComposeEmailAdmin /> : null}
+        {section === "contacts" ? <TeamContactsAdmin /> : null}
+        {section === "season" ? <SeasonSettingsCard /> : null}
+        {section === "procedure" ? (
+          <WeeklyProcedure
+            week={week}
+            currentWeek={season.current_week}
+            totalWeeks={season.total_weeks}
+            pending={pending.length}
+            missing={weekMatches.filter((m) => m.status === "scheduled").length}
+            notFinal={notFinal.length}
+          />
+        ) : null}
+        {section === "next-season" ? <NextSeasonAdmin /> : null}
 
-      <section id="admin-new-season" className="mt-10 rounded-lg border border-border bg-card p-6">
-        <h2 className="text-2xl font-bold uppercase tracking-wide">Start a new season</h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Available once the final week is finalised. Teams are seeded into the new season from the
-          divisions they finished in.
-        </p>
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          <label className="space-y-1">
-            <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Season name
-            </span>
-            <input
-              className={control}
-              value={seasonName}
-              placeholder="Motionsserien VT-27"
-              onChange={(e) => setSeasonName(e.target.value)}
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Starting Monday
-            </span>
-            <input
-              type="date"
-              className={control}
-              value={seasonStart}
-              onChange={(e) => setSeasonStart(e.target.value)}
-            />
-          </label>
-          <button
-            className={btn}
-            disabled={busy || !seasonName || !seasonStart}
-            onClick={() =>
-              run(
-                () => newSeason({ data: { name: seasonName, startMonday: seasonStart } }),
-                "New season created with week 1 scheduled.",
-              )
-            }
-          >
-            Start new season
-          </button>
-        </div>
-      </section>
+        {section === "matches" ? (
+          <>
+            {notFinal.length > 0 ? (
+              <p className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
+                {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not
+                final yet. Pending submissions must be approved or rejected; matches with no score at
+                all become 0–0 when you finalise the week.
+              </p>
+            ) : null}
+
+            <div className="glass-surface flex flex-wrap items-center gap-2 rounded-xl border border-border px-4 py-3">
+              <span className="text-sm font-semibold">{selected.size} selected for approval</span>
+              <button
+                className={btn}
+                disabled={busy || selected.size === 0}
+                onClick={() =>
+                  run(async () => {
+                    await approveOne({ data: { matchIds: [...selected] } });
+                    setSelected(new Set());
+                  }, "Selected scores approved.")
+                }
+              >
+                Approve selected
+              </button>
+              <button
+                className={btnGhost}
+                disabled={pending.length === 0}
+                onClick={() => setSelected(new Set(pending.map((m) => m.id)))}
+              >
+                Select all waiting ({pending.length})
+              </button>
+              <button
+                className={btnGhost}
+                disabled={selected.size === 0}
+                onClick={() => setSelected(new Set())}
+              >
+                Clear
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {[...new Set(weekMatches.map((m) => m.division))].map((division) => {
+                const group = weekMatches.filter((m) => m.division === division);
+                const waiting = group.filter((m) => m.status !== "final").length;
+                return (
+                  <DivisionGroup key={division} division={division} waiting={waiting}>
+                    {group.map((match) => (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        nameA={teamName(match.team_a_id)}
+                        nameB={teamName(match.team_b_id)}
+                        busy={busy}
+                        selected={selected.has(match.id)}
+                        onToggleSelect={() => toggleSelect(match.id)}
+                        lastReminder={lastReminderFor(match.id)}
+                        onRemind={() => sendReminder(match.id)}
+                        onApprove={() =>
+                          run(
+                            () => approveOne({ data: { matchIds: [match.id] } }),
+                            "Score approved.",
+                          )
+                        }
+                        onReject={() =>
+                          run(() => reject({ data: { matchId: match.id } }), "Score cleared.")
+                        }
+                        onNoShow={() =>
+                          run(() => noShow({ data: { matchId: match.id } }), "Marked as 0–0.")
+                        }
+                        onSave={(score) =>
+                          run(
+                            () => saveScore({ data: { matchId: match.id, ...score } }),
+                            "Score saved.",
+                          )
+                        }
+                      />
+                    ))}
+                  </DivisionGroup>
+                );
+              })}
+            </div>
+          </>
+        ) : null}
+
+        {section === "new-season" ? (
+          <section className="glass-surface rounded-xl border border-border p-6">
+            <h2 className="font-display text-2xl font-bold">Start a new season</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Available once the final week is finalised. Teams are seeded into the new season from
+              the divisions they finished in.
+            </p>
+            <div className="mt-4 flex flex-wrap items-end gap-3">
+              <label className="space-y-1">
+                <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Season name
+                </span>
+                <input
+                  className={control}
+                  value={seasonName}
+                  placeholder="Motionsserien VT-27"
+                  onChange={(e) => setSeasonName(e.target.value)}
+                />
+              </label>
+              <label className="space-y-1">
+                <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Starting Monday
+                </span>
+                <input
+                  type="date"
+                  className={control}
+                  value={seasonStart}
+                  onChange={(e) => setSeasonStart(e.target.value)}
+                />
+              </label>
+              <button
+                className={btn}
+                disabled={busy || !seasonName || !seasonStart}
+                onClick={() =>
+                  run(
+                    () => newSeason({ data: { name: seasonName, startMonday: seasonStart } }),
+                    "New season created with week 1 scheduled.",
+                  )
+                }
+              >
+                Start new season
+              </button>
+            </div>
+          </section>
+        ) : null}
+      </div>
     </>
   );
 }
+
 
 type Score = {
   s1a: number;
