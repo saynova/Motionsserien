@@ -28,7 +28,12 @@ export type Registration = {
   created_at: string;
 };
 
-export type RegisteredTeam = { team_name: string; division: number | null };
+export type RegisteredTeam = {
+  team_name: string;
+  division: number | null;
+  player1_name: string;
+  player2_name: string;
+};
 
 export type RegistrationInfo = {
   isOpen: boolean;
@@ -101,13 +106,26 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
 
 export const getRegisteredTeams = createServerFn({ method: "GET" }).handler(
   async (): Promise<RegisteredTeam[]> => {
-    // Only team name + division are exposed; applicant contact data stays private.
+    // Team name, division and both player names are public for approved teams;
+    // emails and phone numbers stay private.
     const { adminClient } = await import("./tournament.server");
     const { data, error } = await adminClient()
-      .from("registered_teams")
-      .select("team_name, division")
-      .order("division", { ascending: true });
+      .from("registrations")
+      .select("team_name, previous_division, player1_name, player2_name")
+      .eq("status", "accepted")
+      .order("team_name", { ascending: true });
     if (error) throw new Error(error.message);
+    const teams = ((data ?? []) as Array<{
+      team_name: string;
+      previous_division: number | null;
+      player1_name: string;
+      player2_name: string;
+    }>).map((r) => ({
+      team_name: r.team_name,
+      division: r.previous_division,
+      player1_name: r.player1_name,
+      player2_name: r.player2_name,
+    }));
     return ((data ?? []) as RegisteredTeam[]).sort((a, b) => {
       const da = a.division ?? 99;
       const db = b.division ?? 99;

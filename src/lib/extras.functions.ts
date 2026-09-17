@@ -16,10 +16,11 @@ export type ShuttleOrder = {
   created_at: string;
 };
 
-/** Public shuttle list never includes the buyer's personal name. */
+/** Public shuttle list shows team and buyer name; only approved orders are exposed. */
 export type PublicShuttleOrder = {
   id: string;
   team_name: string;
+  buyer_name: string;
   quantity: number;
   status: string;
   created_at: string;
@@ -27,7 +28,7 @@ export type PublicShuttleOrder = {
 
 const BANNER_COLUMNS = "id, title, message, is_active";
 const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
-const PUBLIC_ORDER_COLUMNS = "id, team_name, quantity, status, created_at";
+const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
 
 // ------------------------------------------------------------------- banner
 
