@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { ScrollText, X } from "lucide-react";
 
 import { MovementBadge, PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import {
@@ -31,6 +33,42 @@ export const Route = createFileRoute("/")({
   component: StandingsPage,
 });
 
+function TermsNotice() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (window.localStorage.getItem("terms-notice-dismissed") !== "yes") {
+      setVisible(true);
+    }
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div className="mb-6 flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm">
+      <ScrollText className="h-4 w-4 shrink-0 text-primary" />
+      <p className="flex-1">
+        Please read the{" "}
+        <Link to="/terms" className="font-semibold text-primary underline">
+          Terms &amp; Conditions
+        </Link>{" "}
+        before using this site.
+      </p>
+      <button
+        type="button"
+        aria-label="Dismiss"
+        onClick={() => {
+          window.localStorage.setItem("terms-notice-dismissed", "yes");
+          setVisible(false);
+        }}
+        className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 function StandingsPage() {
   const { data } = useSuspenseQuery(tournamentQueryOptions);
   const { season, teams, slots, matches } = data;
@@ -46,6 +84,7 @@ function StandingsPage() {
 
   return (
     <>
+      <TermsNotice />
       <PageHeader
         eyebrow={`${season.name} · Week ${week} of ${season.total_weeks}`}
         title="Current standings"
