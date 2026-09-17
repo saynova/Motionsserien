@@ -305,14 +305,28 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
       throw new Error("Message must be between 2 and 4000 characters.");
     }
     const email = (data?.email ?? "").trim();
-    if ((mode === "player" || mode === "address") && !isValidEmail(email)) {
+    let emails: string[] = [];
+    if (mode === "address") {
+      emails = Array.from(
+        new Set(
+          email
+            .split(/[,;\s]+/)
+            .map((part) => part.trim().replace(/^<|>$/g, ""))
+            .filter((part) => part.length > 0),
+        ),
+      );
+      if (emails.length === 0) throw new Error("Enter at least one email address.");
+      if (emails.length > 60) throw new Error("You can send to at most 60 addresses at a time.");
+      const bad = emails.filter((one) => !isValidEmail(one));
+      if (bad.length > 0) throw new Error(`These addresses look wrong: ${bad.join(", ")}`);
+    } else if (mode === "player" && !isValidEmail(email)) {
       throw new Error("Enter a valid email address.");
     }
     const division = Number(data?.division ?? 0);
     if (mode === "division" && !(division >= 1 && division <= 10)) {
       throw new Error("Choose a division.");
     }
-    return { mode, division, email, subject, body };
+    return { mode, division, email, emails, subject, body };
   })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("./admin-session.server");
