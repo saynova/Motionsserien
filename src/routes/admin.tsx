@@ -60,7 +60,7 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 
 export const Route = createFileRoute("/admin")({
   validateSearch: (search: Record<string, unknown>): { section: SectionId } => {
-    const raw = String(search.section ?? "matches");
+    const raw = String(search["section"] ?? "matches");
     const match = SECTIONS.find((s) => s.id === raw);
     return { section: match ? match.id : "matches" };
   },
