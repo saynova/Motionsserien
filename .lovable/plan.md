@@ -1,24 +1,15 @@
-# Fix email provisioning failure for notify.motionsserien.se
+# Switch sender domain to noreply.motionsserien.se
 
-## What happened
+## Status
 
-Sending from `notify.motionsserien.se` fails with **Provisioning failed**. The DNS records at Strato are all correct (verified directly). The real cause: that sender domain is still registered to your **old Lovable workspace** at the email provider, so this workspace cannot claim it. Retrying here will keep failing until the old registration is released.
+- Old domain `notify.motionsserien.se`: deleted from this workspace (it was stuck because the old workspace still owned it at the email provider).
+- New subdomain `noreply.motionsserien.se`: created at Strato, but not yet registered inside this Lovable workspace.
 
-Two ways forward:
+## Steps
 
-## Option A — Release the old registration (recommended, keeps your existing address)
+1. **You**: add `noreply.motionsserien.se` in the email setup (button below). Setup shows you the exact DNS records.
+2. **You at Strato**: add the TXT record shown in setup for `_lovable-email` (the NS records for `noreply` you already added — confirm they point to the two nameservers shown in setup). The old `notify` records can be removed afterwards.
+3. **Me**: once it verifies, I confirm the domain is Active and that reminders, question replies, and the compose box send as **Md Rabiul Islam · rabiul@motionsserien.se** — the email code and all templates need no changes.
+4. **Me**: run a quick test send to confirm delivery works end to end.
 
-1. You contact Lovable support (the in-app help chat) and ask them to **release the email domain `notify.motionsserien.se` from the previous workspace** so it can be provisioned in this one.
-2. Once they confirm, I re-run the email setup for `notify.motionsserien.se` here. No DNS changes needed — your Strato records already match.
-
-## Option B — Use a fresh sender subdomain (works immediately, no support wait)
-
-1. We set up a new sender domain, e.g. `mail.motionsserien.se` (or another prefix you like), through the email setup dialog.
-2. You add the new DNS records at Strato (one TXT + two NS records — I will give you the exact values; the old `notify` records can then be removed).
-3. Emails will then send from `rabiul@motionsserien.se` exactly as before — the code does not change, since the sender address stays the same.
-
-## After either option
-
-- I verify the domain flips to Active.
-- I send a test and confirm reminders and question replies go out.
-- Everything else (templates, reply inbox, compose box) already works and needs no changes.
+Note: since this is a fresh sending address, the first emails to each player may land in junk again for a short warm-up period — ask players to mark "Not junk" once.
