@@ -5,7 +5,7 @@ Two small display changes so names are visible publicly, as requested.
 ## 1. Registration page — show both player names
 The public "Registered teams" list currently shows only team name and division.
 
-- Update the registered-teams lookup (`getRegisteredTeams` in `src/lib/registration.functions.ts`) to also return `player1_name` and `player2_name` for approved teams. Email addresses and phone numbers stay private — only names are added.
+- Update the registered-teams lookup (`getRegisteredTeams` in `src/lib/registration.functions.ts`) to also return `player1_name` and `player2_name` for approved teams only — pending and rejected registrations stay hidden until you approve them. Email addresses and phone numbers stay private — only names are added.
 - Update the table on `/register` to show a "Players" column with both player names next to the team name.
 
 ## 2. Shuttle purchases — show the buyer name
