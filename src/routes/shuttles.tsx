@@ -164,7 +164,7 @@ function ShuttlesPage() {
               <thead>
                 <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-2 text-left font-semibold">Team</th>
-                  <th className="px-2 py-2 text-left font-semibold">Buyer</th>
+                  
                   <th className="px-4 py-2 text-right font-semibold">Boxes</th>
                 </tr>
               </thead>
@@ -172,7 +172,7 @@ function ShuttlesPage() {
                 {data.orders.map((order) => (
                   <tr key={order.id} className="border-b border-border/60 last:border-0">
                     <td className="px-4 py-2.5 font-semibold">{order.team_name}</td>
-                    <td className="px-2 py-2.5 text-muted-foreground">{order.buyer_name}</td>
+                    
                     <td className="tabnum px-4 py-2.5 text-right font-semibold">
                       {order.quantity}
                     </td>
