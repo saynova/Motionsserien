@@ -85,7 +85,7 @@ function RegisterPage() {
       <PageHeader
         eyebrow={info.targetSeason ? `Registration · ${info.targetSeason}` : "Registration"}
         title="Team registration"
-        description="Sign your team up for the next season. An admin reviews every entry; approved teams are listed below with their division. Player names, emails and phone numbers are never shown publicly."
+        description="Sign your team up for the next season. An admin reviews every entry; approved teams are listed below with their division and both player names. Emails and phone numbers are never shown publicly."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
@@ -234,6 +234,7 @@ function RegisterPage() {
               <thead>
                 <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-2 text-left font-semibold">Team</th>
+                  <th className="px-4 py-2 text-left font-semibold">Players</th>
                   <th className="px-4 py-2 text-right font-semibold">Division</th>
                 </tr>
               </thead>
@@ -241,6 +242,9 @@ function RegisterPage() {
                 {teams.map((team) => (
                   <tr key={team.team_name} className="border-b border-border/60 last:border-0">
                     <td className="px-4 py-2.5 font-semibold">{team.team_name}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">
+                      {team.player1_name} & {team.player2_name}
+                    </td>
                     <td className="tabnum px-4 py-2.5 text-right font-semibold">
                       {team.division ? `Div ${team.division}` : "To be set"}
                     </td>
