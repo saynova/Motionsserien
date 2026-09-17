@@ -25,6 +25,16 @@ export function ComposeEmailAdmin() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const parsedAddresses = Array.from(
+    new Set(
+      address
+        .split(/[,;\s]+/)
+        .map((part) => part.trim().replace(/^<|>$/g, ""))
+        .filter((part) => part.length > 0),
+    ),
+  );
 
   const rows = players.data ?? [];
   const divisions = Array.from(new Set(rows.map((r) => r.division))).sort((a, b) => a - b);
@@ -60,19 +70,31 @@ export function ComposeEmailAdmin() {
     body.trim().length >= 2 &&
     (mode === "division" ||
       (mode === "player" && email.length > 0) ||
-      (mode === "address" && address.trim().length > 3));
+      (mode === "address" && parsedAddresses.length > 0));
 
   return (
-    <section className="rounded-lg border border-border bg-card p-6">
-      <h2 className="text-2xl font-bold uppercase tracking-wide">Send an email</h2>
-      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Write to one player, everyone in a division, or any address. Emails go out as{" "}
-        <strong>Md Rabiul Islam &lt;rabiul@motionsserien.se&gt;</strong>. Use it for tournament
-        matters only — reminders, schedule changes, answers. Newsletters and promotional mail are
-        not supported and would hurt delivery of the important emails.
-      </p>
+    <section className="rounded-lg border border-border bg-card">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full flex-wrap items-center justify-between gap-3 p-6 text-left"
+      >
+        <div>
+          <h2 className="text-2xl font-bold uppercase tracking-wide">Send an email</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Write to one player, everyone in a division, or one or many pasted addresses. Emails go
+            out as <strong>Md Rabiul Islam &lt;rabiul@motionsserien.se&gt;</strong>. Use it for
+            tournament matters only.
+          </p>
+        </div>
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {open ? "Hide" : "Show"}
+        </span>
+      </button>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      {!open ? null : (
+        <div className="border-t border-border p-6">
+      <div className="flex flex-wrap gap-2">
         {(
           [
             ["player", "One player"],
@@ -131,14 +153,19 @@ export function ComposeEmailAdmin() {
 
         {mode === "address" ? (
           <label className="space-y-1 sm:col-span-2">
-            <span className={label}>Email address</span>
-            <input
+            <span className={label}>Email addresses</span>
+            <textarea
+              rows={3}
               className={field}
-              type="email"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="name@example.com"
+              placeholder="Paste one or many addresses, separated by comma, semicolon, space or new line"
             />
+            <span className="block text-xs text-muted-foreground">
+              {parsedAddresses.length === 0
+                ? "You can paste a whole list at once — each person gets their own separate copy."
+                : `${parsedAddresses.length} address${parsedAddresses.length === 1 ? "" : "es"} ready · each gets a separate copy`}
+            </span>
           </label>
         ) : null}
       </div>
@@ -171,6 +198,8 @@ export function ComposeEmailAdmin() {
         <Send className="mr-1.5 inline size-3.5" aria-hidden="true" />
         {busy ? "Sending…" : "Send email"}
       </button>
+        </div>
+      )}
     </section>
   );
 }
