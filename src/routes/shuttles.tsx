@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -38,6 +38,7 @@ function ShuttlesPage() {
   const [teamName, setTeamName] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [quantity, setQuantity] = useState("1");
+  const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(event: React.FormEvent) {
@@ -120,9 +121,26 @@ function ShuttlesPage() {
               Maximum 1 shuttle box per team in two weeks.
             </p>
           </div>
+
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-primary"
+            />
+            <span>
+              I have read and accept the{" "}
+              <Link to="/terms" className="font-semibold text-primary underline">
+                Terms &amp; Conditions
+              </Link>
+              .
+            </span>
+          </label>
+
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || !accepted}
             className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {busy ? "Sending…" : "Order shuttles"}

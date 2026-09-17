@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -52,6 +52,7 @@ function RegisterPage() {
     previousDivision: "new",
   });
   const [busy, setBusy] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -170,7 +171,22 @@ function RegisterPage() {
                 </select>
               </div>
             </div>
-            <button type="submit" disabled={busy} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40">
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-primary"
+              />
+              <span>
+                I have read and accept the{" "}
+                <Link to="/terms" className="font-semibold text-primary underline">
+                  Terms &amp; Conditions
+                </Link>
+                .
+              </span>
+            </label>
+            <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40">
               {busy ? "Sending…" : "Register team"}
             </button>
             {info.paymentDetails ? (

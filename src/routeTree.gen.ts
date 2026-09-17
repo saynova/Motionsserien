@@ -17,6 +17,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as ShuttlesRouteImport } from './routes/shuttles'
 import { Route as SubmitRouteImport } from './routes/submit'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const SubmitRoute = SubmitRouteImport.update({
   path: '/submit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
   '/submit': typeof SubmitRoute
+  '/terms': typeof TermsRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
   '/submit': typeof SubmitRoute
+  '/terms': typeof TermsRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
   '/submit': typeof SubmitRoute
+  '/terms': typeof TermsRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/shuttles'
     | '/submit'
+    | '/terms'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/shuttles'
     | '/submit'
+    | '/terms'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/shuttles'
     | '/submit'
+    | '/terms'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   ScheduleRoute: typeof ScheduleRoute
   ShuttlesRoute: typeof ShuttlesRoute
   SubmitRoute: typeof SubmitRoute
+  TermsRoute: typeof TermsRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScheduleRoute: ScheduleRoute,
   ShuttlesRoute: ShuttlesRoute,
   SubmitRoute: SubmitRoute,
+  TermsRoute: TermsRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport

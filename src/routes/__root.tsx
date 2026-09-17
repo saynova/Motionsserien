@@ -131,6 +131,7 @@ const NAV = [
   { to: "/shuttles", label: "Shuttles" },
   { to: "/register", label: "Register" },
   { to: "/ask", label: "Contact" },
+  { to: "/terms", label: "Terms" },
   { to: "/admin", label: "Admin" },
 ] as const;
 
@@ -177,7 +178,10 @@ function RootComponent() {
         </main>
         <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-muted-foreground">
           Mondays · Divisions 1–5 at 19:00, Divisions 6–10 at 20:00 · Please arrive 10 minutes
-          before your start time.
+          before your start time. ·{" "}
+          <Link to="/terms" className="font-semibold text-primary underline">
+            Terms &amp; Conditions
+          </Link>
         </footer>
       </div>
       <Toaster position="top-center" />
