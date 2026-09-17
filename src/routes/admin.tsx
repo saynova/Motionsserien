@@ -172,17 +172,9 @@ function AdminConsole() {
   const [seasonStart, setSeasonStart] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const ADMIN_SECTIONS = [
-    { id: "admin-matches", label: "Matches" },
-    { id: "admin-banner", label: "Weekly banner" },
-    { id: "admin-shuttles", label: "Shuttles" },
-    { id: "admin-support", label: "Support" },
-    { id: "admin-messages", label: "Questions" },
-    { id: "admin-email", label: "Send email" },
-    { id: "admin-contacts", label: "Team contacts" },
-    { id: "admin-season", label: "Season" },
-    { id: "admin-next-season", label: "Next season" },
-  ];
+  const { section } = Route.useSearch();
+  const navigate = Route.useNavigate();
+
 
   const toggleSelect = (id: string) =>
     setSelected((prev) => {
