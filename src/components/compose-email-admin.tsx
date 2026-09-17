@@ -198,6 +198,8 @@ export function ComposeEmailAdmin() {
         <Send className="mr-1.5 inline size-3.5" aria-hidden="true" />
         {busy ? "Sending…" : "Send email"}
       </button>
+        </div>
+      )}
     </section>
   );
 }
