@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarRange, Layers3, ScrollText, Users, X } from "lucide-react";
+import { CalendarRange, Layers3, ScrollText, Trophy, Users, X } from "lucide-react";
 
 import { MovementBadge, PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { Button } from "@/components/ui/button";
@@ -87,32 +87,27 @@ function StandingsPage() {
     <>
       <section className="relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-card px-5 py-8 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-primary/5 lg:block" aria-hidden="true" />
-        <div className="relative max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            {season.name} · Week {week} of {season.total_weeks}
-          </p>
-          <h1 className="mt-3 font-display text-4xl font-bold leading-tight text-foreground sm:text-6xl">
-            Motionsserien HT-26
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Follow the live standings, find your next Monday match, and register a team for the next badminton season.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" asChild>
-              <Link
-                to="/schedule"
-                search={{ week: undefined, court: undefined, division: undefined, team: undefined }}
-              >
-                Se Spelschema <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/register">Anmäl Lag</Link>
-            </Button>
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
+              <Trophy className="size-6 sm:size-7" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                Week {week} scores
+              </p>
+              <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">
+                Played your match?
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
+            </div>
           </div>
+          <Button size="lg" className="h-12 px-6 text-base shadow-lg shadow-primary/20" asChild>
+            <Link to="/submit">Submit your score</Link>
+          </Button>
         </div>
 
-        <dl className="relative mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:max-w-3xl">
+        <dl className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
             <Users className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{teams.length}</dd><dt className="text-xs text-muted-foreground">Active teams</dt></div>
@@ -136,7 +131,6 @@ function StandingsPage() {
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
           <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
-          <Button size="sm" variant="outline" asChild><Link to="/submit">Submit a score</Link></Button>
         </div>
       </PageHeader>
 

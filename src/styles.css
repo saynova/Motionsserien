@@ -95,8 +95,8 @@
   --banner-border: oklch(0.511 0.23 277 / 18%);
   --banner-foreground: oklch(0.257 0.09 277);
   --banner-muted: oklch(0.393 0.08 274);
-  --banner-gold: oklch(0.511 0.23 277);
-  --banner-gold-soft: oklch(0.92 0.045 276);
+  --banner-gold: oklch(0.73 0.16 78);
+  --banner-gold-soft: oklch(0.95 0.08 92);
   --chart-1: oklch(0.511 0.23 277);
   --chart-2: oklch(0.696 0.149 162);
   --chart-3: oklch(0.68 0.14 205);
@@ -203,6 +203,13 @@
   45%, 100% { transform: translateX(420%) skewX(-18deg); }
 }
 
+@keyframes champion-petal-toss {
+  0% { opacity: 0; transform: translateY(1.5rem) translateX(0) rotate(0deg) scale(0.7); }
+  18% { opacity: 1; }
+  58% { opacity: 1; transform: translateY(-1.8rem) translateX(0.8rem) rotate(170deg) scale(1); }
+  100% { opacity: 0; transform: translateY(1.2rem) translateX(1.5rem) rotate(340deg) scale(0.75); }
+}
+
 @utility weekly-banner {
   animation: weekly-banner-enter 500ms ease-out both;
   background-image:
@@ -245,19 +252,20 @@
     position: absolute;
     width: 0.45rem;
     height: 0.85rem;
-    border-radius: 2px;
+    border-radius: 70% 15% 70% 15%;
     background: var(--primary);
     transform: rotate(34deg);
+    animation: champion-petal-toss 3.8s ease-in-out infinite;
   }
 
-  & i:nth-child(1) { left: 19%; top: 18%; background: var(--accent); transform: rotate(-28deg); }
-  & i:nth-child(2) { left: 25%; bottom: 15%; background: var(--up); transform: rotate(48deg); }
-  & i:nth-child(3) { left: 32%; top: 10%; background: var(--banner-gold); transform: rotate(25deg); }
-  & i:nth-child(4) { left: 39%; bottom: 8%; background: var(--up); transform: rotate(72deg); }
-  & i:nth-child(5) { right: 37%; top: 12%; background: var(--down); transform: rotate(-18deg); }
-  & i:nth-child(6) { right: 29%; bottom: 11%; background: var(--accent); transform: rotate(42deg); }
-  & i:nth-child(7) { right: 22%; top: 15%; background: var(--primary); transform: rotate(-38deg); }
-  & i:nth-child(8) { right: 16%; bottom: 14%; background: var(--up); transform: rotate(25deg); }
+  & i:nth-child(1) { left: 19%; top: 18%; background: var(--accent); animation-delay: -0.4s; }
+  & i:nth-child(2) { left: 25%; bottom: 15%; background: var(--up); animation-delay: -1.7s; }
+  & i:nth-child(3) { left: 32%; top: 10%; background: var(--banner-gold); animation-delay: -2.8s; }
+  & i:nth-child(4) { left: 39%; bottom: 8%; background: var(--up); animation-delay: -0.9s; }
+  & i:nth-child(5) { right: 37%; top: 12%; background: var(--down); animation-delay: -2.2s; }
+  & i:nth-child(6) { right: 29%; bottom: 11%; background: var(--accent); animation-delay: -3.2s; }
+  & i:nth-child(7) { right: 22%; top: 15%; background: var(--primary); animation-delay: -1.2s; }
+  & i:nth-child(8) { right: 16%; bottom: 14%; background: var(--up); animation-delay: -2.5s; }
 }
 
 @utility banner-confetti--slim {

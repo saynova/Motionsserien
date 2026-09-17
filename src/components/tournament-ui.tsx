@@ -146,10 +146,10 @@ export function WeeklyBanner() {
 
       <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="weekly-trophy-wrap relative flex size-11 shrink-0 items-center justify-center" aria-hidden="true">
+          <div className="weekly-trophy-wrap relative flex size-14 shrink-0 items-center justify-center" aria-hidden="true">
             <span className="absolute inset-0 rounded-full bg-banner-gold-soft" />
-            <Trophy className="weekly-trophy relative size-6 text-banner-gold" strokeWidth={2} />
-            <Sparkles className="weekly-sparkle absolute -right-1 -top-1 size-3.5 text-banner-gold" strokeWidth={2} />
+            <Trophy className="weekly-trophy relative size-8 text-banner-gold" strokeWidth={2.2} />
+            <Sparkles className="weekly-sparkle absolute -right-1 -top-1 size-4 text-banner-gold" strokeWidth={2} />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-banner-gold sm:text-xs">
