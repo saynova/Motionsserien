@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Shuttle Scheduler"
+const SITE_NAME = "Motionsserien HT-26"
 const ROOT_DOMAIN = "motionsserien.se"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
