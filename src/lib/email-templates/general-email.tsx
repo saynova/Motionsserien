@@ -33,10 +33,10 @@ const Email = ({ name, subject = '', bodyText = '' }: Props) => (
 
 export const template = {
   component: Email,
-  subject: (data: Record<string, any>) =>
-    typeof data?.subject === 'string' && data.subject.trim().length > 0
-      ? data.subject
-      : 'Motionsserien HT-26',
+  subject: (data: Record<string, any>) => {
+    const value = data?.['subject']
+    return typeof value === 'string' && value.trim().length > 0 ? value : 'Motionsserien HT-26'
+  },
   displayName: 'Email from the General',
   previewData: {
     name: 'Anna',
