@@ -136,17 +136,17 @@ const NAV = [
 ] as const;
 
 const ADMIN_NAV = [
-  { id: "admin-matches", label: "Match scores" },
-  { id: "admin-banner", label: "Weekly banner" },
-  { id: "admin-shuttles", label: "Shuttle purchases" },
-  { id: "admin-support", label: "Donation & sponsor" },
-  { id: "admin-messages", label: "Questions" },
-  { id: "admin-email", label: "Send email" },
-  { id: "admin-contacts", label: "Team contacts" },
-  { id: "admin-season", label: "Season settings" },
-  { id: "admin-procedure", label: "Weekly procedure" },
-  { id: "admin-next-season", label: "Registration & seeding" },
-  { id: "admin-new-season", label: "Start new season" },
+  { id: "matches", label: "Match scores" },
+  { id: "banner", label: "Weekly banner" },
+  { id: "shuttles", label: "Shuttle purchases" },
+  { id: "support", label: "Donation & sponsor" },
+  { id: "messages", label: "Questions" },
+  { id: "email", label: "Send email" },
+  { id: "contacts", label: "Team contacts" },
+  { id: "season", label: "Season settings" },
+  { id: "procedure", label: "Weekly procedure" },
+  { id: "next-season", label: "Registration & seeding" },
+  { id: "new-season", label: "Start new season" },
 ] as const;
 
 function AdminNavigation() {
@@ -159,25 +159,25 @@ function AdminNavigation() {
         aria-label="Admin menu navigation"
         className="mx-auto flex w-full max-w-[96rem] gap-1.5 overflow-x-auto px-3 py-2 sm:px-5 lg:px-8"
       >
-        <Link
-          to="/admin"
-          className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
-        >
+        <span className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">
           Admin menu
-        </Link>
+        </span>
         {ADMIN_NAV.map((item) => (
-          <a
+          <Link
             key={item.id}
-            href={`/admin#${item.id}`}
+            to="/admin"
+            search={{ section: item.id }}
             className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            activeProps={{ className: "border-primary/40 bg-primary/10 text-primary" }}
           >
             {item.label}
-          </a>
+          </Link>
         ))}
       </nav>
     </div>
   );
 }
+
 
 function SiteHeader() {
   return (
