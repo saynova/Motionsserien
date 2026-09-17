@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 
 import { template as missingScoreReminder } from './missing-score-reminder'
 import { template as messageReply } from './message-reply'
+import { template as generalEmail } from './general-email'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -23,4 +24,5 @@ export interface TemplateEntry {
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'missing-score-reminder': missingScoreReminder,
   'message-reply': messageReply,
+  'general-email': generalEmail,
 }

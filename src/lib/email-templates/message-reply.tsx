@@ -1,5 +1,5 @@
 import React from 'react'
-import { Body, Container, Head, Heading, Hr, Html, Preview, Section, Text } from '@react-email/components'
+import { Body, Container, Head, Hr, Html, Preview, Section, Text } from '@react-email/components'
 import type { TemplateEntry } from './registry'
 
 interface Props {
@@ -14,7 +14,6 @@ const Email = ({ name, replyBody = '', originalBody = '' }: Props) => (
     <Preview>Reply from Motionsserien HT-26</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Motionsserien HT-26</Heading>
         <Text style={text}>{name ? `Hi ${name},` : 'Hi,'}</Text>
         {replyBody
           .split(/\n{2,}/)
