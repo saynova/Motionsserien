@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -56,7 +56,16 @@ function SubmitPage() {
   const openMatches = useMemo(
     () =>
       matches
-        .filter((m) => m.week_no === week && m.status !== "final")
+        .filter((m) => m.week_no === week && m.status === "scheduled")
+        .filter((m) => (division === "" ? true : m.division === division))
+        .sort((a, b) => a.division - b.division || a.match_no - b.match_no),
+    [matches, week, division],
+  );
+
+  const awaitingMatches = useMemo(
+    () =>
+      matches
+        .filter((m) => m.week_no === week && m.status === "pending")
         .filter((m) => (division === "" ? true : m.division === division))
         .sort((a, b) => a.division - b.division || a.match_no - b.match_no),
     [matches, week, division],
@@ -201,7 +210,6 @@ function SubmitPage() {
               <option key={m.id} value={m.id}>
                 Div {m.division} · {m.start_time} · Court {m.court} · {teamName(m.team_a_id)} v{" "}
                 {teamName(m.team_b_id)}
-                {m.status === "pending" ? " (already submitted)" : ""}
               </option>
             ))}
           </select>
@@ -209,8 +217,29 @@ function SubmitPage() {
 
         {openMatches.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Every match in week {week} is already final. Ask an admin if a score needs changing.
+            Every match in week {week} has a result already. Ask an admin if a score needs changing.
           </p>
+        ) : null}
+
+        {awaitingMatches.length > 0 ? (
+          <div className="rounded border border-primary/25 bg-primary/5 p-3 text-sm">
+            <p className="font-semibold text-primary">Already submitted — awaiting approval</p>
+            <ul className="mt-1 space-y-0.5 text-muted-foreground">
+              {awaitingMatches.map((m) => (
+                <li key={m.id}>
+                  Div {m.division} · {teamName(m.team_a_id)} v {teamName(m.team_b_id)}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2">
+              This match score has already been submitted and is awaiting approval. If you need to
+              make changes, please contact the General through{" "}
+              <Link to="/ask" className="font-semibold text-primary underline">
+                contact form
+              </Link>{" "}
+              from this website only.
+            </p>
+          </div>
         ) : null}
 
         {selected ? (

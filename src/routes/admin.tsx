@@ -148,6 +148,28 @@ function AdminConsole() {
   const [busy, setBusy] = useState(false);
   const [seasonName, setSeasonName] = useState("");
   const [seasonStart, setSeasonStart] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const ADMIN_SECTIONS = [
+    { id: "admin-matches", label: "Matches" },
+    { id: "admin-banner", label: "Weekly banner" },
+    { id: "admin-shuttles", label: "Shuttles" },
+    { id: "admin-support", label: "Support" },
+    { id: "admin-messages", label: "Questions" },
+    { id: "admin-email", label: "Send email" },
+    { id: "admin-contacts", label: "Team contacts" },
+    { id: "admin-season", label: "Season" },
+    { id: "admin-next-season", label: "Next season" },
+  ];
+
+  const toggleSelect = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
 
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "Unknown";
   const weeks = [...new Set(matches.map((m) => m.week_no))].sort((a, b) => a - b);
@@ -261,20 +283,45 @@ function AdminConsole() {
         </div>
       </PageHeader>
 
+      <nav
+        aria-label="Admin sections"
+        className="sticky top-[4.5rem] z-20 mt-6 flex flex-wrap gap-1.5 rounded-lg border border-border bg-card/90 px-2 py-2 backdrop-blur"
+      >
+        {ADMIN_SECTIONS.map((section) => (
+          <a key={section.id} href={`#${section.id}`} className={btnGhost}>
+            {section.label}
+          </a>
+        ))}
+      </nav>
+
       <div className="mt-10 grid items-start gap-6 lg:grid-cols-2">
-        <BannerEditor />
-        <ShuttleAdmin />
+        <div id="admin-banner">
+          <BannerEditor />
+        </div>
+        <div id="admin-shuttles">
+          <ShuttleAdmin />
+        </div>
       </div>
 
-      <SupportSettingsEditor />
+      <div id="admin-support">
+        <SupportSettingsEditor />
+      </div>
 
-      <MessagesAdmin />
+      <div id="admin-messages">
+        <MessagesAdmin />
+      </div>
 
-      <ComposeEmailAdmin />
+      <div id="admin-email">
+        <ComposeEmailAdmin />
+      </div>
 
-      <TeamContactsAdmin />
+      <div id="admin-contacts">
+        <TeamContactsAdmin />
+      </div>
 
-      <SeasonSettingsCard />
+      <div id="admin-season">
+        <SeasonSettingsCard />
+      </div>
 
       <WeeklyProcedure
         week={week}
@@ -293,6 +340,41 @@ function AdminConsole() {
         </p>
       ) : null}
 
+      <div
+        id="admin-matches"
+        className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-4 py-3"
+      >
+        <span className="text-sm font-semibold">
+          {selected.size} selected for approval
+        </span>
+        <button
+          className={btn}
+          disabled={busy || selected.size === 0}
+          onClick={() =>
+            run(async () => {
+              await approveOne({ data: { matchIds: [...selected] } });
+              setSelected(new Set());
+            }, "Selected scores approved.")
+          }
+        >
+          Approve selected
+        </button>
+        <button
+          className={btnGhost}
+          disabled={pending.length === 0}
+          onClick={() => setSelected(new Set(pending.map((m) => m.id)))}
+        >
+          Select all waiting ({pending.length})
+        </button>
+        <button
+          className={btnGhost}
+          disabled={selected.size === 0}
+          onClick={() => setSelected(new Set())}
+        >
+          Clear
+        </button>
+      </div>
+
       <div className="space-y-3">
         {[...new Set(weekMatches.map((m) => m.division))].map((division) => {
           const group = weekMatches.filter((m) => m.division === division);
@@ -306,6 +388,8 @@ function AdminConsole() {
                   nameA={teamName(match.team_a_id)}
                   nameB={teamName(match.team_b_id)}
                   busy={busy}
+                  selected={selected.has(match.id)}
+                  onToggleSelect={() => toggleSelect(match.id)}
                   lastReminder={lastReminderFor(match.id)}
                   onRemind={() => sendReminder(match.id)}
                   onApprove={() =>
@@ -327,7 +411,9 @@ function AdminConsole() {
         })}
       </div>
 
-      <NextSeasonAdmin />
+      <div id="admin-next-season">
+        <NextSeasonAdmin />
+      </div>
 
       <section className="mt-10 rounded-lg border border-border bg-card p-6">
         <h2 className="text-2xl font-bold uppercase tracking-wide">Start a new season</h2>
@@ -473,6 +559,8 @@ function MatchCard({
   nameA,
   nameB,
   busy,
+  selected,
+  onToggleSelect,
   lastReminder,
   onRemind,
   onApprove,
@@ -484,6 +572,8 @@ function MatchCard({
   nameA: string;
   nameB: string;
   busy: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
   lastReminder?: string | undefined;
   onRemind: () => void;
   onApprove: () => void;
@@ -542,6 +632,16 @@ function MatchCard({
         }}
         className="flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-2"
       >
+        {match.status === "pending" ? (
+          <input
+            type="checkbox"
+            checked={selected}
+            onClick={(event) => event.stopPropagation()}
+            onChange={onToggleSelect}
+            className="size-4 accent-primary"
+            aria-label={`Select ${nameA} v ${nameB} for approval`}
+          />
+        ) : null}
         <span className="tabnum text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Div {match.division} · {match.start_time} · Court {match.court}
         </span>

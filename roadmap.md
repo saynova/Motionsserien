@@ -10,4 +10,4 @@
 7. Simplify the homepage opening, feature score submission, and enhance the champion celebration — done
 8. Make the shared layout fill and adapt to mobile, laptop, and large screens without clipping — done
 9. Add the "Before You Register" fee note under the registration form — done
-10. Bulk score approval, duplicate submission lock, and admin menu bar after sign-in — pending
+10. Bulk score approval, duplicate submission lock, and admin menu bar after sign-in — done

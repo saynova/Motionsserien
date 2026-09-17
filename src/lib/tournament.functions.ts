@@ -104,6 +104,9 @@ function toScore(input: SubmitInput | AdminScoreInput): ScoreInput {
   };
 }
 
+export const ALREADY_SUBMITTED_MESSAGE =
+  "This match score has already been submitted and is awaiting approval. If you need to make changes, please contact the General through contact form from this website only";
+
 export const submitScore = createServerFn({ method: "POST" })
   .inputValidator((data: SubmitInput) => {
     if (typeof data?.matchId !== "string" || data.matchId.length < 10) {
@@ -130,6 +133,9 @@ export const submitScore = createServerFn({ method: "POST" })
     if (!existing.data) throw new Error("That match no longer exists.");
     if (existing.data.status === "final") {
       throw new Error("That match is already final. Ask an admin to change it.");
+    }
+    if (existing.data.status === "pending") {
+      throw new Error(ALREADY_SUBMITTED_MESSAGE);
     }
 
     const { error } = await supabase
