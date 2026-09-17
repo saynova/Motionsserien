@@ -8,10 +8,9 @@ import { TEMPLATES } from './registry'
 // Configuration baked in at scaffold time
 const SITE_NAME = "Md Rabiul Islam"
 const FROM_USER = "rabiul"
-// SENDER_DOMAIN is the verified sender domain. Use the root domain configured
-// for this project so emails are sent as rabiul@motionsserien.se.
-const SENDER_DOMAIN = "motionsserien.se"
-// FROM_DOMAIN is the domain shown in the From: header.
+// SENDER_DOMAIN is the delegated sending subdomain verified with Lovable.
+// FROM_DOMAIN is what recipients see in the From: header (can be the root domain).
+const SENDER_DOMAIN = "notify.motionsserien.se"
 const FROM_DOMAIN = "motionsserien.se"
 
 export type SendTemplateEmailResult =
