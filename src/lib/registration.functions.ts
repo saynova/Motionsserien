@@ -109,24 +109,50 @@ export const getRegisteredTeams = createServerFn({ method: "GET" }).handler(
     // Team name, division and both player names are public for approved teams;
     // emails and phone numbers stay private.
     const { adminClient } = await import("./tournament.server");
-    const { data, error } = await adminClient()
-      .from("registrations")
-      .select("team_name, previous_division, player1_name, player2_name")
-      .eq("status", "accepted")
-      .order("team_name", { ascending: true });
-    if (error) throw new Error(error.message);
-    const teams = ((data ?? []) as Array<{
-      team_name: string;
-      previous_division: number | null;
-      player1_name: string;
-      player2_name: string;
-    }>).map((r) => ({
+    const supabase = adminClient();
+    const settings = await supabase
+      .from("registration_settings")
+      .select("target_season")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (settings.error) throw new Error(settings.error.message);
+    const targetSeason = settings.data?.target_season ?? "";
+
+    const [regs, seeds] = await Promise.all([
+      supabase
+        .from("registrations")
+        .select("team_name, player1_name, player2_name")
+        .eq("status", "accepted")
+        .eq("target_season", targetSeason)
+        .order("team_name", { ascending: true }),
+      supabase
+        .from("season_seeds")
+        .select("team_name, division")
+        .eq("target_season", targetSeason),
+    ]);
+    if (regs.error) throw new Error(regs.error.message);
+    if (seeds.error) throw new Error(seeds.error.message);
+
+    const divisionByTeam = new Map(
+      ((seeds.data ?? []) as Array<{ team_name: string; division: number }>).map((s) => [
+        s.team_name.toLowerCase(),
+        s.division,
+      ]),
+    );
+    const teams: RegisteredTeam[] = (
+      (regs.data ?? []) as Array<{
+        team_name: string;
+        player1_name: string;
+        player2_name: string;
+      }>
+    ).map((r) => ({
       team_name: r.team_name,
-      division: r.previous_division,
+      division: divisionByTeam.get(r.team_name.toLowerCase()) ?? null,
       player1_name: r.player1_name,
       player2_name: r.player2_name,
     }));
-    return ((data ?? []) as RegisteredTeam[]).sort((a, b) => {
+    return teams.sort((a, b) => {
       const da = a.division ?? 99;
       const db = b.division ?? 99;
       if (da !== db) return da - db;

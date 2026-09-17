@@ -234,6 +234,7 @@ function RegisterPage() {
               <thead>
                 <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-2 text-left font-semibold">Team</th>
+                  <th className="px-4 py-2 text-left font-semibold">Players</th>
                   <th className="px-4 py-2 text-right font-semibold">Division</th>
                 </tr>
               </thead>
@@ -241,6 +242,9 @@ function RegisterPage() {
                 {teams.map((team) => (
                   <tr key={team.team_name} className="border-b border-border/60 last:border-0">
                     <td className="px-4 py-2.5 font-semibold">{team.team_name}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">
+                      {team.player1_name} & {team.player2_name}
+                    </td>
                     <td className="tabnum px-4 py-2.5 text-right font-semibold">
                       {team.division ? `Div ${team.division}` : "To be set"}
                     </td>
