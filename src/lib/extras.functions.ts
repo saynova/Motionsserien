@@ -105,10 +105,19 @@ export const getSupportSettings = createServerFn({ method: "GET" }).handler(
 
     let qrImageUrl: string | null = null;
     if (data.qr_image_path) {
-      const signed = await supabase.storage
-        .from("donation-assets")
-        .createSignedUrl(data.qr_image_path, 60 * 60 * 24 * 7);
-      if (!signed.error) qrImageUrl = signed.data.signedUrl;
+      const downloaded = await supabase.storage.from("donation-assets").download(data.qr_image_path);
+      if (!downloaded.error) {
+        const bytes = new Uint8Array(await downloaded.data.arrayBuffer());
+        let binary = "";
+        for (const byte of bytes) binary += String.fromCharCode(byte);
+        const extension = data.qr_image_path.split(".").pop()?.toLowerCase();
+        const mimeType = extension === "jpg" || extension === "jpeg"
+          ? "image/jpeg"
+          : extension === "webp"
+            ? "image/webp"
+            : "image/png";
+        qrImageUrl = `data:${mimeType};base64,${btoa(binary)}`;
+      }
     }
 
     return { ...data, qr_image_url: qrImageUrl } as SupportSettings;
