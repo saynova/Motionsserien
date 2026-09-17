@@ -164,7 +164,6 @@ function SiteHeader() {
           </div>
         </div>
       </div>
-      <AdminNavigation />
     </header>
   );
 }
