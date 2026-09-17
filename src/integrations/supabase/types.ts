@@ -362,6 +362,36 @@ export type Database = {
         }
         Relationships: []
       }
+      site_support_settings: {
+        Row: {
+          created_at: string
+          donation_visible: boolean
+          id: string
+          qr_image_path: string | null
+          sponsor_details: string
+          sponsor_visible: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          donation_visible?: boolean
+          id?: string
+          qr_image_path?: string | null
+          sponsor_details?: string
+          sponsor_visible?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          donation_visible?: boolean
+          id?: string
+          qr_image_path?: string | null
+          sponsor_details?: string
+          sponsor_visible?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       team_players: {
         Row: {
           created_at: string
