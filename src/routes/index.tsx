@@ -226,6 +226,7 @@ function StandingsPage() {
           );
         })}
       </div>
+      <TermsNotice />
     </>
   );
 }
