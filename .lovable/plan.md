@@ -1,46 +1,63 @@
-# Add a flexible donation option
+# Simpler reply emails, a compose box, and the questions inbox
 
-## Goal
-Let visitors donate money to Ludvika Badmintonklubb / Motionsserien with a donor-chosen amount.
+## 1. Reply emails start with just "Hi,"
 
-## Provider
-Paddle (recommended and confirmed by the eligibility check). Paddle acts as the merchant of record and handles tax compliance automatically.
+The reply email currently prints "Motionsserien HT-26" as a big title above the greeting. That
+title is removed, so the email opens directly with:
 
-## What will happen when enabled
-- A test environment is created immediately so donations can be tested without real money.
-- Accepting live payments requires verification on the Paddle side.
+> Hi Anna,
 
-## Plan
+(or just "Hi," when no name was given), then your text, your sign-off, the quoted original
+question, and the small footer line at the very bottom.
 
-1. Enable Paddle payments
-   - Call `enable_paddle_payments`.
-   - This creates the test environment and makes the Paddle client available.
+## 2. Emails come from your own name and address
 
-2. Create a donation product
-   - One Paddle product called e.g. "Donation to Motionsserien".
-   - Custom / flexible price: donor enters the amount before checkout.
+All emails the site sends (replies and score reminders) will show:
 
-3. Add a public "Donate" page
-   - New route `/donate` linked in the navigation and footer.
-   - Simple form: amount input (min value, e.g. 25 kr), optional message/name, submit button.
-   - Explain that this is a voluntary donation to the club/series.
+> Md Rabiul Islam &lt;rabiul@motionsserien.se&gt;
 
-4. Implement Paddle checkout
-   - On submit, call a server function that creates a Paddle checkout session with the chosen amount.
-   - Redirect the donor to Paddle's hosted checkout.
-   - After successful payment, show a thank-you page at `/donate/thanks`.
+and answers from players land in that mailbox instead of a no-reply address.
 
-5. Record donations (optional but useful)
-   - New `donations` table: amount, currency, paddle_transaction_id, donor_name, message, status, created_at.
-   - Admin-only view in the admin console showing a list of donations and a total.
+## 3. New "Send an email" box in the admin console
 
-6. Webhook / post-payment handling
-   - Public webhook endpoint under `/api/public/paddle-webhook`.
-   - Verify Paddle signature and update the donation status to `completed`.
+A new card lets you write and send an email yourself, with three ways to choose who gets it:
+
+- **A single player** — pick a division, then pick one player from the teams in it.
+- **Everyone in a division** — all players of the three teams in that division. Each person
+  gets their own separate copy, and you see how many were sent.
+- **Any address** — type an email address by hand.
+
+You write the subject and the message; it goes out from your address with the same clean
+layout as the replies. A short note in the card reminds you this is for tournament matters
+(reminders, schedule changes, answers) — the site is not set up for newsletters or
+promotional mail, because that would harm delivery of the important emails.
+
+## 4. Reading and replying to email
+
+The questions inbox in the admin console stays your place to read and answer players: every
+message from the Contact page appears there, and you reply straight from the site.
+
+The site itself cannot receive email, so messages sent directly to
+rabiul@motionsserien.se still arrive in your normal mailbox at your provider — those cannot
+be shown on the website.
 
 ## Technical notes
-- Add `src/routes/donate.tsx` and `src/routes/donate/thanks.tsx`.
-- Add `src/lib/donations.functions.ts` for `createDonationCheckout` (admin not required).
-- Add `src/routes/api/public/paddle-webhook.ts` for the Paddle callback.
-- New migration: `donations` table with RLS and grants; service_role writes via webhook, admin reads via server function.
-- No changes to existing tournament/scoring logic.
+
+- `src/lib/email-templates/message-reply.tsx`: drop the `Heading` title; keep greeting,
+  body paragraphs, sign-off, quoted original, footer.
+- `src/lib/email-templates/send-email.ts`: `SITE_NAME` → `Md Rabiul Islam`, from address
+  `rabiul@${FROM_DOMAIN}`, and `reply_to` defaults to the same address. `SENDER_DOMAIN`
+  stays `notify.motionsserien.se`.
+- New template `src/lib/email-templates/general-email.tsx` (props `subject`, `bodyText`,
+  optional `name`) registered in `registry.ts` as `general-email`, with the subject taken
+  from `templateData`.
+- New server functions in `src/lib/reminders.functions.ts`, all behind `requireAdmin`:
+  `listDivisionPlayers` (current week's `week_slots` → teams → `team_players`, grouped by
+  division) and `sendGeneralEmail` ({ mode: 'player' | 'division' | 'address', ... subject,
+  body }) which resolves recipients server-side and sends one personalised email per
+  recipient with idempotency key `general-<hash>-<email>-<date>`; returns sent/suppressed
+  counts. No recipient list is ever accepted from the browser.
+- New `src/components/compose-email-admin.tsx` rendered in `src/routes/admin.tsx` near the
+  Team contacts card; new query option `divisionPlayersQueryOptions` in
+  `src/lib/tournament-query.ts`.
+- Verify with a typecheck and a desktop/mobile check of the admin console.
