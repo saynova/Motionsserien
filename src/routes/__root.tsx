@@ -99,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -136,13 +136,13 @@ const NAV = [
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-6">
         <Link to="/" className="flex items-baseline gap-2">
-          <span className="font-display text-2xl font-bold uppercase tracking-widest text-primary">
+          <span className="font-display text-xl font-bold text-primary sm:text-2xl">
             Motionsserien
           </span>
-          <span className="font-display text-2xl font-bold uppercase tracking-widest">HT-26</span>
+          <span className="font-display text-xl font-bold text-foreground sm:text-2xl">HT-26</span>
         </Link>
         <div className="flex flex-wrap items-center gap-2">
           <nav className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto">
@@ -151,8 +151,8 @@ function SiteHeader() {
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.to === "/" }}
-                className="rounded px-3 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "bg-primary/15 text-primary hover:bg-primary/20" }}
+                className="rounded-md px-2.5 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                activeProps={{ className: "bg-primary/10 text-primary hover:bg-primary/15" }}
               >
                 {item.label}
               </Link>
@@ -172,14 +172,14 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen">
         <SiteHeader />
-        <main className="mx-auto max-w-6xl px-4 py-8">
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 lg:px-6">
           <WeeklyBanner />
           <SponsorBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <ContactBar />
         </main>
-        <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-muted-foreground">
+        <footer className="mx-auto max-w-7xl px-4 pb-10 text-xs text-muted-foreground lg:px-6">
           Mondays · Divisions 1–5 at 19:00, Divisions 6–10 at 20:00 · Please arrive 10 minutes
           before your start time. ·{" "}
           <Link to="/terms" className="font-semibold text-primary underline">

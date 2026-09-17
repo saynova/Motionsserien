@@ -5,13 +5,13 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Motionsserien HT-26 design system — courtside dark.
+ * Motionsserien HT-26 design system — light professional sport.
  * All colours are oklch semantic tokens; never hardcode colours in components.
  */
 
 @theme inline {
-  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Barlow Condensed", "Barlow", ui-sans-serif, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "DM Sans", ui-sans-serif, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -66,72 +66,54 @@
 }
 
 :root {
-  --radius: 0.35rem;
-  --background: oklch(0.17 0.022 172);
-  --foreground: oklch(0.96 0.012 160);
-  --card: oklch(0.215 0.026 172);
-  --card-foreground: oklch(0.96 0.012 160);
-  --popover: oklch(0.215 0.026 172);
-  --popover-foreground: oklch(0.96 0.012 160);
-  --primary: oklch(0.85 0.19 128);
-  --primary-foreground: oklch(0.2 0.05 140);
-  --secondary: oklch(0.28 0.03 172);
-  --secondary-foreground: oklch(0.95 0.012 160);
-  --muted: oklch(0.26 0.024 172);
-  --muted-foreground: oklch(0.73 0.022 165);
-  --accent: oklch(0.8 0.15 68);
-  --accent-foreground: oklch(0.22 0.05 60);
+  --radius: 0.5rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.208 0.042 266);
+  --card: oklch(1 0 0 / 78%);
+  --card-foreground: oklch(0.208 0.042 266);
+  --popover: oklch(1 0 0 / 96%);
+  --popover-foreground: oklch(0.208 0.042 266);
+  --primary: oklch(0.511 0.23 277);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.968 0.007 248);
+  --secondary-foreground: oklch(0.279 0.041 260);
+  --muted: oklch(0.968 0.007 248);
+  --muted-foreground: oklch(0.446 0.043 258);
+  --accent: oklch(0.696 0.149 162);
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.62 0.2 25);
   --destructive-foreground: oklch(0.97 0.01 30);
-  --border: oklch(0.32 0.028 172);
-  --input: oklch(0.3 0.026 172);
-  --ring: oklch(0.85 0.19 128);
-  --up: oklch(0.82 0.18 145);
+  --border: oklch(0.208 0.042 266 / 8%);
+  --input: oklch(0.87 0.014 255);
+  --ring: oklch(0.511 0.23 277);
+  --up: oklch(0.696 0.149 162);
   --down: oklch(0.68 0.2 25);
-  --hold: oklch(0.72 0.02 165);
-  --court: oklch(0.36 0.06 205);
-  --court-line: oklch(0.92 0.02 160);
-  --banner: oklch(0.965 0.052 125);
-  --banner-border: oklch(0.84 0.11 136);
-  --banner-foreground: oklch(0.27 0.08 251);
-  --banner-muted: oklch(0.38 0.07 248);
-  --banner-gold: oklch(0.72 0.17 72);
-  --banner-gold-soft: oklch(0.93 0.11 91);
-  --chart-1: oklch(0.85 0.19 128);
-  --chart-2: oklch(0.8 0.15 68);
+  --hold: oklch(0.554 0.046 257);
+  --court: oklch(0.511 0.23 277);
+  --court-line: oklch(1 0 0);
+  --banner: oklch(0.97 0.025 276);
+  --banner-border: oklch(0.511 0.23 277 / 18%);
+  --banner-foreground: oklch(0.257 0.09 277);
+  --banner-muted: oklch(0.393 0.08 274);
+  --banner-gold: oklch(0.511 0.23 277);
+  --banner-gold-soft: oklch(0.92 0.045 276);
+  --chart-1: oklch(0.511 0.23 277);
+  --chart-2: oklch(0.696 0.149 162);
   --chart-3: oklch(0.68 0.14 205);
   --chart-4: oklch(0.72 0.16 320);
   --chart-5: oklch(0.68 0.2 25);
-  --sidebar: oklch(0.2 0.024 172);
-  --sidebar-foreground: oklch(0.96 0.012 160);
-  --sidebar-primary: oklch(0.85 0.19 128);
-  --sidebar-primary-foreground: oklch(0.2 0.05 140);
-  --sidebar-accent: oklch(0.28 0.03 172);
-  --sidebar-accent-foreground: oklch(0.95 0.012 160);
-  --sidebar-border: oklch(0.32 0.028 172);
-  --sidebar-ring: oklch(0.85 0.19 128);
+  --sidebar: oklch(0.985 0.004 248);
+  --sidebar-foreground: oklch(0.208 0.042 266);
+  --sidebar-primary: oklch(0.511 0.23 277);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.94 0.03 276);
+  --sidebar-accent-foreground: oklch(0.355 0.16 277);
+  --sidebar-border: oklch(0.208 0.042 266 / 8%);
+  --sidebar-ring: oklch(0.511 0.23 277);
 }
 
 .dark {
-  --background: oklch(0.17 0.022 172);
-  --foreground: oklch(0.96 0.012 160);
-  --card: oklch(0.215 0.026 172);
-  --card-foreground: oklch(0.96 0.012 160);
-  --popover: oklch(0.215 0.026 172);
-  --popover-foreground: oklch(0.96 0.012 160);
-  --primary: oklch(0.85 0.19 128);
-  --primary-foreground: oklch(0.2 0.05 140);
-  --secondary: oklch(0.28 0.03 172);
-  --secondary-foreground: oklch(0.95 0.012 160);
-  --muted: oklch(0.26 0.024 172);
-  --muted-foreground: oklch(0.73 0.022 165);
-  --accent: oklch(0.8 0.15 68);
-  --accent-foreground: oklch(0.22 0.05 60);
-  --destructive: oklch(0.62 0.2 25);
-  --destructive-foreground: oklch(0.97 0.01 30);
-  --border: oklch(0.32 0.028 172);
-  --input: oklch(0.3 0.026 172);
-  --ring: oklch(0.85 0.19 128);
+  color-scheme: light;
 }
 
 @layer base {
@@ -143,8 +125,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image:
-      linear-gradient(to bottom, oklch(0.22 0.03 172 / 60%), transparent 40rem);
+    background-image: linear-gradient(to bottom, var(--color-secondary), transparent 30rem);
+    background-attachment: fixed;
   }
 
   h1,
@@ -152,8 +134,27 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
   }
+
+  input,
+  select,
+  textarea {
+    box-shadow: 0 1px 2px oklch(0.208 0.042 266 / 4%);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid color-mix(in oklab, var(--primary) 22%, transparent);
+    outline-offset: 1px;
+  }
+}
+
+@utility glass-surface {
+  background: color-mix(in oklab, var(--card) 82%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px oklch(0.208 0.042 266 / 7%);
 }
 
 @utility tabnum {
@@ -189,9 +190,7 @@
 @utility weekly-banner {
   animation: weekly-banner-enter 500ms ease-out both;
   background-image:
-    radial-gradient(circle at 4% 10%, color-mix(in oklab, var(--primary) 26%, transparent) 0 5.5rem, transparent 5.6rem),
-    radial-gradient(circle at 96% 0%, color-mix(in oklab, var(--primary) 22%, transparent) 0 6rem, transparent 6.1rem),
-    linear-gradient(110deg, color-mix(in oklab, var(--banner) 88%, white), var(--banner));
+    linear-gradient(110deg, color-mix(in oklab, var(--banner) 82%, white), var(--banner));
 }
 
 @utility weekly-trophy {
