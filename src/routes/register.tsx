@@ -85,7 +85,7 @@ function RegisterPage() {
       <PageHeader
         eyebrow={info.targetSeason ? `Registration · ${info.targetSeason}` : "Registration"}
         title="Team registration"
-        description="Sign your team up for the next season. An admin reviews every entry; approved teams are listed below with their division. Player names, emails and phone numbers are never shown publicly."
+        description="Sign your team up for the next season. An admin reviews every entry; approved teams are listed below with their division and both player names. Emails and phone numbers are never shown publicly."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
