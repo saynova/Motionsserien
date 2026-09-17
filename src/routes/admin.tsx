@@ -10,6 +10,7 @@ import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-sea
 import { MessagesAdmin } from "@/components/messages-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
 import { TeamContactsAdmin } from "@/components/team-contacts-admin";
+import { ComposeEmailAdmin } from "@/components/compose-email-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
@@ -261,6 +262,8 @@ function AdminConsole() {
       </div>
 
       <MessagesAdmin />
+
+      <ComposeEmailAdmin />
 
       <TeamContactsAdmin />
 

@@ -9,7 +9,7 @@ import {
   listRegistrations,
 } from "./registration.functions";
 import { listMessages } from "./messages.functions";
-import { listReminders, listTeamContacts } from "./reminders.functions";
+import { listDivisionPlayers, listReminders, listTeamContacts } from "./reminders.functions";
 
 export const tournamentQueryOptions = queryOptions({
   queryKey: ["tournament"],
@@ -69,4 +69,9 @@ export const teamContactsQueryOptions = queryOptions({
 export const remindersQueryOptions = queryOptions({
   queryKey: ["score-reminders", "admin"],
   queryFn: () => listReminders(),
+});
+
+export const divisionPlayersQueryOptions = queryOptions({
+  queryKey: ["division-players", "admin"],
+  queryFn: () => listDivisionPlayers(),
 });
