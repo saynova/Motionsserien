@@ -11,6 +11,7 @@ export type SupportSettings = {
   id: string;
   donation_visible: boolean;
   sponsor_visible: boolean;
+  sponsor_label: string;
   sponsor_details: string;
   qr_image_path: string | null;
   qr_image_url: string | null;
@@ -38,7 +39,7 @@ export type PublicShuttleOrder = {
 const BANNER_COLUMNS = "id, title, message, is_active";
 const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
 const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
-const SUPPORT_COLUMNS = "id, donation_visible, sponsor_visible, sponsor_details, qr_image_path";
+const SUPPORT_COLUMNS = "id, donation_visible, sponsor_visible, sponsor_label, sponsor_details, qr_image_path";
 
 // ------------------------------------------------------------------- banner
 
@@ -104,10 +105,19 @@ export const getSupportSettings = createServerFn({ method: "GET" }).handler(
 
     let qrImageUrl: string | null = null;
     if (data.qr_image_path) {
-      const signed = await supabase.storage
-        .from("donation-assets")
-        .createSignedUrl(data.qr_image_path, 60 * 60 * 24 * 7);
-      if (!signed.error) qrImageUrl = signed.data.signedUrl;
+      const downloaded = await supabase.storage.from("donation-assets").download(data.qr_image_path);
+      if (!downloaded.error) {
+        const bytes = new Uint8Array(await downloaded.data.arrayBuffer());
+        let binary = "";
+        for (const byte of bytes) binary += String.fromCharCode(byte);
+        const extension = data.qr_image_path.split(".").pop()?.toLowerCase();
+        const mimeType = extension === "jpg" || extension === "jpeg"
+          ? "image/jpeg"
+          : extension === "webp"
+            ? "image/webp"
+            : "image/png";
+        qrImageUrl = `data:${mimeType};base64,${btoa(binary)}`;
+      }
     }
 
     return { ...data, qr_image_url: qrImageUrl } as SupportSettings;
@@ -117,6 +127,7 @@ export const getSupportSettings = createServerFn({ method: "GET" }).handler(
 type SupportSettingsInput = {
   donationVisible: boolean;
   sponsorVisible: boolean;
+  sponsorLabel: string;
   sponsorDetails: string;
   qrImage?: { base64: string; mimeType: string } | null;
   removeQr?: boolean;
@@ -125,6 +136,10 @@ type SupportSettingsInput = {
 export const saveSupportSettings = createServerFn({ method: "POST" })
   .inputValidator((data: SupportSettingsInput) => {
     const sponsorDetails = (data?.sponsorDetails ?? "").trim().slice(0, 300);
+    const sponsorLabel = (data?.sponsorLabel ?? "").trim().slice(0, 120);
+    if (data?.sponsorVisible && sponsorLabel.length < 2) {
+      throw new Error("Add a sponsor heading before showing the sponsor banner.");
+    }
     if (data?.sponsorVisible && sponsorDetails.length < 2) {
       throw new Error("Add sponsor details before showing the sponsor banner.");
     }
@@ -140,6 +155,7 @@ export const saveSupportSettings = createServerFn({ method: "POST" })
     return {
       donationVisible: data?.donationVisible === true,
       sponsorVisible: data?.sponsorVisible === true,
+      sponsorLabel,
       sponsorDetails,
       qrImage: data?.qrImage ?? null,
       removeQr: data?.removeQr === true,
@@ -178,6 +194,7 @@ export const saveSupportSettings = createServerFn({ method: "POST" })
     const payload = {
       donation_visible: data.donationVisible,
       sponsor_visible: data.sponsorVisible,
+      sponsor_label: data.sponsorLabel,
       sponsor_details: data.sponsorDetails,
       qr_image_path: qrImagePath,
     };

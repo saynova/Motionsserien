@@ -724,6 +724,7 @@ function SupportSettingsEditor() {
   const [open, setOpen] = useState(false);
   const [donationVisible, setDonationVisible] = useState<boolean | null>(null);
   const [sponsorVisible, setSponsorVisible] = useState<boolean | null>(null);
+  const [sponsorLabel, setSponsorLabel] = useState<string | null>(null);
   const [sponsorDetails, setSponsorDetails] = useState<string | null>(null);
   const [qrImage, setQrImage] = useState<{ base64: string; mimeType: string } | null>(null);
   const [removeQr, setRemoveQr] = useState(false);
@@ -731,6 +732,7 @@ function SupportSettingsEditor() {
 
   const donation = donationVisible ?? settings.data?.donation_visible ?? false;
   const sponsor = sponsorVisible ?? settings.data?.sponsor_visible ?? false;
+  const label = sponsorLabel ?? settings.data?.sponsor_label ?? "This session is sponsored by:";
   const details = sponsorDetails ?? settings.data?.sponsor_details ?? "";
 
   function chooseImage(file: File | undefined) {
@@ -757,6 +759,7 @@ function SupportSettingsEditor() {
         data: {
           donationVisible: donation,
           sponsorVisible: sponsor,
+          sponsorLabel: label,
           sponsorDetails: details,
           qrImage,
           removeQr,
@@ -843,6 +846,16 @@ function SupportSettingsEditor() {
                 <span className="block text-xs text-muted-foreground">Shown below the weekly champion banner.</span>
               </span>
               <Switch checked={sponsor} onCheckedChange={setSponsorVisible} />
+            </label>
+            <label className="block space-y-1">
+              <span className="block text-xs font-semibold uppercase text-muted-foreground">Sponsor heading</span>
+              <input
+                className={`${control} w-full`}
+                maxLength={120}
+                value={label}
+                placeholder="This session is sponsored by:"
+                onChange={(event) => setSponsorLabel(event.target.value)}
+              />
             </label>
             <label className="block space-y-1">
               <span className="block text-xs font-semibold uppercase text-muted-foreground">Sponsor details</span>
