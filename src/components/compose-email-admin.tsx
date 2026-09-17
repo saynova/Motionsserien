@@ -153,14 +153,19 @@ export function ComposeEmailAdmin() {
 
         {mode === "address" ? (
           <label className="space-y-1 sm:col-span-2">
-            <span className={label}>Email address</span>
-            <input
+            <span className={label}>Email addresses</span>
+            <textarea
+              rows={3}
               className={field}
-              type="email"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="name@example.com"
+              placeholder="Paste one or many addresses, separated by comma, semicolon, space or new line"
             />
+            <span className="block text-xs text-muted-foreground">
+              {parsedAddresses.length === 0
+                ? "You can paste a whole list at once — each person gets their own separate copy."
+                : `${parsedAddresses.length} address${parsedAddresses.length === 1 ? "" : "es"} ready · each gets a separate copy`}
+            </span>
           </label>
         ) : null}
       </div>
