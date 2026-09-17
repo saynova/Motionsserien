@@ -85,8 +85,8 @@ function StandingsPage() {
 
   return (
     <>
-      <section className="relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-card px-5 py-8 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
-        <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-primary/5 lg:block" aria-hidden="true" />
+      <section className="submit-score-hero relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-card px-5 py-8 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
+        <div className="absolute inset-0 -translate-x-full animate-submit-shimmer bg-gradient-to-r from-transparent via-primary/5 to-transparent" aria-hidden="true" />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
@@ -97,7 +97,7 @@ function StandingsPage() {
                 Week {week} scores
               </p>
               <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">
-                Played your match?
+                Submit your score
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
             </div>
@@ -113,7 +113,7 @@ function StandingsPage() {
             <div><dd className="tabnum text-lg font-bold">{teams.length}</dd><dt className="text-xs text-muted-foreground">Active teams</dt></div>
           </div>
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
-            <CalendarRange className="size-5 text-accent" aria-hidden="true" />
+            <CalendarRange className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{week} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
