@@ -323,14 +323,16 @@ function AdminConsole() {
         <SeasonSettingsCard />
       </div>
 
-      <WeeklyProcedure
-        week={week}
-        currentWeek={season.current_week}
-        totalWeeks={season.total_weeks}
-        pending={pending.length}
-        missing={weekMatches.filter((m) => m.status === "scheduled").length}
-        notFinal={notFinal.length}
-      />
+      <div id="admin-procedure">
+        <WeeklyProcedure
+          week={week}
+          currentWeek={season.current_week}
+          totalWeeks={season.total_weeks}
+          pending={pending.length}
+          missing={weekMatches.filter((m) => m.status === "scheduled").length}
+          notFinal={notFinal.length}
+        />
+      </div>
 
       {notFinal.length > 0 ? (
         <p className="mb-6 rounded border border-accent/40 bg-accent/10 p-4 text-sm">
@@ -415,7 +417,7 @@ function AdminConsole() {
         <NextSeasonAdmin />
       </div>
 
-      <section className="mt-10 rounded-lg border border-border bg-card p-6">
+      <section id="admin-new-season" className="mt-10 rounded-lg border border-border bg-card p-6">
         <h2 className="text-2xl font-bold uppercase tracking-wide">Start a new season</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           Available once the final week is finalised. Teams are seeded into the new season from the
