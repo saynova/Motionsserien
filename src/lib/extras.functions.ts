@@ -79,15 +79,15 @@ export const saveBanner = createServerFn({ method: "POST" })
 // ----------------------------------------------------------- shuttle orders
 
 export const getShuttleOrders = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ orders: ShuttleOrder[]; total: number }> => {
-    const { readClient } = await import("./tournament.server");
-    const { data, error } = await readClient()
+  async (): Promise<{ orders: PublicShuttleOrder[]; total: number }> => {
+    const { adminClient } = await import("./tournament.server");
+    const { data, error } = await adminClient()
       .from("shuttle_orders")
-      .select(ORDER_COLUMNS)
+      .select(PUBLIC_ORDER_COLUMNS)
       .eq("status", "approved")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    const orders = (data ?? []) as ShuttleOrder[];
+    const orders = (data ?? []) as PublicShuttleOrder[];
     return { orders, total: orders.reduce((sum, o) => sum + o.quantity, 0) };
   },
 );
