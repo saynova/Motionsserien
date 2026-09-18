@@ -169,11 +169,15 @@ function SiteHeader() {
   );
 }
 
+let lastLoggedPath = "";
+
 function VisitLogger() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   useEffect(() => {
     if (pathname.startsWith("/admin")) return;
+    if (lastLoggedPath === pathname) return;
+    lastLoggedPath = pathname;
     void logVisit({ data: { path: pathname } }).catch(() => {});
   }, [pathname]);
 
