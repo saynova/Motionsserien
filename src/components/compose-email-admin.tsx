@@ -82,9 +82,9 @@ export function ComposeEmailAdmin() {
         <div>
           <h2 className="text-2xl font-bold uppercase tracking-wide">Send an email</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Write to one player, everyone in a division, or one or many pasted addresses. Emails go
-            out from <strong>Md Rabiul Islam</strong> · rabiul@motionsserien.se. Use it for
-            tournament matters only.
+            Write to one player, everyone in a division, or one or many pasted addresses. Emails are
+            sent from Motionsserien HT-26 · noreply@motionsserien.se. Use it for tournament
+            matters only.
           </p>
         </div>
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
