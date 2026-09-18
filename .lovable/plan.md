@@ -1,42 +1,44 @@
 # Fix the email verification record
 
-## What I found
+## What I found (verified against live internet records)
 
-I checked the live internet records just now, and this time the cause is clear and it is not a typo in the value.
+At Strato, the whole name `mdrabiul.motionsserien.se` has been handed over ("delegated") to Lovable's name servers. Because of that, Strato no longer answers anything under that name — including the `_lovable-email.mdrabiul` verification record you added. The record exists in your Strato panel, but the internet never sees it, so verification can never complete.
 
-At Strato, the whole name `mdrabiul.motionsserien.se` has been handed over ("delegated") to Lovable's name servers. Because of that, Strato no longer answers anything under that name — including the `_lovable-email.mdrabiul` verification record you just added. The record exists in your Strato panel, but the internet never sees it, so verification can never complete.
+The two nameserver values (`ns5.lovable.cloud`, `ns6.lovable.cloud`) are correct; only the name they sit on is one level too high.
 
-The nameserver records themselves (`ns5.lovable.cloud`, `ns6.lovable.cloud`) are live and correct.
+## Recommended fix (one small change at Strato)
 
-## The fix (one small change at Strato)
+The handover must sit on `notify.mdrabiul`, not on `mdrabiul`.
 
-The handover must sit one level deeper, on `notify.mdrabiul`, not on `mdrabiul`.
-
-1. In Strato DNS, find the two NS records whose prefix is `mdrabiul` and change the prefix to `notify.mdrabiul` (or delete them and re-add with that prefix). Values stay `ns5.lovable.cloud` and `ns6.lovable.cloud`.
-2. Keep the TXT record exactly as you have it:
+1. In Strato DNS, find the two NS records with prefix `mdrabiul` and change the prefix to `notify.mdrabiul` (or delete and re-add with that prefix). Values stay `ns5.lovable.cloud` and `ns6.lovable.cloud`.
+2. Keep the TXT record exactly as it is:
    - Prefix: `_lovable-email.mdrabiul`
    - Value: `lovable_email_verify=5fefce788207b4aa5ca998e7ed8bc485f42503084ea7399694a055f248beae27`
-3. Say "check" and I will confirm both records publicly and then trigger verification.
+3. Say "check" and I confirm both records publicly, then run verification.
 
-If Strato does not allow a two-part prefix like `notify.mdrabiul`, tell me and we use the simpler alternative below instead.
+## Alternative — verified, if Strato blocks the two-part prefix
 
-## Alternative if Strato blocks the deeper prefix
+Checked: the email setup currently holds `notify.mdrabiul.motionsserien.se`, so this option means replacing it with a shorter sending name.
 
-Use `mdrabiul.motionsserien.se` itself as the sending name — that matches the handover you already have in place:
+1. You remove the current sending name in the email settings and add `mdrabiul.motionsserien.se` instead.
+2. The settings then issue a fresh verification value for that name. Its records will be:
+   - NS on prefix `mdrabiul` (the delegation you already have — no change needed)
+   - TXT on prefix `_lovable-email`, plain on the main domain, with the newly issued value
+3. Important: the new TXT value will differ from the one above — I read it from the settings and give you the exact line; do not reuse an old value.
+4. Confirmed this host is currently empty in public DNS, so there is nothing conflicting there.
+5. I then point the app at `mdrabiul.motionsserien.se`.
 
-1. Keep the NS records on prefix `mdrabiul` unchanged.
-2. Move the TXT record to prefix `_lovable-email` (plain, on the main domain), same value as issued for that name.
-3. I register `mdrabiul.motionsserien.se` in the email settings and point the app at it.
+Either route ends in a working sender; the recommended one needs no re-registration.
 
 ## After the records are correct
 
-- I confirm the records publicly, then run verification until the domain is active.
-- I check that score reminders, question replies, general emails, and login emails all use the verified sending name.
+- I confirm the records publicly, then run verification until the sending name is active.
+- I check that score reminders, question replies, general emails, and login emails all use it.
 - I send one test email and report the delivery result.
 
 ## Unchanged
 
-The visible sender stays **Motionsserien HT-26 &lt;noreply@motionsserien.se&gt;** in both options. No other part of the site changes.
+The visible sender stays **Motionsserien HT-26, noreply@motionsserien.se** in both options. Nothing else on the site changes.
 
 ## Limitation
 
