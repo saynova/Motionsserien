@@ -168,6 +168,7 @@ function AdminConsole() {
   const newSeason = useServerFn(startNewSeason);
   const remind = useServerFn(sendScoreReminder);
   const reminders = useQuery(remindersQueryOptions);
+  const submitterDetails = useQuery(submitterDetailsQueryOptions);
 
   const { season, teams, matches } = data;
   const [week, setWeek] = useState(season.current_week);
@@ -199,6 +200,9 @@ function AdminConsole() {
 
   const lastReminderFor = (matchId: string) =>
     reminders.data?.find((r) => r.match_id === matchId)?.sent_at;
+
+  const detailFor = (matchId: string) =>
+    submitterDetails.data?.find((d) => d.matchId === matchId);
 
   async function sendReminder(matchId: string) {
     setBusy(true);
