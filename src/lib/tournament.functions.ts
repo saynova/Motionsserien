@@ -138,9 +138,16 @@ export const submitScore = createServerFn({ method: "POST" })
       throw new Error(ALREADY_SUBMITTED_MESSAGE);
     }
 
+    const { describeVisitor } = await import("./visitors.server");
+    const visitor = describeVisitor();
+
     const { error } = await supabase
       .from("matches")
       .update({
+        submitted_ip: visitor.ip,
+        submitted_user_agent: visitor.userAgent,
+        submitted_device: visitor.device,
+        submitted_location: visitor.location,
         status: "pending",
         s1a: data.s1a,
         s1b: data.s1b,

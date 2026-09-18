@@ -59,6 +59,10 @@ export type Database = {
           status: string
           submitted_at: string | null
           submitted_by: string | null
+          submitted_device: string | null
+          submitted_ip: string | null
+          submitted_location: string | null
+          submitted_user_agent: string | null
           team_a_id: string
           team_b_id: string
           week_no: number
@@ -80,6 +84,10 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
+          submitted_device?: string | null
+          submitted_ip?: string | null
+          submitted_location?: string | null
+          submitted_user_agent?: string | null
           team_a_id: string
           team_b_id: string
           week_no: number
@@ -101,6 +109,10 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
+          submitted_device?: string | null
+          submitted_ip?: string | null
+          submitted_location?: string | null
+          submitted_user_agent?: string | null
           team_a_id?: string
           team_b_id?: string
           week_no?: number
@@ -451,6 +463,48 @@ export type Database = {
           id?: string
           name?: string
           start_division?: number
+        }
+        Relationships: []
+      }
+      visit_logs: {
+        Row: {
+          browser: string
+          city: string
+          country: string
+          created_at: string
+          device: string
+          id: string
+          ip: string
+          os: string
+          path: string
+          referrer: string
+          user_agent: string
+        }
+        Insert: {
+          browser?: string
+          city?: string
+          country?: string
+          created_at?: string
+          device?: string
+          id?: string
+          ip?: string
+          os?: string
+          path?: string
+          referrer?: string
+          user_agent?: string
+        }
+        Update: {
+          browser?: string
+          city?: string
+          country?: string
+          created_at?: string
+          device?: string
+          id?: string
+          ip?: string
+          os?: string
+          path?: string
+          referrer?: string
+          user_agent?: string
         }
         Relationships: []
       }

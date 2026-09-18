@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-season";
 import { MessagesAdmin } from "@/components/messages-admin";
+import { VisitorsAdmin } from "@/components/visitors-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
+import type { SubmitterDetail } from "@/lib/visitors.functions";
 import { TeamContactsAdmin } from "@/components/team-contacts-admin";
 import { ComposeEmailAdmin } from "@/components/compose-email-admin";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,7 @@ import {
   adminStatusQueryOptions,
   bannerQueryOptions,
   remindersQueryOptions,
+  submitterDetailsQueryOptions,
   tournamentQueryOptions,
   supportSettingsQueryOptions,
 } from "@/lib/tournament-query";
@@ -54,6 +57,7 @@ const SECTIONS = [
   { id: "procedure", label: "Weekly procedure" },
   { id: "next-season", label: "Registration & seeding" },
   { id: "new-season", label: "Start new season" },
+  { id: "visitors", label: "Visitors" },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
@@ -164,6 +168,7 @@ function AdminConsole() {
   const newSeason = useServerFn(startNewSeason);
   const remind = useServerFn(sendScoreReminder);
   const reminders = useQuery(remindersQueryOptions);
+  const submitterDetails = useQuery(submitterDetailsQueryOptions);
 
   const { season, teams, matches } = data;
   const [week, setWeek] = useState(season.current_week);
@@ -195,6 +200,9 @@ function AdminConsole() {
 
   const lastReminderFor = (matchId: string) =>
     reminders.data?.find((r) => r.match_id === matchId)?.sent_at;
+
+  const detailFor = (matchId: string) =>
+    submitterDetails.data?.find((d) => d.matchId === matchId);
 
   async function sendReminder(matchId: string) {
     setBusy(true);
@@ -345,6 +353,7 @@ function AdminConsole() {
           />
         ) : null}
         {section === "next-season" ? <NextSeasonAdmin /> : null}
+        {section === "visitors" ? <VisitorsAdmin /> : null}
 
         {section === "matches" ? (
           <>
@@ -401,6 +410,7 @@ function AdminConsole() {
                         busy={busy}
                         selected={selected.has(match.id)}
                         onToggleSelect={() => toggleSelect(match.id)}
+                        detail={detailFor(match.id)}
                         lastReminder={lastReminderFor(match.id)}
                         onRemind={() => sendReminder(match.id)}
                         onApprove={() =>
@@ -580,6 +590,7 @@ function MatchCard({
   busy,
   selected,
   onToggleSelect,
+  detail,
   lastReminder,
   onRemind,
   onApprove,
@@ -593,6 +604,7 @@ function MatchCard({
   busy: boolean;
   selected: boolean;
   onToggleSelect: () => void;
+  detail?: SubmitterDetail | undefined;
   lastReminder?: string | undefined;
   onRemind: () => void;
   onApprove: () => void;
@@ -701,6 +713,26 @@ function MatchCard({
 
       {!open ? null : (
       <>
+      {detail && detail.submittedAt ? (
+        <dl className="mt-3 grid gap-x-6 gap-y-1 rounded border border-border bg-background/50 p-3 text-xs sm:grid-cols-2">
+          <div className="sm:col-span-2 font-semibold uppercase tracking-widest text-muted-foreground">
+            Submitted by
+          </div>
+          {[
+            ["Name", detail.submittedBy || "—"],
+            ["Time", new Date(detail.submittedAt).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })],
+            ["IP address", detail.ip || "—"],
+            ["Device", detail.device || "—"],
+            ["Location", detail.location || "—"],
+          ].map(([term, value]) => (
+            <div key={term} className="flex gap-2">
+              <dt className="text-muted-foreground">{term}:</dt>
+              <dd className="break-all font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
       <div className="mt-3 flex flex-wrap gap-2">
         {match.status === "pending" ? (
           <>

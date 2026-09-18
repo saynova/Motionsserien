@@ -12,3 +12,4 @@
 9. Add the "Before You Register" fee note under the registration form — done
 10. Bulk score approval, duplicate submission lock, and admin menu bar after sign-in — done
 11. Show submitted score details, simplify the pending message, and expose every admin section in the signed-in menu — done
+12. Log visitors (IP, device, location) in a new admin Visitors section and record submitter details with each score — done
