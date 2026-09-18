@@ -713,6 +713,26 @@ function MatchCard({
 
       {!open ? null : (
       <>
+      {detail && detail.submittedAt ? (
+        <dl className="mt-3 grid gap-x-6 gap-y-1 rounded border border-border bg-background/50 p-3 text-xs sm:grid-cols-2">
+          <div className="sm:col-span-2 font-semibold uppercase tracking-widest text-muted-foreground">
+            Submitted by
+          </div>
+          {[
+            ["Name", detail.submittedBy || "—"],
+            ["Time", new Date(detail.submittedAt).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })],
+            ["IP address", detail.ip || "—"],
+            ["Device", detail.device || "—"],
+            ["Location", detail.location || "—"],
+          ].map(([term, value]) => (
+            <div key={term} className="flex gap-2">
+              <dt className="text-muted-foreground">{term}:</dt>
+              <dd className="break-all font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
       <div className="mt-3 flex flex-wrap gap-2">
         {match.status === "pending" ? (
           <>

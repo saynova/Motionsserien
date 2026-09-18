@@ -167,11 +167,23 @@ function SiteHeader() {
   );
 }
 
+function VisitLogger() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) return;
+    void logVisit({ data: { path: pathname } }).catch(() => {});
+  }, [pathname]);
+
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
+      <VisitLogger />
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
         <SiteHeader />
         <main className="mx-auto w-full max-w-[96rem] flex-1 px-3 py-5 sm:px-5 sm:py-8 lg:px-8">
