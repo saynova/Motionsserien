@@ -6,8 +6,7 @@ import { TEMPLATES } from './registry'
 // Server-only: reads LOVABLE_API_KEY. Never import from client components.
 
 // Configuration baked in at scaffold time
-const SITE_NAME = "Md Rabiul Islam"
-const FROM_USER = "rabiul"
+const SITE_NAME = "Motionsserien HT-26"
 // SENDER_DOMAIN is the delegated sending subdomain verified with Lovable.
 // FROM_DOMAIN is what recipients see in the From: header (can be the root domain).
 const SENDER_DOMAIN = "notify.motionsserien.se"
@@ -68,7 +67,7 @@ export async function sendTemplateEmail(
     await sendLovableEmail(
       {
         to: recipient,
-        from: `${SITE_NAME} <${FROM_USER}@${FROM_DOMAIN}>`,
+        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
         subject,
         html,
@@ -76,7 +75,7 @@ export async function sendTemplateEmail(
         purpose: 'transactional',
         label: templateName,
         idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        reply_to: options.replyTo || `${FROM_USER}@${FROM_DOMAIN}`,
+        ...(options.replyTo ? { reply_to: options.replyTo } : {}),
       },
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )

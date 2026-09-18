@@ -23,7 +23,7 @@ const Email = ({ name, subject = '', bodyText = '' }: Props) => (
               {paragraph}
             </Text>
           ))}
-        <Text style={text}>/ Md Rabiul Islam — The General</Text>
+        <Text style={text}>/ Motionsserien HT-26</Text>
         <Hr style={hr} />
         <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
       </Container>

@@ -24,7 +24,7 @@ const Email = ({ name, replyBody = '', originalBody = '' }: Props) => (
             </Text>
           ))}
         <Text style={text}>
-          / Md Rabiul Islam — The General
+          / Motionsserien HT-26
         </Text>
 
         {originalBody ? (
