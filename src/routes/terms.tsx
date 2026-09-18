@@ -105,6 +105,11 @@ function TermsPage() {
             organizer removes them.
           </p>
           <p>
+            Visit information (IP address, device, browser and approximate location) is logged for
+            security and fair-play checks, kept for a limited time, and visible only to the
+            organizer.
+          </p>
+          <p>
             You may at any time ask to see, correct, or delete your personal data by contacting
             the organizer through the{" "}
             <Link to="/ask" className="font-semibold text-primary underline">
