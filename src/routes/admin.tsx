@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { NextSeasonAdmin, SeasonSettingsCard } from "@/components/admin-next-season";
 import { MessagesAdmin } from "@/components/messages-admin";
+import { VisitorsAdmin } from "@/components/visitors-admin";
 import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
+import type { SubmitterDetail } from "@/lib/visitors.functions";
 import { TeamContactsAdmin } from "@/components/team-contacts-admin";
 import { ComposeEmailAdmin } from "@/components/compose-email-admin";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,7 @@ import {
   adminStatusQueryOptions,
   bannerQueryOptions,
   remindersQueryOptions,
+  submitterDetailsQueryOptions,
   tournamentQueryOptions,
   supportSettingsQueryOptions,
 } from "@/lib/tournament-query";
@@ -54,6 +57,7 @@ const SECTIONS = [
   { id: "procedure", label: "Weekly procedure" },
   { id: "next-season", label: "Registration & seeding" },
   { id: "new-season", label: "Start new season" },
+  { id: "visitors", label: "Visitors" },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
@@ -345,6 +349,7 @@ function AdminConsole() {
           />
         ) : null}
         {section === "next-season" ? <NextSeasonAdmin /> : null}
+        {section === "visitors" ? <VisitorsAdmin /> : null}
 
         {section === "matches" ? (
           <>
@@ -401,6 +406,7 @@ function AdminConsole() {
                         busy={busy}
                         selected={selected.has(match.id)}
                         onToggleSelect={() => toggleSelect(match.id)}
+                        detail={detailFor(match.id)}
                         lastReminder={lastReminderFor(match.id)}
                         onRemind={() => sendReminder(match.id)}
                         onApprove={() =>
@@ -580,6 +586,7 @@ function MatchCard({
   busy,
   selected,
   onToggleSelect,
+  detail,
   lastReminder,
   onRemind,
   onApprove,
@@ -593,6 +600,7 @@ function MatchCard({
   busy: boolean;
   selected: boolean;
   onToggleSelect: () => void;
+  detail?: SubmitterDetail | undefined;
   lastReminder?: string | undefined;
   onRemind: () => void;
   onApprove: () => void;
