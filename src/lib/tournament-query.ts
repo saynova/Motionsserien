@@ -10,6 +10,17 @@ import {
 } from "./registration.functions";
 import { listMessages } from "./messages.functions";
 import { listDivisionPlayers, listReminders, listTeamContacts } from "./reminders.functions";
+import { listSubmitterDetails, listVisits } from "./visitors.functions";
+
+export const visitsQueryOptions = queryOptions({
+  queryKey: ["visits", "admin"],
+  queryFn: () => listVisits(),
+});
+
+export const submitterDetailsQueryOptions = queryOptions({
+  queryKey: ["submitter-details", "admin"],
+  queryFn: () => listSubmitterDetails(),
+});
 
 export const tournamentQueryOptions = queryOptions({
   queryKey: ["tournament"],
