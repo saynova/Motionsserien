@@ -10,7 +10,7 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
 const SITE_NAME = "Motionsserien HT-26"
-const SENDER_DOMAIN = "send.motionsserien.se"
+const SENDER_DOMAIN = "notify.send.motionsserien.se"
 const ROOT_DOMAIN = "motionsserien.se"
 const FROM_DOMAIN = "motionsserien.se"
 const SITE_URL = `https://${ROOT_DOMAIN}`

@@ -9,7 +9,7 @@ import { TEMPLATES } from './registry'
 const SITE_NAME = "Motionsserien HT-26"
 // SENDER_DOMAIN is the delegated sending subdomain verified with Lovable.
 // FROM_DOMAIN is what recipients see in the From: header (can be the root domain).
-const SENDER_DOMAIN = "send.motionsserien.se"
+const SENDER_DOMAIN = "notify.send.motionsserien.se"
 const FROM_DOMAIN = "motionsserien.se"
 
 export type SendTemplateEmailResult =
