@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import { DonationButton, SponsorBanner } from "@/components/support-ui";
@@ -136,36 +136,6 @@ const NAV = [
   { to: "/admin", label: "Admin" },
 ] as const;
 
-function LiveClock() {
-  const [now, setNow] = useState<Date | null>(null);
-
-  useEffect(() => {
-    setNow(new Date());
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="border-b border-border bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[96rem] items-center justify-center px-3 py-1 sm:justify-end sm:px-5 lg:px-8">
-        <span className="tabnum text-[11px] font-semibold tracking-wide text-muted-foreground sm:text-xs">
-          {now
-            ? now.toLocaleString("sv-SE", {
-                weekday: "short",
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })
-            : "\u00A0"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
@@ -221,7 +191,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <VisitLogger />
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
-        <LiveClock />
         <SiteHeader />
         <main className="mx-auto w-full max-w-[96rem] flex-1 px-3 py-5 sm:px-5 sm:py-8 lg:px-8">
           <WeeklyBanner />
