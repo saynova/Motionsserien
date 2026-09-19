@@ -63,8 +63,8 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  try {
-    await sendLovableEmail(
+  const attempt = (idempotencyKey: string) =>
+    sendLovableEmail(
       {
         to: recipient,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
@@ -74,11 +74,25 @@ export async function sendTemplateEmail(
         text,
         purpose: 'transactional',
         label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
+        idempotency_key: idempotencyKey,
         ...(options.replyTo ? { reply_to: options.replyTo } : {}),
       },
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
+
+  try {
+    try {
+      await attempt(options.idempotencyKey || crypto.randomUUID())
+    } catch (error) {
+      // 409 = a previous send with this key already failed; the service refuses
+      // the key forever. Retry once with a fresh key so a failed attempt never
+      // blocks the admin from sending again.
+      if (error instanceof EmailAPIError && error.status === 409) {
+        await attempt(crypto.randomUUID())
+      } else {
+        throw error
+      }
+    }
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
       return { sent: false, reason: 'recipient_suppressed' }

@@ -205,7 +205,7 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
         },
         idempotencyKey: `score-reminder-${match.data.id}-${player.email}-${new Date()
           .toISOString()
-          .slice(0, 10)}`,
+          .slice(0, 10)}-${crypto.randomUUID().slice(0, 8)}`,
       });
       if (result.sent) sent += 1;
       else suppressed += 1;
@@ -364,7 +364,7 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
           subject: data.subject,
           bodyText: data.body,
         },
-        idempotencyKey: `general-${tag}-${recipient.email}-${day}`,
+        idempotencyKey: `general-${tag}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });
       if (result.sent) sent += 1;
       else suppressed += 1;

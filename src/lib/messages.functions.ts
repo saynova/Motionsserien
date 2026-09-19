@@ -141,7 +141,7 @@ export const replyToMessage = createServerFn({ method: "POST" })
         replyBody: data.replyBody,
         originalBody: message.data.body,
       },
-      idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}`,
+      idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}-${crypto.randomUUID().slice(0, 8)}`,
     });
 
     const { error } = await client
