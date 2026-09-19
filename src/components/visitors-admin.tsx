@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -23,6 +23,18 @@ export function VisitorsAdmin() {
   const rows = visits.data ?? [];
   const paths = useMemo(() => [...new Set(rows.map((r) => r.path))].sort(), [rows]);
   const filtered = path === "" ? rows : rows.filter((r) => r.path === path);
+
+  // One row per unique IP, newest visit first, with a total visit counter.
+  const uniqueRows = useMemo(() => {
+    const byIp = new Map<string, { latest: (typeof filtered)[number]; count: number }>();
+    for (const row of filtered) {
+      const key = row.ip || `unknown:${row.id}`;
+      const existing = byIp.get(key);
+      if (existing) existing.count += 1;
+      else byIp.set(key, { latest: row, count: 1 });
+    }
+    return [...byIp.values()];
+  }, [filtered]);
 
   const now = Date.now();
   const since = (ms: number) => rows.filter((r) => now - new Date(r.created_at).getTime() < ms).length;
