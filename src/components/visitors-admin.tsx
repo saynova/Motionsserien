@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -62,7 +62,8 @@ export function VisitorsAdmin() {
         <div>
           <h2 className="font-display text-2xl font-bold">Visitors</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            The most recent 400 page visits. Only you can see this.
+            Unique visitors (one row per address) from the most recent 400 page visits. Only you
+            can see this.
           </p>
         </div>
         <button className={btnGhost} disabled={busy} onClick={onPurge}>
