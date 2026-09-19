@@ -24,6 +24,18 @@ export function VisitorsAdmin() {
   const paths = useMemo(() => [...new Set(rows.map((r) => r.path))].sort(), [rows]);
   const filtered = path === "" ? rows : rows.filter((r) => r.path === path);
 
+  // One row per unique IP, newest visit first, with a total visit counter.
+  const uniqueRows = useMemo(() => {
+    const byIp = new Map<string, { latest: (typeof filtered)[number]; count: number }>();
+    for (const row of filtered) {
+      const key = row.ip || `unknown:${row.id}`;
+      const existing = byIp.get(key);
+      if (existing) existing.count += 1;
+      else byIp.set(key, { latest: row, count: 1 });
+    }
+    return [...byIp.values()];
+  }, [filtered]);
+
   const now = Date.now();
   const since = (ms: number) => rows.filter((r) => now - new Date(r.created_at).getTime() < ms).length;
   const today = since(24 * 60 * 60 * 1000);
@@ -50,7 +62,8 @@ export function VisitorsAdmin() {
         <div>
           <h2 className="font-display text-2xl font-bold">Visitors</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            The most recent 400 page visits. Only you can see this.
+            Unique visitors (one row per address) from the most recent 400 page visits. Only you
+            can see this.
           </p>
         </div>
         <button className={btnGhost} disabled={busy} onClick={onPurge}>
@@ -101,17 +114,24 @@ export function VisitorsAdmin() {
           <table className="w-full min-w-[46rem] text-left text-sm">
             <thead className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               <tr>
-                <th className="py-2 pr-3">When</th>
+                <th className="py-2 pr-3">IP</th>
+                <th className="py-2 pr-3">Visits</th>
+                <th className="py-2 pr-3">Last visit</th>
                 <th className="py-2 pr-3">Page</th>
                 <th className="py-2 pr-3">Device</th>
                 <th className="py-2 pr-3">Location</th>
-                <th className="py-2 pr-3">IP</th>
                 <th className="py-2">Came from</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row) => (
-                <tr key={row.id} className="border-t border-border/60">
+              {uniqueRows.map(({ latest: row, count }) => (
+                <tr key={row.ip || row.id} className="border-t border-border/60">
+                  <td className="tabnum py-2 pr-3">{row.ip || "—"}</td>
+                  <td className="tabnum py-2 pr-3">
+                    <span className="rounded-full border border-border bg-background/60 px-2 py-0.5 text-xs font-bold text-primary">
+                      {count}
+                    </span>
+                  </td>
                   <td className="tabnum py-2 pr-3 whitespace-nowrap">{when(row.created_at)}</td>
                   <td className="py-2 pr-3">{row.path}</td>
                   <td className="py-2 pr-3">
@@ -120,7 +140,6 @@ export function VisitorsAdmin() {
                   <td className="py-2 pr-3">
                     {[row.city, row.country].filter(Boolean).join(", ") || "—"}
                   </td>
-                  <td className="tabnum py-2 pr-3">{row.ip || "—"}</td>
                   <td className="py-2 break-all text-muted-foreground">{row.referrer || "Direct"}</td>
                 </tr>
               ))}
