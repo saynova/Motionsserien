@@ -118,7 +118,7 @@ function ShuttlesPage() {
               Please swish 135kr to 1234785069, Ludvika Badmintonklubb
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Maximum 1 shuttle box per team in two weeks.
+              Each team can order one shuttle box within one week. This will help us ensure that we have sufficient stock available to meet the needs of all teams.
             </p>
           </div>
 
