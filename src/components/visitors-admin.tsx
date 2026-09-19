@@ -114,17 +114,24 @@ export function VisitorsAdmin() {
           <table className="w-full min-w-[46rem] text-left text-sm">
             <thead className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               <tr>
-                <th className="py-2 pr-3">When</th>
+                <th className="py-2 pr-3">IP</th>
+                <th className="py-2 pr-3">Visits</th>
+                <th className="py-2 pr-3">Last visit</th>
                 <th className="py-2 pr-3">Page</th>
                 <th className="py-2 pr-3">Device</th>
                 <th className="py-2 pr-3">Location</th>
-                <th className="py-2 pr-3">IP</th>
                 <th className="py-2">Came from</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row) => (
-                <tr key={row.id} className="border-t border-border/60">
+              {uniqueRows.map(({ latest: row, count }) => (
+                <tr key={row.ip || row.id} className="border-t border-border/60">
+                  <td className="tabnum py-2 pr-3">{row.ip || "—"}</td>
+                  <td className="tabnum py-2 pr-3">
+                    <span className="rounded-full border border-border bg-background/60 px-2 py-0.5 text-xs font-bold text-primary">
+                      {count}
+                    </span>
+                  </td>
                   <td className="tabnum py-2 pr-3 whitespace-nowrap">{when(row.created_at)}</td>
                   <td className="py-2 pr-3">{row.path}</td>
                   <td className="py-2 pr-3">
@@ -133,7 +140,6 @@ export function VisitorsAdmin() {
                   <td className="py-2 pr-3">
                     {[row.city, row.country].filter(Boolean).join(", ") || "—"}
                   </td>
-                  <td className="tabnum py-2 pr-3">{row.ip || "—"}</td>
                   <td className="py-2 break-all text-muted-foreground">{row.referrer || "Direct"}</td>
                 </tr>
               ))}
