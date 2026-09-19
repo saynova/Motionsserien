@@ -233,7 +233,7 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       throw new Error("Enter the buyer's name (2–60 characters).");
     }
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1) {
-      throw new Error("Maximum 1 shuttle box per team in two weeks.");
+      throw new Error("Maximum 1 shuttle box per team within one week.");
     }
     return { teamName, buyerName, quantity };
   })
@@ -245,7 +245,7 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       throw new Error("Maximum 1 shuttle box per team in two weeks.");
     }
 
-    const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const recent = await supabase
       .from("shuttle_orders")
       .select("id, quantity, created_at")
@@ -256,7 +256,7 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     const boxes = (recent.data ?? []).reduce((sum, o) => sum + (o.quantity ?? 0), 0);
     if (boxes >= 1) {
       throw new Error(
-        "This team already ordered a shuttle box in the last two weeks. Maximum 1 box per team in two weeks.",
+        "This team already ordered a shuttle box within the last week. Maximum 1 box per team within one week.",
       );
     }
 
