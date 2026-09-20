@@ -14,4 +14,4 @@
 11. Show submitted score details, simplify the pending message, and expose every admin section in the signed-in menu — done
 12. Log visitors (IP, device, location) in a new admin Visitors section and record submitter details with each score — done
 
-- [ ] Make all admin-written emails bilingual: English first, Swedish second, required bilingual contact closing, and fixed General signature.
+- [ ] Make all admin-written email bodies bilingual: English first, Swedish second, subject unchanged, required bilingual contact closing, and fixed General signature.

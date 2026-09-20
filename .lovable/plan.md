@@ -3,7 +3,7 @@
 ## What will change
 
 - When you type an English reply in **Ask the General**, the site will translate it to Swedish before sending.
-- When you write a new email in **Send an email**, both the subject and message will be translated to Swedish before sending.
+- When you write a new email in **Send an email**, the message will be translated to Swedish before sending; the subject stays exactly as you write it.
 - Recipients will always see the English version first and the Swedish version second, clearly labelled.
 - Every outgoing tournament email—including score reminders—will end with the requested contact sentence in both languages, followed by:
 
@@ -15,7 +15,7 @@
 ## Technical details
 
 - Add a server-only translation helper using Lovable AI with strict English-to-Swedish output validation and no exposure of email addresses or player details to the translation request.
-- Translate each unique subject/body once before sending bulk emails, not once per recipient.
+- Translate each unique message body once before sending bulk emails, not once per recipient; never translate the subject.
 - Pass separate English and Swedish fields into the reply and general-email templates; preserve paragraph breaks and the original submitted question.
 - Keep the existing bilingual score-reminder wording, adding only the standardized closing and signature.
 - If translation fails, stop the send and show a clear error instead of delivering an English-only email.
