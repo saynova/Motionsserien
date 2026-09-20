@@ -13,6 +13,7 @@ import { formatWeekDate, validateScore, type MatchRow } from "@/lib/tournament";
 import type { SubmitterDetail } from "@/lib/visitors.functions";
 import { TeamContactsAdmin } from "@/components/team-contacts-admin";
 import { ComposeEmailAdmin } from "@/components/compose-email-admin";
+import { EmailSettingsAdmin } from "@/components/email-settings-admin";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
@@ -52,6 +53,7 @@ const SECTIONS = [
   { id: "support", label: "Donation & sponsor" },
   { id: "messages", label: "Questions" },
   { id: "email", label: "Send email" },
+  { id: "email-settings", label: "Email settings" },
   { id: "contacts", label: "Team contacts" },
   { id: "season", label: "Season settings" },
   { id: "procedure", label: "Weekly procedure" },
@@ -340,6 +342,7 @@ function AdminConsole() {
         {section === "support" ? <SupportSettingsEditor /> : null}
         {section === "messages" ? <MessagesAdmin /> : null}
         {section === "email" ? <ComposeEmailAdmin /> : null}
+        {section === "email-settings" ? <EmailSettingsAdmin /> : null}
         {section === "contacts" ? <TeamContactsAdmin /> : null}
         {section === "season" ? <SeasonSettingsCard /> : null}
         {section === "procedure" ? (
