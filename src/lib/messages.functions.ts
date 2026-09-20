@@ -143,6 +143,8 @@ export const replyToMessage = createServerFn({ method: "POST" })
     if (message.error) throw new Error(message.error.message);
     if (!message.data) throw new Error("Message not found.");
 
+    const { getEmailSettings } = await import("./email-settings.server");
+    const settings = await getEmailSettings(client);
     const swedishReply = await translateEmailBodyToSwedish(data.replyBody);
     const result = await sendTemplateEmail("message-reply", message.data.email, {
       templateData: {
@@ -150,6 +152,9 @@ export const replyToMessage = createServerFn({ method: "POST" })
         englishReply: data.replyBody,
         swedishReply,
         originalBody: message.data.body,
+        closingEn: settings.closingEn,
+        closingSv: settings.closingSv,
+        signature: settings.signature,
       },
       idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}-${crypto.randomUUID().slice(0, 8)}`,
     });

@@ -187,6 +187,9 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
       );
     }
 
+    const { getEmailSettings } = await import("./email-settings.server");
+    const settings = await getEmailSettings(client);
+
     let sent = 0;
     let suppressed = 0;
     for (const player of recipients) {
@@ -202,6 +205,9 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
           teamName,
           opponentName,
           submitUrl: `${SITE_URL}/submit`,
+          closingEn: settings.closingEn,
+          closingSv: settings.closingSv,
+          signature: settings.signature,
         },
         idempotencyKey: `score-reminder-${match.data.id}-${player.email}-${new Date()
           .toISOString()
