@@ -44,7 +44,9 @@ const Email = ({ name, subject = "", englishBody = "", swedishBody = "" }: Props
         <Text style={signature}>
           Best Regards
           <br />
-          The General Md Rabiul Islam
+          The General
+          <br />
+          Md Rabiul Islam
         </Text>
         <Hr style={hr} />
         <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
