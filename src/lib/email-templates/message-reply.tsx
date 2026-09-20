@@ -88,7 +88,7 @@ export const template = {
 const main = { backgroundColor: "#ffffff", fontFamily: "Arial, Helvetica, sans-serif" };
 const container = { padding: "24px 28px", maxWidth: "600px" };
 const text = { fontSize: "15px", lineHeight: "24px", color: "#1d2a21", margin: "0 0 12px" };
-const signature = { ...text, marginTop: "20px" };
+const signatureStyle = { ...text, marginTop: "20px" };
 const quote = {
   fontSize: "14px",
   lineHeight: "22px",
