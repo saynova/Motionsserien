@@ -21,7 +21,13 @@ interface Props {
   teamName?: string;
   opponentName?: string;
   submitUrl?: string;
+  closingEn?: string;
+  closingSv?: string;
+  signature?: string;
 }
+
+const signatureLines = (value: string) =>
+  value.split(/\n/).map((line) => line.trim()).filter((line) => line.length > 0);
 
 const Email = ({
   weekNo = 1,
@@ -31,6 +37,9 @@ const Email = ({
   teamName = "Your team",
   opponentName = "your opponent",
   submitUrl = "https://www.motionsserien.se/submit",
+  closingEn = "If you have any further questions, please feel free to contact me through the website’s contact form.",
+  closingSv = "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
+  signature = "Best Regards\nThe General\nMd Rabiul Islam",
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -59,10 +68,7 @@ const Email = ({
             You have 2 days to submit the score. A missing result is treated as a no-show and
             recorded as 0–0.
           </Text>
-          <Text style={text}>
-            If you have any further questions, please feel free to contact me through the website’s
-            contact form.
-          </Text>
+          <Text style={text}>{closingEn}</Text>
         </Section>
 
         <Hr style={hr} />
@@ -84,18 +90,16 @@ const Email = ({
             Ni har 2 dagar på er att rapportera resultatet. Saknat resultat räknas som walkover och
             registreras som 0–0.
           </Text>
-          <Text style={text}>
-            Om du har några ytterligare frågor är du välkommen att kontakta mig via
-            kontaktformuläret på webbplatsen.
-          </Text>
+          <Text style={text}>{closingSv}</Text>
         </Section>
 
-        <Text style={signature}>
-          Best Regards
-          <br />
-          The General
-          <br />
-          Md Rabiul Islam
+        <Text style={signatureStyle}>
+          {signatureLines(signature).map((line, index) => (
+            <span key={index}>
+              {index > 0 ? <br /> : null}
+              {line}
+            </span>
+          ))}
         </Text>
         <Hr style={hr} />
         <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
@@ -131,7 +135,7 @@ const label = {
   margin: "0 0 6px",
 };
 const text = { fontSize: "15px", lineHeight: "24px", color: "#1d2a21", margin: "0 0 12px" };
-const signature = { ...text, marginTop: "20px" };
+const signatureStyle = { ...text, marginTop: "20px" };
 const muted = { fontSize: "13px", lineHeight: "20px", color: "#6b7a70", margin: "0 0 8px" };
 const link = { color: "#1f7a3f" };
 const hr = { borderColor: "#e3e8e4", margin: "20px 0" };

@@ -7,12 +7,26 @@ interface Props {
   subject?: string;
   englishBody?: string;
   swedishBody?: string;
+  closingEn?: string;
+  closingSv?: string;
+  signature?: string;
 }
 
 const paragraphs = (value: string) =>
   value.split(/\n{2,}/).filter((paragraph) => paragraph.trim().length > 0);
 
-const Email = ({ name, subject = "", englishBody = "", swedishBody = "" }: Props) => (
+const signatureLines = (value: string) =>
+  value.split(/\n/).map((line) => line.trim()).filter((line) => line.length > 0);
+
+const Email = ({
+  name,
+  subject = "",
+  englishBody = "",
+  swedishBody = "",
+  closingEn = "If you have any further questions, please feel free to contact me through the website’s contact form.",
+  closingSv = "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
+  signature = "Best Regards\nThe General\nMd Rabiul Islam",
+}: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{subject || "Motionsserien HT-26"}</Preview>
@@ -25,10 +39,7 @@ const Email = ({ name, subject = "", englishBody = "", swedishBody = "" }: Props
             {paragraph}
           </Text>
         ))}
-        <Text style={text}>
-          If you have any further questions, please feel free to contact me through the website’s
-          contact form.
-        </Text>
+        <Text style={text}>{closingEn}</Text>
         <Hr style={hr} />
         <Text style={label}>Svenska</Text>
         <Text style={text}>{name ? `Hej ${name},` : "Hej,"}</Text>
@@ -37,16 +48,14 @@ const Email = ({ name, subject = "", englishBody = "", swedishBody = "" }: Props
             {paragraph}
           </Text>
         ))}
-        <Text style={text}>
-          Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret
-          på webbplatsen.
-        </Text>
-        <Text style={signature}>
-          Best Regards
-          <br />
-          The General
-          <br />
-          Md Rabiul Islam
+        <Text style={text}>{closingSv}</Text>
+        <Text style={signatureStyle}>
+          {signatureLines(signature).map((line, index) => (
+            <span key={index}>
+              {index > 0 ? <br /> : null}
+              {line}
+            </span>
+          ))}
         </Text>
         <Hr style={hr} />
         <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
@@ -73,7 +82,7 @@ export const template = {
 const main = { backgroundColor: "#ffffff", fontFamily: "Arial, Helvetica, sans-serif" };
 const container = { padding: "24px 28px", maxWidth: "600px" };
 const text = { fontSize: "15px", lineHeight: "24px", color: "#1d2a21", margin: "0 0 12px" };
-const signature = { ...text, marginTop: "20px" };
+const signatureStyle = { ...text, marginTop: "20px" };
 const label = {
   fontSize: "11px",
   letterSpacing: "1.5px",

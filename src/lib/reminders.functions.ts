@@ -187,6 +187,9 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
       );
     }
 
+    const { getEmailSettings } = await import("./email-settings.server");
+    const settings = await getEmailSettings(client);
+
     let sent = 0;
     let suppressed = 0;
     for (const player of recipients) {
@@ -202,6 +205,9 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
           teamName,
           opponentName,
           submitUrl: `${SITE_URL}/submit`,
+          closingEn: settings.closingEn,
+          closingSv: settings.closingSv,
+          signature: settings.signature,
         },
         idempotencyKey: `score-reminder-${match.data.id}-${player.email}-${new Date()
           .toISOString()
@@ -333,6 +339,9 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
     await requireAdmin();
     const { sendTemplateEmail } = await import("./email-templates/send-email");
     const { translateEmailBodyToSwedish } = await import("./translate-email.server");
+    const { getEmailSettings } = await import("./email-settings.server");
+    const { adminClient } = await import("./tournament.server");
+    const settings = await getEmailSettings(adminClient());
 
     let recipients: { email: string; name: string }[] = [];
     if (data.mode === "address") {
@@ -366,6 +375,9 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
           subject: data.subject,
           englishBody: data.body,
           swedishBody,
+          closingEn: settings.closingEn,
+          closingSv: settings.closingSv,
+          signature: settings.signature,
         },
         idempotencyKey: `general-${tag}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });
