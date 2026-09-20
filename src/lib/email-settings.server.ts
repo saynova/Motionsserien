@@ -1,4 +1,7 @@
 // Server-only helpers for admin-editable email closing and signature texts.
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { Database } from "@/integrations/supabase/types";
 
 export type EmailSettings = {
   closingEn: string;
@@ -15,24 +18,13 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
   signature: "Best Regards\nThe General\nMd Rabiul Islam",
 };
 
-type Row = { closing_en: string; closing_sv: string; signature: string };
-
-type SettingsClient = {
-  from: (table: string) => {
-    select: (columns: string) => {
-      order: (
-        column: string,
-        options: { ascending: boolean },
-      ) => { limit: (count: number) => Promise<{ data: Row[] | null; error: { message: string } | null }> };
-    };
-  };
-};
-
 /**
  * Reads the saved email settings, falling back to the defaults for any field
  * left empty, so an email can never go out without a closing or signature.
  */
-export async function getEmailSettings(client: SettingsClient): Promise<EmailSettings> {
+export async function getEmailSettings(
+  client: SupabaseClient<Database>,
+): Promise<EmailSettings> {
   const { data, error } = await client
     .from("email_settings")
     .select("closing_en, closing_sv, signature")
