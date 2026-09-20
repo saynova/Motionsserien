@@ -135,7 +135,7 @@ const label = {
   margin: "0 0 6px",
 };
 const text = { fontSize: "15px", lineHeight: "24px", color: "#1d2a21", margin: "0 0 12px" };
-const signature = { ...text, marginTop: "20px" };
+const signatureStyle = { ...text, marginTop: "20px" };
 const muted = { fontSize: "13px", lineHeight: "20px", color: "#6b7a70", margin: "0 0 8px" };
 const link = { color: "#1f7a3f" };
 const hr = { borderColor: "#e3e8e4", margin: "20px 0" };
