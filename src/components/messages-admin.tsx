@@ -189,10 +189,7 @@ export function MessagesAdmin() {
                     <ReplyBox message={message} />
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      <a
-                        href={`mailto:${encodeURIComponent(message.email)}`}
-                        className={btnGhost}
-                      >
+                      <a href={`mailto:${encodeURIComponent(message.email)}`} className={btnGhost}>
                         <Mail className="mr-1.5 size-3.5" aria-hidden="true" />
                         Reply in my mail app
                       </a>
@@ -266,7 +263,7 @@ function ReplyBox({ message }: { message: Message }) {
         <textarea
           rows={3}
           className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
-          placeholder="Write your answer — it is emailed to the player with their question quoted."
+          placeholder="Write in English. Swedish is added automatically before the reply is sent."
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />

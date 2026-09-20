@@ -332,6 +332,7 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
     const { requireAdmin } = await import("./admin-session.server");
     await requireAdmin();
     const { sendTemplateEmail } = await import("./email-templates/send-email");
+    const { translateEmailBodyToSwedish } = await import("./translate-email.server");
 
     let recipients: { email: string; name: string }[] = [];
     if (data.mode === "address") {
@@ -355,6 +356,7 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
 
     const day = new Date().toISOString().slice(0, 10);
     const tag = `${data.subject.length}-${data.body.length}`;
+    const swedishBody = await translateEmailBodyToSwedish(data.body);
     let sent = 0;
     let suppressed = 0;
     for (const recipient of recipients) {
@@ -362,7 +364,8 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
         templateData: {
           name: recipient.name,
           subject: data.subject,
-          bodyText: data.body,
+          englishBody: data.body,
+          swedishBody,
         },
         idempotencyKey: `general-${tag}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });
