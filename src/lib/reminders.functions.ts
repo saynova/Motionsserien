@@ -375,6 +375,9 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
           subject: data.subject,
           englishBody: data.body,
           swedishBody,
+          closingEn: settings.closingEn,
+          closingSv: settings.closingSv,
+          signature: settings.signature,
         },
         idempotencyKey: `general-${tag}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });
