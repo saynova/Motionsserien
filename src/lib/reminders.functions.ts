@@ -339,6 +339,9 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
     await requireAdmin();
     const { sendTemplateEmail } = await import("./email-templates/send-email");
     const { translateEmailBodyToSwedish } = await import("./translate-email.server");
+    const { getEmailSettings } = await import("./email-settings.server");
+    const { adminClient } = await import("./tournament.server");
+    const settings = await getEmailSettings(adminClient());
 
     let recipients: { email: string; name: string }[] = [];
     if (data.mode === "address") {
