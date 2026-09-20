@@ -266,7 +266,7 @@ function ReplyBox({ message }: { message: Message }) {
         <textarea
           rows={3}
           className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
-          placeholder="Write your answer — it is emailed to the player with their question quoted."
+          placeholder="Write in English. Swedish is added automatically before the reply is sent."
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />

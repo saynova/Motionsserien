@@ -59,6 +59,10 @@ const Email = ({
             You have 2 days to submit the score. A missing result is treated as a no-show and
             recorded as 0–0.
           </Text>
+          <Text style={text}>
+            If you have any further questions, please feel free to contact me through the website’s
+            contact form.
+          </Text>
         </Section>
 
         <Hr style={hr} />
@@ -80,8 +84,13 @@ const Email = ({
             Ni har 2 dagar på er att rapportera resultatet. Saknat resultat räknas som walkover och
             registreras som 0–0.
           </Text>
+          <Text style={text}>
+            Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret
+            på webbplatsen.
+          </Text>
         </Section>
 
+        <Text style={signature}>Best Regards<br />The General Md Rabiul Islam</Text>
         <Hr style={hr} />
         <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
       </Container>
@@ -116,6 +125,7 @@ const label = {
   margin: '0 0 6px',
 }
 const text = { fontSize: '15px', lineHeight: '24px', color: '#1d2a21', margin: '0 0 12px' }
+const signature = { ...text, marginTop: '20px' }
 const muted = { fontSize: '13px', lineHeight: '20px', color: '#6b7a70', margin: '0 0 8px' }
 const link = { color: '#1f7a3f' }
 const hr = { borderColor: '#e3e8e4', margin: '20px 0' }

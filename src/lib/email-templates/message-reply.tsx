@@ -4,28 +4,46 @@ import type { TemplateEntry } from './registry'
 
 interface Props {
   name?: string
-  replyBody?: string
+  englishReply?: string
+  swedishReply?: string
   originalBody?: string
 }
 
-const Email = ({ name, replyBody = '', originalBody = '' }: Props) => (
+const paragraphs = (value: string) =>
+  value
+    .split(/\n{2,}/)
+    .filter((paragraph) => paragraph.trim().length > 0)
+
+const Email = ({ name, englishReply = '', swedishReply = '', originalBody = '' }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Reply from Motionsserien HT-26</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Text style={label}>English</Text>
         <Text style={text}>{name ? `Hi ${name},` : 'Hi,'}</Text>
-        {replyBody
-          .split(/\n{2,}/)
-          .filter((p) => p.trim().length > 0)
-          .map((paragraph, index) => (
+        {paragraphs(englishReply).map((paragraph, index) => (
             <Text key={index} style={text}>
               {paragraph}
             </Text>
           ))}
         <Text style={text}>
-          / Motionsserien HT-26
+          If you have any further questions, please feel free to contact me through the website’s
+          contact form.
         </Text>
+        <Hr style={hr} />
+        <Text style={label}>Svenska</Text>
+        <Text style={text}>{name ? `Hej ${name},` : 'Hej,'}</Text>
+        {paragraphs(swedishReply).map((paragraph, index) => (
+          <Text key={index} style={text}>
+            {paragraph}
+          </Text>
+        ))}
+        <Text style={text}>
+          Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret
+          på webbplatsen.
+        </Text>
+        <Text style={signature}>Best Regards<br />The General Md Rabiul Islam</Text>
 
         {originalBody ? (
           <Section>
@@ -48,15 +66,16 @@ export const template = {
   displayName: 'Reply to a message',
   previewData: {
     name: 'Anna',
-    replyBody: 'Thanks for letting me know — the score is corrected now.\n\nTack för att du hörde av dig!',
+    englishReply: 'Thanks for letting me know — the score is corrected now.',
+    swedishReply: 'Tack för att du meddelade mig – resultatet är nu korrigerat.',
     originalBody: 'The score for our Division 3 match looks wrong.',
   },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, Helvetica, sans-serif' }
 const container = { padding: '24px 28px', maxWidth: '600px' }
-const h1 = { fontSize: '22px', color: '#14361f', margin: '0 0 16px' }
 const text = { fontSize: '15px', lineHeight: '24px', color: '#1d2a21', margin: '0 0 12px' }
+const signature = { ...text, marginTop: '20px' }
 const quote = {
   fontSize: '14px',
   lineHeight: '22px',

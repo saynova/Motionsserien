@@ -82,8 +82,8 @@ export function ComposeEmailAdmin() {
         <div>
           <h2 className="text-2xl font-bold uppercase tracking-wide">Send an email</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Write to one player, everyone in a division, or one or many pasted addresses. Emails are
-            sent from Motionsserien HT-26 · noreply@motionsserien.se. Use it for tournament
+            Write in English to one player, everyone in a division, or pasted addresses. A Swedish
+            version is added automatically; the subject stays unchanged. Use it for tournament
             matters only.
           </p>
         </div>
@@ -189,7 +189,7 @@ export function ComposeEmailAdmin() {
             className={field}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Write your message. Leave a blank line between paragraphs."
+            placeholder="Write in English. Swedish is added automatically. Leave a blank line between paragraphs."
           />
         </label>
       </div>

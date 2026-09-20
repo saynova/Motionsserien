@@ -125,6 +125,7 @@ export const replyToMessage = createServerFn({ method: "POST" })
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
     const { sendTemplateEmail } = await import("./email-templates/send-email");
+    const { translateEmailBodyToSwedish } = await import("./translate-email.server");
     const client = adminClient();
 
     const message = await client
@@ -135,10 +136,12 @@ export const replyToMessage = createServerFn({ method: "POST" })
     if (message.error) throw new Error(message.error.message);
     if (!message.data) throw new Error("Message not found.");
 
+    const swedishReply = await translateEmailBodyToSwedish(data.replyBody);
     const result = await sendTemplateEmail("message-reply", message.data.email, {
       templateData: {
         name: message.data.name,
-        replyBody: data.replyBody,
+        englishReply: data.replyBody,
+        swedishReply,
         originalBody: message.data.body,
       },
       idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}-${crypto.randomUUID().slice(0, 8)}`,
