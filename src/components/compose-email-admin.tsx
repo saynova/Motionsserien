@@ -94,110 +94,114 @@ export function ComposeEmailAdmin() {
 
       {!open ? null : (
         <div className="border-t border-border p-6">
-      <div className="flex flex-wrap gap-2">
-        {(
-          [
-            ["player", "One player"],
-            ["division", "Whole division"],
-            ["address", "Any address"],
-          ] as const
-        ).map(([value, text]) => (
-          <button
-            key={value}
-            onClick={() => setMode(value)}
-            className={`rounded border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${
-              mode === value
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-secondary hover:bg-secondary/70"
-            }`}
-          >
-            {text}
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["player", "One player"],
+                ["division", "Whole division"],
+                ["address", "Any address"],
+              ] as const
+            ).map(([value, text]) => (
+              <button
+                key={value}
+                onClick={() => setMode(value)}
+                className={`rounded border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                  mode === value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-secondary hover:bg-secondary/70"
+                }`}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {mode !== "address" ? (
+              <label className="space-y-1">
+                <span className={label}>Division</span>
+                <select
+                  className={field}
+                  value={division}
+                  onChange={(e) => {
+                    setDivision(Number(e.target.value));
+                    setEmail("");
+                  }}
+                >
+                  {(divisions.length > 0 ? divisions : [1]).map((d) => (
+                    <option key={d} value={d}>
+                      Division {d}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            {mode === "player" ? (
+              <label className="space-y-1">
+                <span className={label}>Player</span>
+                <select className={field} value={email} onChange={(e) => setEmail(e.target.value)}>
+                  <option value="">Choose a player…</option>
+                  {inDivision.map((p) => (
+                    <option key={p.email} value={p.email}>
+                      {p.name || p.email} · {p.teamName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            {mode === "address" ? (
+              <label className="space-y-1 sm:col-span-2">
+                <span className={label}>Email addresses</span>
+                <textarea
+                  rows={3}
+                  className={field}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Paste one or many addresses, separated by comma, semicolon, space or new line"
+                />
+                <span className="block text-xs text-muted-foreground">
+                  {parsedAddresses.length === 0
+                    ? "You can paste a whole list at once — each person gets their own separate copy."
+                    : `${parsedAddresses.length} address${parsedAddresses.length === 1 ? "" : "es"} ready · each gets a separate copy`}
+                </span>
+              </label>
+            ) : null}
+          </div>
+
+          {mode === "division" ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {inDivision.length} player{inDivision.length === 1 ? "" : "s"} in Division {division}{" "}
+              have an email saved. Each gets their own separate copy.
+            </p>
+          ) : null}
+
+          <div className="mt-4 space-y-3">
+            <label className="block space-y-1">
+              <span className={label}>Subject</span>
+              <input
+                className={field}
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className={label}>Message</span>
+              <textarea
+                rows={5}
+                className={field}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Write in English. Swedish is added automatically. Leave a blank line between paragraphs."
+              />
+            </label>
+          </div>
+
+          <button className={`${btn} mt-4`} disabled={busy || !canSend} onClick={submit}>
+            <Send className="mr-1.5 inline size-3.5" aria-hidden="true" />
+            {busy ? "Sending…" : "Send email"}
           </button>
-        ))}
-      </div>
-
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        {mode !== "address" ? (
-          <label className="space-y-1">
-            <span className={label}>Division</span>
-            <select
-              className={field}
-              value={division}
-              onChange={(e) => {
-                setDivision(Number(e.target.value));
-                setEmail("");
-              }}
-            >
-              {(divisions.length > 0 ? divisions : [1]).map((d) => (
-                <option key={d} value={d}>
-                  Division {d}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-
-        {mode === "player" ? (
-          <label className="space-y-1">
-            <span className={label}>Player</span>
-            <select className={field} value={email} onChange={(e) => setEmail(e.target.value)}>
-              <option value="">Choose a player…</option>
-              {inDivision.map((p) => (
-                <option key={p.email} value={p.email}>
-                  {p.name || p.email} · {p.teamName}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-
-        {mode === "address" ? (
-          <label className="space-y-1 sm:col-span-2">
-            <span className={label}>Email addresses</span>
-            <textarea
-              rows={3}
-              className={field}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Paste one or many addresses, separated by comma, semicolon, space or new line"
-            />
-            <span className="block text-xs text-muted-foreground">
-              {parsedAddresses.length === 0
-                ? "You can paste a whole list at once — each person gets their own separate copy."
-                : `${parsedAddresses.length} address${parsedAddresses.length === 1 ? "" : "es"} ready · each gets a separate copy`}
-            </span>
-          </label>
-        ) : null}
-      </div>
-
-      {mode === "division" ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {inDivision.length} player{inDivision.length === 1 ? "" : "s"} in Division {division} have
-          an email saved. Each gets their own separate copy.
-        </p>
-      ) : null}
-
-      <div className="mt-4 space-y-3">
-        <label className="block space-y-1">
-          <span className={label}>Subject</span>
-          <input className={field} value={subject} onChange={(e) => setSubject(e.target.value)} />
-        </label>
-        <label className="block space-y-1">
-          <span className={label}>Message</span>
-          <textarea
-            rows={5}
-            className={field}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Write in English. Swedish is added automatically. Leave a blank line between paragraphs."
-          />
-        </label>
-      </div>
-
-      <button className={`${btn} mt-4`} disabled={busy || !canSend} onClick={submit}>
-        <Send className="mr-1.5 inline size-3.5" aria-hidden="true" />
-        {busy ? "Sending…" : "Send email"}
-      </button>
         </div>
       )}
     </section>

@@ -189,10 +189,7 @@ export function MessagesAdmin() {
                     <ReplyBox message={message} />
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      <a
-                        href={`mailto:${encodeURIComponent(message.email)}`}
-                        className={btnGhost}
-                      >
+                      <a href={`mailto:${encodeURIComponent(message.email)}`} className={btnGhost}>
                         <Mail className="mr-1.5 size-3.5" aria-hidden="true" />
                         Reply in my mail app
                       </a>
