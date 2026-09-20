@@ -21,7 +21,13 @@ interface Props {
   teamName?: string;
   opponentName?: string;
   submitUrl?: string;
+  closingEn?: string;
+  closingSv?: string;
+  signature?: string;
 }
+
+const signatureLines = (value: string) =>
+  value.split(/\n/).map((line) => line.trim()).filter((line) => line.length > 0);
 
 const Email = ({
   weekNo = 1,
@@ -31,6 +37,9 @@ const Email = ({
   teamName = "Your team",
   opponentName = "your opponent",
   submitUrl = "https://www.motionsserien.se/submit",
+  closingEn = "If you have any further questions, please feel free to contact me through the website’s contact form.",
+  closingSv = "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
+  signature = "Best Regards\nThe General\nMd Rabiul Islam",
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
