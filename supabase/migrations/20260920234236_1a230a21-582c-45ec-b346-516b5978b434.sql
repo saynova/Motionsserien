@@ -1,0 +1,1 @@
+CREATE POLICY "email settings no client access" ON public.email_settings FOR SELECT TO anon, authenticated USING (false);
