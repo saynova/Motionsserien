@@ -44,7 +44,9 @@ const Email = ({ name, englishReply = "", swedishReply = "", originalBody = "" }
         <Text style={signature}>
           Best Regards
           <br />
-          The General Md Rabiul Islam
+          The General
+          <br />
+          Md Rabiul Islam
         </Text>
 
         {originalBody ? (
