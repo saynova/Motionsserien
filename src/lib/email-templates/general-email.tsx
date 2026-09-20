@@ -7,12 +7,26 @@ interface Props {
   subject?: string;
   englishBody?: string;
   swedishBody?: string;
+  closingEn?: string;
+  closingSv?: string;
+  signature?: string;
 }
 
 const paragraphs = (value: string) =>
   value.split(/\n{2,}/).filter((paragraph) => paragraph.trim().length > 0);
 
-const Email = ({ name, subject = "", englishBody = "", swedishBody = "" }: Props) => (
+const signatureLines = (value: string) =>
+  value.split(/\n/).map((line) => line.trim()).filter((line) => line.length > 0);
+
+const Email = ({
+  name,
+  subject = "",
+  englishBody = "",
+  swedishBody = "",
+  closingEn = "If you have any further questions, please feel free to contact me through the website’s contact form.",
+  closingSv = "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
+  signature = "Best Regards\nThe General\nMd Rabiul Islam",
+}: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{subject || "Motionsserien HT-26"}</Preview>
