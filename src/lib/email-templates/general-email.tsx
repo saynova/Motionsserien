@@ -39,10 +39,7 @@ const Email = ({
             {paragraph}
           </Text>
         ))}
-        <Text style={text}>
-          If you have any further questions, please feel free to contact me through the website’s
-          contact form.
-        </Text>
+        <Text style={text}>{closingEn}</Text>
         <Hr style={hr} />
         <Text style={label}>Svenska</Text>
         <Text style={text}>{name ? `Hej ${name},` : "Hej,"}</Text>
@@ -51,16 +48,14 @@ const Email = ({
             {paragraph}
           </Text>
         ))}
-        <Text style={text}>
-          Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret
-          på webbplatsen.
-        </Text>
-        <Text style={signature}>
-          Best Regards
-          <br />
-          The General
-          <br />
-          Md Rabiul Islam
+        <Text style={text}>{closingSv}</Text>
+        <Text style={signatureStyle}>
+          {signatureLines(signature).map((line, index) => (
+            <span key={index}>
+              {index > 0 ? <br /> : null}
+              {line}
+            </span>
+          ))}
         </Text>
         <Hr style={hr} />
         <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
