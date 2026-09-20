@@ -41,6 +41,33 @@ export type Database = {
         }
         Relationships: []
       }
+      email_settings: {
+        Row: {
+          closing_en: string
+          closing_sv: string
+          created_at: string
+          id: string
+          signature: string
+          updated_at: string
+        }
+        Insert: {
+          closing_en?: string
+          closing_sv?: string
+          created_at?: string
+          id?: string
+          signature?: string
+          updated_at?: string
+        }
+        Update: {
+          closing_en?: string
+          closing_sv?: string
+          created_at?: string
+          id?: string
+          signature?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           approved_at: string | null
