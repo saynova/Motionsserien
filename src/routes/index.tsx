@@ -99,10 +99,9 @@ function StandingsPage() {
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
             <Button
               size="default"
-              className="mt-4 h-10 gap-2 bg-gradient-to-r from-[#10b981] to-[#059669] font-semibold text-white shadow-[0_4px_12px_rgba(16,185,129,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(16,185,129,0.35)] active:translate-y-px"
+              className="mt-4 h-10 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
               asChild
             >
-
               <Link to="/submit">
                 <Send className="size-4" aria-hidden="true" />
                 Submit Your Score
