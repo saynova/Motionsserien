@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CalendarRange, Layers3, ScrollText, Trophy, Users, X } from "lucide-react";
+import { CalendarRange, Layers3, ScrollText, Send, Trophy, Users, X } from "lucide-react";
+
 
 import { MovementBadge, PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
 import { Button } from "@/components/ui/button";
@@ -96,9 +97,17 @@ function StandingsPage() {
               Week {week} scores
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
-            <Button size="default" className="mt-4 h-10 shadow-md shadow-primary/15" asChild>
-              <Link to="/submit">Submit your score</Link>
+            <Button
+              size="default"
+              className="mt-4 h-10 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
+              asChild
+            >
+              <Link to="/submit">
+                <Send className="size-4" aria-hidden="true" />
+                Submit Your Score
+              </Link>
             </Button>
+
           </div>
         </div>
 
