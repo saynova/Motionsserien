@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      champions: {
+        Row: {
+          created_at: string
+          id: string
+          image_path: string | null
+          players: string
+          season_title: string
+          sort_order: number
+          team_name: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          players?: string
+          season_title?: string
+          sort_order?: number
+          team_name?: string
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          players?: string
+          season_title?: string
+          sort_order?: number
+          team_name?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       email_settings: {
         Row: {
           closing_en: string
@@ -64,6 +100,33 @@ export type Database = {
           created_at?: string
           id?: string
           signature?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gallery_photos: {
+        Row: {
+          caption: string
+          created_at: string
+          id: string
+          image_path: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          id?: string
+          image_path: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          id?: string
+          image_path?: string
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
@@ -407,6 +470,7 @@ export type Database = {
           donation_visible: boolean
           id: string
           qr_image_path: string | null
+          season_finished: boolean
           sponsor_details: string
           sponsor_label: string
           sponsor_visible: boolean
@@ -417,6 +481,7 @@ export type Database = {
           donation_visible?: boolean
           id?: string
           qr_image_path?: string | null
+          season_finished?: boolean
           sponsor_details?: string
           sponsor_label?: string
           sponsor_visible?: boolean
@@ -427,12 +492,64 @@ export type Database = {
           donation_visible?: boolean
           id?: string
           qr_image_path?: string | null
+          season_finished?: boolean
           sponsor_details?: string
           sponsor_label?: string
           sponsor_visible?: boolean
           updated_at?: string
         }
         Relationships: []
+      }
+      team_payments: {
+        Row: {
+          created_at: string
+          id: string
+          is_paid: boolean
+          note: string
+          paid_at: string | null
+          reminded_at: string | null
+          season_id: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          note?: string
+          paid_at?: string | null
+          reminded_at?: string | null
+          season_id: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          note?: string
+          paid_at?: string | null
+          reminded_at?: string | null
+          season_id?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_payments_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_payments_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_players: {
         Row: {
