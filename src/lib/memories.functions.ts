@@ -28,29 +28,30 @@ export type MemoriesData = {
 
 const SIGNED_URL_SECONDS = 60 * 60 * 12;
 
-async function signedUrlMap(
-  client: {
-    storage: {
-      from: (bucket: string) => {
-        createSignedUrls: (
-          paths: string[],
-          expiresIn: number,
-        ) => Promise<{ data: { path?: string | null; signedUrl: string }[] | null; error: unknown }>;
-      };
+type StorageHost = {
+  storage: {
+    from: (bucket: string) => {
+      createSignedUrls: (
+        paths: string[],
+        expiresIn: number,
+      ) => Promise<{
+        data: { path: string | null; signedUrl: string | null }[] | null;
+        error: unknown;
+      }>;
     };
-  },
-  paths: string[],
-): Promise<Record<string, string>> {
+  };
+};
+
+async function signedUrlMap(client: unknown, paths: string[]): Promise<Record<string, string>> {
   const unique = [...new Set(paths.filter((p) => p.length > 0))];
   if (unique.length === 0) return {};
-  const { data, error } = await client.storage.from("gallery").createSignedUrls(
-    unique,
-    SIGNED_URL_SECONDS,
-  );
+  const { data, error } = await (client as StorageHost).storage
+    .from("gallery")
+    .createSignedUrls(unique, SIGNED_URL_SECONDS);
   if (error || !data) return {};
   const out: Record<string, string> = {};
   for (const row of data) {
-    if (row.path) out[row.path] = row.signedUrl;
+    if (row.path && row.signedUrl) out[row.path] = row.signedUrl;
   }
   return out;
 }
