@@ -34,10 +34,7 @@ async function loadSeason(client: ReturnType<typeof import("./tournament.server"
   return season.data;
 }
 
-export const listTeamPayments = createServerFn({ method: "POST" }).handler(
-  async (): Promise<TeamPaymentsData> => {
-    const { requireAdmin } = await import("./admin-session.server");
-    await requireAdmin();
+async function loadPayments(): Promise<TeamPaymentsData> {
     const { adminClient } = await import("./tournament.server");
     const client = adminClient();
     const season = await loadSeason(client);
@@ -83,6 +80,13 @@ export const listTeamPayments = createServerFn({ method: "POST" }).handler(
     );
 
     return { seasonId: season.id, seasonName: season.name, rows };
+}
+
+export const listTeamPayments = createServerFn({ method: "POST" }).handler(
+  async (): Promise<TeamPaymentsData> => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    return loadPayments();
   },
 );
 
@@ -202,7 +206,7 @@ export const sendPaymentReminder = createServerFn({ method: "POST" })
 export const remindAllUnpaid = createServerFn({ method: "POST" }).handler(async () => {
   const { requireAdmin } = await import("./admin-session.server");
   await requireAdmin();
-  const data = await listTeamPayments();
+  const data = await loadPayments();
   const unpaid = data.rows.filter((row) => !row.isPaid && row.contacts > 0).map((r) => r.teamId);
   if (unpaid.length === 0) {
     throw new Error("No unpaid teams with saved email addresses.");
