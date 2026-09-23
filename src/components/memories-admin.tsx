@@ -169,7 +169,7 @@ export function MemoriesAdmin() {
           disabled={busy}
           onClick={() =>
             run(async () => {
-              const image = championFile ? (await readFiles([championFile]))[0] : null;
+              const image = championFile ? ((await readFiles([championFile]))[0] ?? null) : null;
               await saveOne({
                 data: { seasonTitle, year, teamName, players, image },
               });
