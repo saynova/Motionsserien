@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronDown, Mail, QrCode } from "lucide-react";
+import { ChevronDown, Mail, Menu, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
@@ -17,6 +17,15 @@ import { EmailSettingsAdmin } from "@/components/email-settings-admin";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { PaymentsAdmin } from "@/components/payments-admin";
+import { MemoriesAdmin } from "@/components/memories-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
@@ -47,20 +56,24 @@ import {
 } from "@/lib/tournament.functions";
 
 const SECTIONS = [
-  { id: "matches", label: "Match scores" },
-  { id: "banner", label: "Weekly banner" },
-  { id: "shuttles", label: "Shuttle purchases" },
-  { id: "support", label: "Donation & sponsor" },
-  { id: "messages", label: "Questions" },
-  { id: "email", label: "Send email" },
-  { id: "email-settings", label: "Email settings" },
-  { id: "contacts", label: "Team contacts" },
-  { id: "season", label: "Season settings" },
-  { id: "procedure", label: "Weekly procedure" },
-  { id: "next-season", label: "Registration & seeding" },
-  { id: "new-season", label: "Start new season" },
-  { id: "visitors", label: "Visitors" },
+  { id: "matches", label: "Match scores", group: "Weekly work" },
+  { id: "procedure", label: "Weekly procedure", group: "Weekly work" },
+  { id: "payments", label: "Payments", group: "Weekly work" },
+  { id: "messages", label: "Questions", group: "Weekly work" },
+  { id: "banner", label: "Weekly banner", group: "Content" },
+  { id: "memories", label: "Champions & Gallery", group: "Content" },
+  { id: "support", label: "Donation & sponsor", group: "Content" },
+  { id: "shuttles", label: "Shuttle purchases", group: "Content" },
+  { id: "email", label: "Send email", group: "Email" },
+  { id: "email-settings", label: "Email settings", group: "Email" },
+  { id: "contacts", label: "Team contacts", group: "Email" },
+  { id: "season", label: "Season settings", group: "Season" },
+  { id: "next-season", label: "Registration & seeding", group: "Season" },
+  { id: "new-season", label: "Start new season", group: "Season" },
+  { id: "visitors", label: "Visitors", group: "Season" },
 ] as const;
+
+const SECTION_GROUPS = ["Weekly work", "Content", "Email", "Season"] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -178,6 +191,7 @@ function AdminConsole() {
   const [seasonName, setSeasonName] = useState("");
   const [seasonStart, setSeasonStart] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const { section } = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -307,34 +321,75 @@ function AdminConsole() {
         </div>
       </PageHeader>
 
-      <nav
-        aria-label="Admin sections"
-        className="glass-surface mt-6 flex gap-1.5 overflow-x-auto rounded-xl border border-border p-2"
-      >
-        {SECTIONS.map((item) => {
-          const active = item.id === section;
-          return (
+      <div className="glass-surface mt-6 flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            {SECTIONS.find((item) => item.id === section)?.group ?? "Admin"}
+          </p>
+          <h2 className="truncate text-lg font-bold tracking-tight">
+            {SECTIONS.find((item) => item.id === section)?.label ?? "Admin"}
+          </h2>
+        </div>
+
+        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <SheetTrigger asChild>
             <button
-              key={item.id}
               type="button"
-              aria-current={active ? "page" : undefined}
-              onClick={() => navigate({ search: { section: item.id }, resetScroll: false })}
-              className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
-                active
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+              aria-label="Open admin menu"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-secondary"
             >
-              {item.label}
-              {item.id === "matches" && pending.length > 0 ? (
-                <span className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-[0.65rem] font-bold text-accent-foreground">
-                  {pending.length}
-                </span>
-              ) : null}
+              <Menu className="h-5 w-5" />
+              <span className="hidden sm:inline">Menu</span>
             </button>
-          );
-        })}
-      </nav>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[19rem] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Admin sections</SheetTitle>
+            </SheetHeader>
+            <nav aria-label="Admin sections" className="mt-4 space-y-5 pb-8">
+              {SECTION_GROUPS.map((group) => (
+                <div key={group}>
+                  <p className="px-2 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">
+                    {group}
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {SECTIONS.filter((item) => item.group === group).map((item) => {
+                      const active = item.id === section;
+                      const badge =
+                        item.id === "matches" && pending.length > 0 ? pending.length : null;
+                      return (
+                        <li key={item.id}>
+                          <button
+                            type="button"
+                            aria-current={active ? "page" : undefined}
+                            onClick={() => {
+                              navigate({ search: { section: item.id }, resetScroll: false });
+                              setMenuOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                              active
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-foreground hover:bg-secondary"
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                            {badge ? (
+                              <span className="rounded-full bg-accent px-1.5 py-0.5 text-[0.65rem] font-bold text-accent-foreground">
+                                {badge}
+                              </span>
+                            ) : null}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+          </SheetContent>
+        </Sheet>
+      </div>
+
 
       <div className="mt-6 space-y-6">
         {section === "banner" ? <BannerEditor /> : null}
@@ -357,6 +412,8 @@ function AdminConsole() {
         ) : null}
         {section === "next-season" ? <NextSeasonAdmin /> : null}
         {section === "visitors" ? <VisitorsAdmin /> : null}
+        {section === "payments" ? <PaymentsAdmin /> : null}
+        {section === "memories" ? <MemoriesAdmin /> : null}
 
         {section === "matches" ? (
           <>

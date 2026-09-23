@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AskRouteImport } from './routes/ask'
+import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ScheduleRouteImport } from './routes/schedule'
@@ -36,6 +37,11 @@ const AdminRoute = AdminRouteImport.update({
 const AskRoute = AskRouteImport.update({
   id: '/ask',
   path: '/ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemoriesRoute = MemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgressRoute = ProgressRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/ask': typeof AskRoute
+  '/memories': typeof MemoriesRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/ask': typeof AskRoute
+  '/memories': typeof MemoriesRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/ask': typeof AskRoute
+  '/memories': typeof MemoriesRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/ask'
+    | '/memories'
     | '/progress'
     | '/register'
     | '/schedule'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/ask'
+    | '/memories'
     | '/progress'
     | '/register'
     | '/schedule'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/ask'
+    | '/memories'
     | '/progress'
     | '/register'
     | '/schedule'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AskRoute: typeof AskRoute
+  MemoriesRoute: typeof MemoriesRoute
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
   ScheduleRoute: typeof ScheduleRoute
@@ -222,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/ask'
       fullPath: '/ask'
       preLoaderRoute: typeof AskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memories': {
+      id: '/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof MemoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/progress': {
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AskRoute: AskRoute,
+  MemoriesRoute: MemoriesRoute,
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
   ScheduleRoute: ScheduleRoute,

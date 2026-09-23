@@ -11,6 +11,18 @@ import {
 import { listMessages } from "./messages.functions";
 import { listDivisionPlayers, listReminders, listTeamContacts } from "./reminders.functions";
 import { listSubmitterDetails, listVisits } from "./visitors.functions";
+import { listTeamPayments } from "./payments.functions";
+import { getMemories } from "./memories.functions";
+
+export const teamPaymentsQueryOptions = queryOptions({
+  queryKey: ["team-payments", "admin"],
+  queryFn: () => listTeamPayments(),
+});
+
+export const memoriesQueryOptions = queryOptions({
+  queryKey: ["memories"],
+  queryFn: () => getMemories(),
+});
 
 export const visitsQueryOptions = queryOptions({
   queryKey: ["visits", "admin"],
