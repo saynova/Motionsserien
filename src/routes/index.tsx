@@ -12,7 +12,8 @@ import {
   formatWeekDate,
   sessionForDivision,
 } from "@/lib/tournament";
-import { tournamentQueryOptions } from "@/lib/tournament-query";
+import { memoriesQueryOptions, tournamentQueryOptions } from "@/lib/tournament-query";
+import { MemoriesView } from "@/components/memories-view";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,8 +32,12 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(tournamentQueryOptions),
-  component: StandingsPage,
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(tournamentQueryOptions),
+      context.queryClient.ensureQueryData(memoriesQueryOptions),
+    ]),
+  component: HomePage,
 });
 
 function TermsNotice() {
@@ -69,6 +74,25 @@ function TermsNotice() {
       </button>
     </div>
   );
+}
+
+function HomePage() {
+  const memories = useSuspenseQuery(memoriesQueryOptions);
+  if (memories.data.seasonFinished) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Memories"
+          title="Champions & Gallery"
+          description="Our Hall of Fame and the best moments from Monday nights in the Rackethall."
+        />
+        <div className="mt-8">
+          <MemoriesView />
+        </div>
+      </>
+    );
+  }
+  return <StandingsPage />;
 }
 
 function StandingsPage() {
