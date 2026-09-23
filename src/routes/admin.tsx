@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronDown, Mail, QrCode } from "lucide-react";
+import { ChevronDown, Mail, Menu, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
@@ -17,6 +17,15 @@ import { EmailSettingsAdmin } from "@/components/email-settings-admin";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { PaymentsAdmin } from "@/components/payments-admin";
+import { MemoriesAdmin } from "@/components/memories-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
@@ -182,6 +191,7 @@ function AdminConsole() {
   const [seasonName, setSeasonName] = useState("");
   const [seasonStart, setSeasonStart] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const { section } = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -402,6 +412,8 @@ function AdminConsole() {
         ) : null}
         {section === "next-season" ? <NextSeasonAdmin /> : null}
         {section === "visitors" ? <VisitorsAdmin /> : null}
+        {section === "payments" ? <PaymentsAdmin /> : null}
+        {section === "memories" ? <MemoriesAdmin /> : null}
 
         {section === "matches" ? (
           <>
