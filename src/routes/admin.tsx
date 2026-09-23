@@ -47,20 +47,24 @@ import {
 } from "@/lib/tournament.functions";
 
 const SECTIONS = [
-  { id: "matches", label: "Match scores" },
-  { id: "banner", label: "Weekly banner" },
-  { id: "shuttles", label: "Shuttle purchases" },
-  { id: "support", label: "Donation & sponsor" },
-  { id: "messages", label: "Questions" },
-  { id: "email", label: "Send email" },
-  { id: "email-settings", label: "Email settings" },
-  { id: "contacts", label: "Team contacts" },
-  { id: "season", label: "Season settings" },
-  { id: "procedure", label: "Weekly procedure" },
-  { id: "next-season", label: "Registration & seeding" },
-  { id: "new-season", label: "Start new season" },
-  { id: "visitors", label: "Visitors" },
+  { id: "matches", label: "Match scores", group: "Weekly work" },
+  { id: "procedure", label: "Weekly procedure", group: "Weekly work" },
+  { id: "payments", label: "Payments", group: "Weekly work" },
+  { id: "messages", label: "Questions", group: "Weekly work" },
+  { id: "banner", label: "Weekly banner", group: "Content" },
+  { id: "memories", label: "Champions & Gallery", group: "Content" },
+  { id: "support", label: "Donation & sponsor", group: "Content" },
+  { id: "shuttles", label: "Shuttle purchases", group: "Content" },
+  { id: "email", label: "Send email", group: "Email" },
+  { id: "email-settings", label: "Email settings", group: "Email" },
+  { id: "contacts", label: "Team contacts", group: "Email" },
+  { id: "season", label: "Season settings", group: "Season" },
+  { id: "next-season", label: "Registration & seeding", group: "Season" },
+  { id: "new-season", label: "Start new season", group: "Season" },
+  { id: "visitors", label: "Visitors", group: "Season" },
 ] as const;
+
+const SECTION_GROUPS = ["Weekly work", "Content", "Email", "Season"] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
