@@ -95,6 +95,62 @@ function HomePage() {
   return <StandingsPage />;
 }
 
+function stockholmNow(): string {
+  // "YYYY-MM-DD HH:mm" in Swedish time
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).format(new Date());
+}
+
+function MissingScores({
+  season, week, matches, teams,
+}: {
+  season: { start_monday: string };
+  week: number;
+  matches: { id: string; status: string; division: number; team_a_id: string; team_b_id: string }[];
+  teams: { id: string; name: string }[];
+}) {
+  const [now, setNow] = useState<string | null>(null);
+  useEffect(() => {
+    setNow(stockholmNow());
+    const t = setInterval(() => setNow(stockholmNow()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  if (!now) return null;
+
+  const [y = 0, m = 1, d = 1] = season.start_monday.split("-").map(Number);
+  const tue = new Date(Date.UTC(y, m - 1, d + (week - 1) * 7 + 1));
+  const showFrom = `${tue.toISOString().slice(0, 10)} 10:00`;
+  if (now < showFrom) return null;
+
+  const missing = matches.filter((x) => x.status === "scheduled");
+  if (missing.length === 0) return null;
+  const name = new Map(teams.map((t) => [t.id, t.name]));
+  const teamNames = [...new Set(missing.flatMap((x) => [x.team_a_id, x.team_b_id]))]
+    .map((id) => name.get(id) ?? "Unknown team")
+    .sort((a, b) => a.localeCompare(b));
+
+  return (
+    <div className="mt-5 rounded-lg border border-destructive/25 bg-destructive/5 p-4">
+      <p className="text-sm font-semibold text-destructive">
+        Missing scores · {missing.length} {missing.length === 1 ? "match" : "matches"}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        These teams have not submitted their result yet:
+      </p>
+      <ul className="mt-3 flex flex-wrap gap-2">
+        {teamNames.map((n) => (
+          <li key={n} className="rounded-full border border-destructive/30 bg-card px-3 py-1 text-xs font-semibold">
+            {n}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function StandingsPage() {
   const { data } = useSuspenseQuery(tournamentQueryOptions);
   const { season, teams, slots, matches } = data;
@@ -131,6 +187,8 @@ function StandingsPage() {
                 Submit Your Score
               </Link>
             </Button>
+            <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
+
 
           </div>
         </div>
