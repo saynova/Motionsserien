@@ -123,27 +123,24 @@ function MissingScores({
   const [y = 0, m = 1, d = 1] = season.start_monday.split("-").map(Number);
   const tue = new Date(Date.UTC(y, m - 1, d + (week - 1) * 7 + 1));
   const showFrom = `${tue.toISOString().slice(0, 10)} 10:00`;
-  if (now < showFrom) return null;
+  const thu = new Date(tue.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const showUntil = `${thu.toISOString().slice(0, 10)} 10:00`;
+  if (now < showFrom || now >= showUntil) return null;
 
   const missing = matches.filter((x) => x.status === "scheduled");
   if (missing.length === 0) return null;
   const name = new Map(teams.map((t) => [t.id, t.name]));
-  const teamNames = [...new Set(missing.flatMap((x) => [x.team_a_id, x.team_b_id]))]
-    .map((id) => name.get(id) ?? "Unknown team")
-    .sort((a, b) => a.localeCompare(b));
 
   return (
-    <div className="mt-5 rounded-lg border border-destructive/25 bg-destructive/5 p-4">
+    <div className="rounded-lg border border-destructive/25 bg-destructive/5 p-4">
       <p className="text-sm font-semibold text-destructive">
         Missing scores · {missing.length} {missing.length === 1 ? "match" : "matches"}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        These teams have not submitted their result yet:
-      </p>
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {teamNames.map((n) => (
-          <li key={n} className="rounded-full border border-destructive/30 bg-card px-3 py-1 text-xs font-semibold">
-            {n}
+      <ul className="mt-2 space-y-1.5">
+        {missing.map((x) => (
+          <li key={x.id} className="text-xs font-semibold">
+            <span className="text-muted-foreground">Div {x.division}:</span>{" "}
+            {name.get(x.team_a_id) ?? "Unknown"} vs {name.get(x.team_b_id) ?? "Unknown"}
           </li>
         ))}
       </ul>
