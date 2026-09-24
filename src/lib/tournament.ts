@@ -249,22 +249,42 @@ export function computeStandings(
       row.pointDiff = row.pointsFor - row.pointsAgainst;
     }
 
-    // Matches won decides first; teams level on wins are separated by the total
-    // points they scored across all sets that week, then by set/point difference.
-    rows.sort(
-      (x, y) =>
-        y.matchWins - x.matchWins ||
-        y.pointsFor - x.pointsFor ||
-        y.setDiff - x.setDiff ||
-        y.pointDiff - x.pointDiff ||
-        y.tieBreakAdj - x.tieBreakAdj ||
-        x.position - y.position,
-    );
+    const weekNo = divisionSlots[0]?.week_no ?? 0;
+    const finalCount = matches.filter(
+      (m) => m.division === division && m.status === "final",
+    ).length;
+    const expectedMatches = (rows.length * (rows.length - 1)) / 2;
+    const allApproved = expectedMatches > 0 && finalCount >= expectedMatches;
+
+    if (weekNo >= 3) {
+      // From week 3: match wins, then set difference, then point difference.
+      rows.sort(
+        (x, y) =>
+          y.matchWins - x.matchWins ||
+          y.setDiff - x.setDiff ||
+          y.pointDiff - x.pointDiff ||
+          y.pointsFor - x.pointsFor ||
+          y.tieBreakAdj - x.tieBreakAdj ||
+          x.position - y.position,
+      );
+    } else {
+      // Weeks 1–2 (historical): match wins, then total points scored.
+      rows.sort(
+        (x, y) =>
+          y.matchWins - x.matchWins ||
+          y.pointsFor - x.pointsFor ||
+          y.setDiff - x.setDiff ||
+          y.pointDiff - x.pointDiff ||
+          y.tieBreakAdj - x.tieBreakAdj ||
+          x.position - y.position,
+      );
+    }
 
     rows.forEach((row, i) => {
       row.rank = i + 1;
-      row.movement = movementFor(division, row.rank);
-      row.nextDivision = nextDivisionFor(division, row.rank);
+      // Until every match in the division is approved, everyone shows "stays".
+      row.movement = allApproved ? movementFor(division, row.rank) : "stay";
+      row.nextDivision = allApproved ? nextDivisionFor(division, row.rank) : division;
     });
 
     byDivision.set(division, rows);
