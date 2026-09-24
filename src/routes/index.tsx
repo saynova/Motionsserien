@@ -123,27 +123,24 @@ function MissingScores({
   const [y = 0, m = 1, d = 1] = season.start_monday.split("-").map(Number);
   const tue = new Date(Date.UTC(y, m - 1, d + (week - 1) * 7 + 1));
   const showFrom = `${tue.toISOString().slice(0, 10)} 10:00`;
-  if (now < showFrom) return null;
+  const thu = new Date(tue.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const showUntil = `${thu.toISOString().slice(0, 10)} 10:00`;
+  if (now < showFrom || now >= showUntil) return null;
 
   const missing = matches.filter((x) => x.status === "scheduled");
   if (missing.length === 0) return null;
   const name = new Map(teams.map((t) => [t.id, t.name]));
-  const teamNames = [...new Set(missing.flatMap((x) => [x.team_a_id, x.team_b_id]))]
-    .map((id) => name.get(id) ?? "Unknown team")
-    .sort((a, b) => a.localeCompare(b));
 
   return (
-    <div className="mt-5 rounded-lg border border-destructive/25 bg-destructive/5 p-4">
+    <div className="rounded-lg border border-destructive/25 bg-destructive/5 p-4">
       <p className="text-sm font-semibold text-destructive">
         Missing scores · {missing.length} {missing.length === 1 ? "match" : "matches"}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        These teams have not submitted their result yet:
-      </p>
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {teamNames.map((n) => (
-          <li key={n} className="rounded-full border border-destructive/30 bg-card px-3 py-1 text-xs font-semibold">
-            {n}
+      <ul className="mt-2 space-y-1.5">
+        {missing.map((x) => (
+          <li key={x.id} className="text-xs font-semibold">
+            <span className="text-muted-foreground">Div {x.division}:</span>{" "}
+            {name.get(x.team_a_id) ?? "Unknown"} vs {name.get(x.team_b_id) ?? "Unknown"}
           </li>
         ))}
       </ul>
@@ -177,19 +174,21 @@ function StandingsPage() {
               Week {week} scores
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
-            <Button
-              size="default"
-              className="mt-4 h-10 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
-              asChild
-            >
-              <Link to="/submit">
-                <Send className="size-4" aria-hidden="true" />
-                Submit Your Score
-              </Link>
-            </Button>
-            <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
-
-
+            <div className="mt-4 flex flex-wrap items-start gap-4">
+              <Button
+                size="default"
+                className="h-10 shrink-0 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
+                asChild
+              >
+                <Link to="/submit">
+                  <Send className="size-4" aria-hidden="true" />
+                  Submit Your Score
+                </Link>
+              </Button>
+              <div className="min-w-0 flex-1 sm:max-w-md">
+                <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
+              </div>
+            </div>
           </div>
         </div>
 
