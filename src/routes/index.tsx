@@ -174,19 +174,21 @@ function StandingsPage() {
               Week {week} scores
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
-            <Button
-              size="default"
-              className="mt-4 h-10 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
-              asChild
-            >
-              <Link to="/submit">
-                <Send className="size-4" aria-hidden="true" />
-                Submit Your Score
-              </Link>
-            </Button>
-            <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
-
-
+            <div className="mt-4 flex flex-wrap items-start gap-4">
+              <Button
+                size="default"
+                className="h-10 shrink-0 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
+                asChild
+              >
+                <Link to="/submit">
+                  <Send className="size-4" aria-hidden="true" />
+                  Submit Your Score
+                </Link>
+              </Button>
+              <div className="min-w-0 flex-1 sm:max-w-md">
+                <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
+              </div>
+            </div>
           </div>
         </div>
 
