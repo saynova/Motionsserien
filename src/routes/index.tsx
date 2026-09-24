@@ -120,7 +120,7 @@ function MissingScores({
   }, []);
   if (!now) return null;
 
-  const [y, m, d] = season.start_monday.split("-").map(Number);
+  const [y = 0, m = 1, d = 1] = season.start_monday.split("-").map(Number);
   const tue = new Date(Date.UTC(y, m - 1, d + (week - 1) * 7 + 1));
   const showFrom = `${tue.toISOString().slice(0, 10)} 10:00`;
   if (now < showFrom) return null;
