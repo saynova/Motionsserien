@@ -416,3 +416,16 @@
     animation: none;
   }
 }
+
+@keyframes petal-fall {
+  0% { transform: translate3d(0, -5vh, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.95; }
+  100% { transform: translate3d(var(--petal-drift, 0px), 105vh, 0) rotate(540deg); opacity: 0; }
+}
+.petal-fall {
+  animation-name: petal-fall;
+  animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  box-shadow: inset -2px -2px 4px rgb(0 0 0 / 0.06);
+}

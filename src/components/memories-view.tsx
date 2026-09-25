@@ -1,3 +1,4 @@
+import type React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Camera, Crown, Trophy, X } from "lucide-react";
@@ -92,6 +93,58 @@ function Lightbox({ photo, onClose }: { photo: GalleryPhoto; onClose: () => void
   );
 }
 
+const PETAL_COLORS = ["#f9a8d4", "#fda4af", "#fbcfe8", "#fcd34d", "#fde68a", "#fecdd3"];
+
+function PetalCelebration({ championId }: { championId: string }) {
+  const [petals, setPetals] = useState<
+    { left: number; delay: number; duration: number; size: number; drift: number; color: string }[]
+  >([]);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const key = `mssn-petals-${championId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    const count = window.innerWidth < 640 ? 22 : 38;
+    setPetals(
+      Array.from({ length: count }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 2.5,
+        duration: 5 + Math.random() * 3,
+        size: 10 + Math.random() * 10,
+        drift: (Math.random() - 0.5) * 160,
+        color: PETAL_COLORS[i % PETAL_COLORS.length]!,
+      })),
+    );
+    const timer = window.setTimeout(() => setPetals([]), 11000);
+    return () => window.clearTimeout(timer);
+  }, [championId]);
+
+  if (petals.length === 0) return null;
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+      {petals.map((p, i) => (
+        <span
+          key={i}
+          className="petal-fall absolute -top-8 block"
+          style={
+            {
+              left: `${p.left}%`,
+              width: p.size,
+              height: p.size * 0.7,
+              background: p.color,
+              borderRadius: "80% 0 80% 0",
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.duration}s`,
+              "--petal-drift": `${p.drift}px`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 export function MemoriesView() {
   const { data } = useSuspenseQuery(memoriesQueryOptions);
   const [open, setOpen] = useState<GalleryPhoto | null>(null);
@@ -101,6 +154,7 @@ export function MemoriesView() {
 
   return (
     <div className="space-y-12">
+      {data.seasonFinished && champions[0] ? <PetalCelebration championId={champions[0].id} /> : null}
       <section>
         <header className="text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-amber-700">
