@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Rich-text admin emails: HTML from the editor is cleaned with src/lib/email-html.ts before sending and after translation — keeps unsafe content out of emails.
