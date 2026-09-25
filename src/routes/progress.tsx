@@ -204,7 +204,7 @@ export function ProgressPage() {
             {ordered.map((team) => (
               <tr key={team.id} className="border-b border-border/60 last:border-0">
                 <td className="sticky left-0 bg-card px-4 py-2.5 font-semibold whitespace-nowrap">
-                  <button type="button" onClick={() => setDetailTeamId(team.id)} className="text-left text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <button type="button" onClick={() => setDetailTeamId(team.id)} className="text-left underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     {team.name}
                   </button>
                 </td>
