@@ -49,7 +49,7 @@ const SEASON_COLUMNS = "id, name, start_monday, total_weeks, current_week, is_ac
 
 export const getTournament = createServerFn({ method: "GET" }).handler(
   async (): Promise<TournamentSnapshot> => {
-    const { readClient } = await import("./tournament.server");
+    const { adminClient, readClient } = await import("./tournament.server");
     const supabase = readClient();
 
     const seasonResult = await supabase
