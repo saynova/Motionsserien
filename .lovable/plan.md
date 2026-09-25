@@ -4,23 +4,28 @@ One login for the whole site, used for registering, submitting scores and gettin
 
 ## Decisions
 - Sign-in is required to submit scores **from the next tournament only**. The current season keeps open score submission.
-- An account is linked to a team **automatically when its verified email matches** a player email on that team's registration.
+- **One account registers one team.** The player who registers already has their account, so they never sign up again to submit scores.
+- **Player 2 can use any email** to make their own account and join the team.
 - The invoice design comes from **your PDF template**. The app fills in only **Namn** and **Datum**.
 
 ## 1. Accounts and sign-in
-- A new **Sign in** page with three options: email and password, Google, and Apple.
+- A new **Sign in / Create account** page with three options: email and password, Google, and Apple.
 - Email accounts must confirm their email before they can do anything. Google and Apple emails count as confirmed.
+- **Browsers can save the password.** The sign-in and sign-up forms are built so Chrome, Safari, Edge and phone password managers offer to save and fill it in.
+- You stay signed in on that browser until you choose **Sign out**.
 - Forgot-password and reset-password pages.
-- The site header shows "Sign in" when you're signed out, and a **My account** menu with Sign out when you're signed in.
-- A **My account** page shows your teams for each tournament, your score status and your invoices.
+- The site header shows "Sign in" when you're signed out, and a **My account** menu with **Sign out** when you're signed in.
+- A **My account** page shows your team for each tournament, your score status and your invoices.
 - The admin area keeps its own password sign-in. Player accounts get no admin access.
 
 ## 2. Team registration (next tournament onward)
 - You must be signed in and verified to register a team. Your account email fills in as Player 1 automatically.
-- Player 2 is linked automatically once they sign in with the email given on the registration.
+- Each account can register **only one team per tournament**.
+- After registering, Player 1 gets a short **team join code** on My account to share with their partner.
+- Player 2 signs in with **any email** and enters the code, and their account is linked to the team. A team can have at most two linked accounts.
 - Protection against duplicates:
   - one team name per tournament
-  - a player email can be on only one team per tournament
+  - an account can be on only one team per tournament
   - the same account can't register twice
 - Each tournament keeps its own teams and players. Accounts carry over to the next one.
 - When the admin approves a team, it gets every feature automatically: standings, schedule, payments and reminders.
