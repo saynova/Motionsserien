@@ -93,6 +93,7 @@ export async function sendAutomaticScoreReminders() {
           closingEn: settings.closingEn,
           closingSv: settings.closingSv,
           signature: settings.signature,
+          footer: settings.footer,
         },
         idempotencyKey: `auto-score-reminder-${match.id}-${player.email}-${day}-${crypto
           .randomUUID()

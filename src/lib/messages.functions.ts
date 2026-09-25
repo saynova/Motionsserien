@@ -1,3 +1,4 @@
+import { htmlToText, looksLikeHtml, sanitizeEmailHtml } from "./email-html";
 import { createServerFn } from "@tanstack/react-start";
 
 const TOPICS = ["question", "feedback", "scoring", "other"] as const;
@@ -121,10 +122,12 @@ export const replyToMessage = createServerFn({ method: "POST" })
     if (typeof data?.messageId !== "string" || data.messageId.length < 10) {
       throw new Error("Message ID is required.");
     }
-    const replyBody = (data?.replyBody ?? "").trim();
-    if (replyBody.length < 2 || replyBody.length > 4000) {
-      throw new Error("Reply must be between 2 and 4000 characters.");
+    const rawReply = (data?.replyBody ?? "").trim();
+    const plain = htmlToText(rawReply);
+    if (plain.length < 2 || plain.length > 6000 || rawReply.length > 40000) {
+      throw new Error("Reply must be between 2 and 6000 characters.");
     }
+    const replyBody = looksLikeHtml(rawReply) ? sanitizeEmailHtml(rawReply) : rawReply;
     return { messageId: data.messageId, replyBody };
   })
   .handler(async ({ data }) => {
@@ -145,7 +148,8 @@ export const replyToMessage = createServerFn({ method: "POST" })
 
     const { getEmailSettings } = await import("./email-settings.server");
     const settings = await getEmailSettings(client);
-    const swedishReply = await translateEmailBodyToSwedish(data.replyBody);
+    const swedishRaw = await translateEmailBodyToSwedish(data.replyBody);
+    const swedishReply = looksLikeHtml(data.replyBody) ? sanitizeEmailHtml(swedishRaw) : swedishRaw;
     const result = await sendTemplateEmail("message-reply", message.data.email, {
       templateData: {
         name: message.data.name,
@@ -155,6 +159,7 @@ export const replyToMessage = createServerFn({ method: "POST" })
         closingEn: settings.closingEn,
         closingSv: settings.closingSv,
         signature: settings.signature,
+        footer: settings.footer,
       },
       idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}-${crypto.randomUUID().slice(0, 8)}`,
     });

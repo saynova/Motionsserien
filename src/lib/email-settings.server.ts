@@ -8,6 +8,7 @@ export type EmailSettings = {
   closingSv: string;
   /** Signature lines separated by newlines. */
   signature: string;
+  footer: string;
 };
 
 export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
@@ -16,6 +17,7 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
   closingSv:
     "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
   signature: "Best Regards\nThe General\nMd Rabiul Islam",
+  footer: "Motionsserien HT-26 · Ludvika Badmintonklubb",
 };
 
 /**
@@ -27,7 +29,7 @@ export async function getEmailSettings(
 ): Promise<EmailSettings> {
   const { data, error } = await client
     .from("email_settings")
-    .select("closing_en, closing_sv, signature")
+    .select("closing_en, closing_sv, signature, footer")
     .order("updated_at", { ascending: false })
     .limit(1);
   if (error) throw new Error(error.message);
@@ -36,5 +38,6 @@ export async function getEmailSettings(
     closingEn: row?.closing_en?.trim() || DEFAULT_EMAIL_SETTINGS.closingEn,
     closingSv: row?.closing_sv?.trim() || DEFAULT_EMAIL_SETTINGS.closingSv,
     signature: row?.signature?.trim() || DEFAULT_EMAIL_SETTINGS.signature,
+    footer: row?.footer?.trim() || DEFAULT_EMAIL_SETTINGS.footer,
   };
 }

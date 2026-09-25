@@ -1,3 +1,4 @@
+import { htmlToText, looksLikeHtml, sanitizeEmailHtml } from "./email-html";
 import { createServerFn } from "@tanstack/react-start";
 
 export type TeamContact = {
@@ -208,6 +209,7 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
           closingEn: settings.closingEn,
           closingSv: settings.closingSv,
           signature: settings.signature,
+          footer: settings.footer,
         },
         idempotencyKey: `score-reminder-${match.data.id}-${player.email}-${new Date()
           .toISOString()
@@ -289,7 +291,7 @@ export const listDivisionPlayers = createServerFn({ method: "POST" }).handler(
 );
 
 type GeneralEmailInput = {
-  mode: "player" | "division" | "address";
+  mode: "player" | "division" | "address" | "all";
   division?: number;
   email?: string;
   subject: string;
@@ -299,7 +301,7 @@ type GeneralEmailInput = {
 export const sendGeneralEmail = createServerFn({ method: "POST" })
   .inputValidator((data: GeneralEmailInput) => {
     const mode = data?.mode;
-    if (mode !== "player" && mode !== "division" && mode !== "address") {
+    if (mode !== "player" && mode !== "division" && mode !== "address" && mode !== "all") {
       throw new Error("Choose who should receive the email.");
     }
     const subject = (data?.subject ?? "").trim();
@@ -307,8 +309,9 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
     if (subject.length < 2 || subject.length > 150) {
       throw new Error("Subject must be between 2 and 150 characters.");
     }
-    if (body.length < 2 || body.length > 4000) {
-      throw new Error("Message must be between 2 and 4000 characters.");
+    const plain = htmlToText(body);
+    if (plain.length < 2 || plain.length > 6000 || body.length > 40000) {
+      throw new Error("Message must be between 2 and 6000 characters.");
     }
     const email = (data?.email ?? "").trim();
     let emails: string[] = [];
@@ -332,7 +335,7 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
     if (mode === "division" && !(division >= 1 && division <= 10)) {
       throw new Error("Choose a division.");
     }
-    return { mode, division, email, emails, subject, body };
+    return { mode, division, email, emails, subject, body: looksLikeHtml(body) ? sanitizeEmailHtml(body) : body };
   })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("./admin-session.server");
@@ -349,7 +352,9 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
     } else {
       const all = await listDivisionPlayers();
       recipients =
-        data.mode === "player"
+        data.mode === "all"
+          ? Array.from(new Map(all.map((p) => [p.email.toLowerCase(), { email: p.email, name: p.name }])).values())
+          : data.mode === "player"
           ? all
               .filter((p) => p.email.toLowerCase() === data.email.toLowerCase())
               .map((p) => ({ email: p.email, name: p.name }))
@@ -365,10 +370,13 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
 
     const day = new Date().toISOString().slice(0, 10);
     const tag = `${data.subject.length}-${data.body.length}`;
-    const swedishBody = await translateEmailBodyToSwedish(data.body);
+    const swedishRaw = await translateEmailBodyToSwedish(data.body);
+    const swedishBody = looksLikeHtml(data.body) ? sanitizeEmailHtml(swedishRaw) : swedishRaw;
     let sent = 0;
     let suppressed = 0;
+    let failed = 0;
     for (const recipient of recipients) {
+      try {
       const result = await sendTemplateEmail("general-email", recipient.email, {
         templateData: {
           name: recipient.name,
@@ -378,12 +386,18 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
           closingEn: settings.closingEn,
           closingSv: settings.closingSv,
           signature: settings.signature,
+          footer: settings.footer,
         },
         idempotencyKey: `general-${tag}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });
       if (result.sent) sent += 1;
       else suppressed += 1;
+      } catch (error) {
+        console.error("General email failed", recipient.email, error);
+        failed += 1;
+      }
     }
+    if (sent === 0 && failed > 0) throw new Error("The email could not be sent. Please try again.");
 
-    return { ok: true as const, sent, suppressed };
+    return { ok: true as const, sent, suppressed, failed };
   });

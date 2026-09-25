@@ -13,7 +13,7 @@ export const getEmailSettingsAdmin = createServerFn({ method: "POST" }).handler(
   },
 );
 
-type SaveInput = { closingEn: string; closingSv: string; signature: string };
+type SaveInput = { closingEn: string; closingSv: string; signature: string; footer: string };
 
 export const saveEmailSettings = createServerFn({ method: "POST" })
   .inputValidator((data: SaveInput) => {
@@ -30,7 +30,9 @@ export const saveEmailSettings = createServerFn({ method: "POST" })
     if (signature.length < 2 || signature.length > 500) {
       throw new Error("The signature must be between 2 and 500 characters.");
     }
-    return { closingEn, closingSv, signature };
+    const footer = clean(data?.footer);
+    if (footer.length > 300) throw new Error("The footer must be at most 300 characters.");
+    return { closingEn, closingSv, signature, footer };
   })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("./admin-session.server");
@@ -49,6 +51,7 @@ export const saveEmailSettings = createServerFn({ method: "POST" })
       closing_en: data.closingEn,
       closing_sv: data.closingSv,
       signature: data.signature,
+      footer: data.footer,
     };
 
     if (existing.data?.[0]) {
