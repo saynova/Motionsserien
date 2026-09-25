@@ -488,6 +488,33 @@ export type Database = {
         }
         Relationships: []
       }
+      site_branding: {
+        Row: {
+          created_at: string
+          header_subtitle: string
+          header_title: string
+          id: string
+          tournament_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          header_subtitle?: string
+          header_title?: string
+          id?: string
+          tournament_name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          header_subtitle?: string
+          header_title?: string
+          id?: string
+          tournament_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_support_settings: {
         Row: {
           created_at: string
