@@ -255,6 +255,7 @@ export type Database = {
       messages: {
         Row: {
           body: string
+          body_en: string | null
           created_at: string
           email: string
           id: string
@@ -268,6 +269,7 @@ export type Database = {
         }
         Insert: {
           body: string
+          body_en?: string | null
           created_at?: string
           email: string
           id?: string
@@ -281,6 +283,7 @@ export type Database = {
         }
         Update: {
           body?: string
+          body_en?: string | null
           created_at?: string
           email?: string
           id?: string
