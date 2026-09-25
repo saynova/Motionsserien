@@ -176,7 +176,7 @@ function StandingsPage() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-              Week {week} scores
+              Week {currentWeek} scores
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
             <div className="mt-4 flex flex-wrap items-start gap-4">
@@ -191,7 +191,7 @@ function StandingsPage() {
                 </Link>
               </Button>
               <div className="min-w-0 flex-1 sm:max-w-md">
-                <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
+                <MissingScores season={season} week={currentWeek} matches={weekMatches} teams={teams} />
               </div>
             </div>
           </div>
