@@ -215,10 +215,26 @@ function StandingsPage() {
 
       <PageHeader
         eyebrow={`Play date · ${formatWeekDate(season.start_monday, week)}`}
-        title="Current standings"
+        title={week === currentWeek ? "Current standings" : `Week ${week} standings`}
         description="Rank 1 moves up, rank 2 stays, and rank 3 moves down. Only approved scores count."
       >
         <div className="flex flex-wrap items-center gap-3 text-sm">
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Select week">
+            {availableWeeks.map((w) => (
+              <button
+                key={w}
+                type="button"
+                onClick={() => setWeek(w)}
+                className={`rounded-full border px-3 py-1.5 font-semibold transition-all duration-200 ${
+                  w === week
+                    ? "border-primary bg-primary text-primary-foreground shadow-[0_4px_12px_rgba(79,70,229,0.25)]"
+                    : "border-border bg-secondary text-muted-foreground hover:-translate-y-px hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Week {w}
+              </button>
+            ))}
+          </div>
           <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
           <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
         </div>
