@@ -191,7 +191,7 @@ function StandingsPage() {
                 </Link>
               </Button>
               <div className="min-w-0 flex-1 sm:max-w-md">
-                <MissingScores season={season} week={currentWeek} matches={weekMatches} teams={teams} />
+                <MissingScores season={season} week={currentWeek} matches={matches.filter((m) => m.week_no === currentWeek)} teams={teams} />
               </div>
             </div>
           </div>
@@ -204,7 +204,7 @@ function StandingsPage() {
           </div>
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
             <CalendarRange className="size-5 text-primary" aria-hidden="true" />
-            <div><dd className="tabnum text-lg font-bold">{week} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
+            <div><dd className="tabnum text-lg font-bold">{currentWeek} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
             <Layers3 className="size-5 text-primary" aria-hidden="true" />
