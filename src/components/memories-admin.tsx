@@ -185,7 +185,7 @@ export function MemoriesAdmin() {
             <input
               className={control}
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/*"
               onChange={(event) => setChampionFile(event.target.files?.[0] ?? null)}
             />
           </label>
@@ -278,7 +278,7 @@ export function MemoriesAdmin() {
               className={control}
               type="file"
               multiple
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/*"
               onChange={(event) => setPhotoFiles([...(event.target.files ?? [])])}
             />
           </label>
@@ -288,8 +288,8 @@ export function MemoriesAdmin() {
           disabled={busy || photoFiles.length === 0}
           onClick={() =>
             run(async () => {
-              const images = await readFiles(photoFiles);
-              await addPhotos({ data: { caption, images } });
+              const paths = await uploadFiles(photoFiles, "photo", getSlots);
+              await addPhotos({ data: { caption, paths } });
               setCaption("");
               setPhotoFiles([]);
             }, "Photos uploaded.")
