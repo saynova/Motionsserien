@@ -19,7 +19,7 @@ import {
   Underline as UnderlineIcon,
 } from "lucide-react";
 
-const SIZES = ["12px", "14px", "16px", "18px", "22px", "28px"];
+const SIZES = ["11px", "12px", "14px", "16px", "18px", "22px", "28px"];
 
 type Props = {
   value: string;
