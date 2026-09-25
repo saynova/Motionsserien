@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
-import { Bell, CheckCheck, ClipboardCheck, MessageSquare, Package, UserPlus } from "lucide-react";
+import { Bell, CheckCheck, ClipboardCheck, ImageIcon, MessageSquare, Package, Trophy, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 import { getAdminNotifications, type AdminNotification } from "@/lib/notifications.functions";
 
@@ -12,7 +13,8 @@ export function useAdminNotifications() {
   const query = useQuery({
     queryKey: ["admin-notifications"],
     queryFn: () => load(),
-    refetchInterval: 60_000,
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
   const [seen, setSeen] = useState<Set<string>>(new Set());
@@ -35,8 +37,38 @@ export function useAdminNotifications() {
     }
   }, []);
 
+  // Keep read state in sync across tabs of the same browser.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== SEEN_KEY || !e.newValue) return;
+      try {
+        setSeen(new Set(JSON.parse(e.newValue) as string[]));
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const items = query.data ?? [];
   const unread = items.filter((item) => !seen.has(item.id));
+
+  // Show the unread count in the browser tab and toast when new ones arrive.
+  const [known, setKnown] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    if (!query.data) return;
+    if (known) {
+      const fresh = query.data.filter((i) => !known.has(i.id) && !seen.has(i.id));
+      if (fresh.length > 0) toast.info(fresh.length === 1 ? fresh[0].title : `${fresh.length} new notifications`);
+    }
+    setKnown(new Set(query.data.map((i) => i.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.data]);
+  useEffect(() => {
+    const base = document.title.replace(/^\(\d+\+?\)\s*/, "");
+    document.title = unread.length > 0 ? `(${unread.length > 99 ? "99+" : unread.length}) ${base}` : base;
+  }, [unread.length]);
 
   return {
     items,
@@ -55,6 +87,8 @@ const ICONS: Record<AdminNotification["kind"], typeof Bell> = {
   score: ClipboardCheck,
   shuttle: Package,
   registration: UserPlus,
+  champion: Trophy,
+  photo: ImageIcon,
 };
 
 function timeAgo(value: string) {
@@ -82,8 +116,8 @@ export function NotificationsPanel({
             <Bell className="h-5 w-5 text-primary" /> Notifications
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            New questions, submitted scores, shuttle orders and team registrations that need your
-            attention. Updates every minute.
+            New questions, submitted scores, shuttle orders, registrations, champions and photos that need your
+            attention. Updates automatically every few seconds.
           </p>
         </div>
         <button
