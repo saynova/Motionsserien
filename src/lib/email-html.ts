@@ -47,20 +47,21 @@ export function sanitizeEmailHtml(input: string): string {
     out += escapeText(src.slice(last, m.index));
     last = re.lastIndex;
     const closing = m[1] === "/";
-    const tag = m[2].toLowerCase();
+    const tag = (m[2] ?? "").toLowerCase();
+    const rawAttrs = m[3] ?? "";
     if (!ALLOWED_TAGS.has(tag)) continue;
     if (closing) {
       if (!VOID.has(tag)) out += `</${tag}>`;
       continue;
     }
     let attrs = "";
-    const style = attr(m[3], "style");
+    const style = attr(rawAttrs, "style");
     if (style) {
       const clean = cleanStyle(style);
       if (clean) attrs += ` style="${clean.replace(/"/g, "&quot;")}"`;
     }
     if (tag === "a") {
-      const href = (attr(m[3], "href") ?? "").trim();
+      const href = (attr(rawAttrs, "href") ?? "").trim();
       if (/^(https?:|mailto:)/i.test(href)) {
         attrs += ` href="${href.replace(/"/g, "&quot;")}" target="_blank" rel="noopener noreferrer"`;
       }
