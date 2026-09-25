@@ -220,7 +220,6 @@ function StandingsPage() {
       >
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <label className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Week</span>
             <select
               value={week}
               onChange={(e) => setWeek(Number(e.target.value))}
