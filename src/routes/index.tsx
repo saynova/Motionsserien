@@ -151,7 +151,12 @@ function MissingScores({
 function StandingsPage() {
   const { data } = useSuspenseQuery(tournamentQueryOptions);
   const { season, teams, slots, matches } = data;
-  const week = season.current_week;
+  const currentWeek = season.current_week;
+  const [week, setWeek] = useState(currentWeek);
+
+  const availableWeeks = [...new Set(slots.map((s) => s.week_no))]
+    .filter((w) => w <= currentWeek)
+    .sort((a, b) => a - b);
 
   const weekSlots = slots.filter((s) => s.week_no === week);
   const weekMatches = matches.filter((m) => m.week_no === week);
@@ -171,7 +176,7 @@ function StandingsPage() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-              Week {week} scores
+              Week {currentWeek} scores
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
             <div className="mt-4 flex flex-wrap items-start gap-4">
@@ -186,7 +191,7 @@ function StandingsPage() {
                 </Link>
               </Button>
               <div className="min-w-0 flex-1 sm:max-w-md">
-                <MissingScores season={season} week={week} matches={weekMatches} teams={teams} />
+                <MissingScores season={season} week={currentWeek} matches={matches.filter((m) => m.week_no === currentWeek)} teams={teams} />
               </div>
             </div>
           </div>
@@ -199,7 +204,7 @@ function StandingsPage() {
           </div>
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
             <CalendarRange className="size-5 text-primary" aria-hidden="true" />
-            <div><dd className="tabnum text-lg font-bold">{week} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
+            <div><dd className="tabnum text-lg font-bold">{currentWeek} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
           <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
             <Layers3 className="size-5 text-primary" aria-hidden="true" />
@@ -210,10 +215,26 @@ function StandingsPage() {
 
       <PageHeader
         eyebrow={`Play date · ${formatWeekDate(season.start_monday, week)}`}
-        title="Current standings"
+        title={week === currentWeek ? "Current standings" : `Week ${week} standings`}
         description="Rank 1 moves up, rank 2 stays, and rank 3 moves down. Only approved scores count."
       >
         <div className="flex flex-wrap items-center gap-3 text-sm">
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Select week">
+            {availableWeeks.map((w) => (
+              <button
+                key={w}
+                type="button"
+                onClick={() => setWeek(w)}
+                className={`rounded-full border px-3 py-1.5 font-semibold transition-all duration-200 ${
+                  w === week
+                    ? "border-primary bg-primary text-primary-foreground shadow-[0_4px_12px_rgba(79,70,229,0.25)]"
+                    : "border-border bg-secondary text-muted-foreground hover:-translate-y-px hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Week {w}
+              </button>
+            ))}
+          </div>
           <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
           <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
         </div>
