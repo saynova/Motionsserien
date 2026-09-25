@@ -15,6 +15,7 @@ One login for the whole site, used for registering, submitting scores and gettin
 ## 1. Accounts and sign-in
 - A new **Sign in / Create account** page with three options: email and password, Google, and Apple.
 - Email accounts must confirm their email first. Google and Apple emails count as confirmed.
+- After signing up, the page says: "We've sent you a confirmation email. If you can't find it, check your **junk or spam** folder." The same reminder appears on the forgot-password page.
 - **Browsers can save the password.** The forms are built so Chrome, Safari, Edge and phone password managers offer to save and fill it in.
 - You stay signed in on that browser until you choose **Sign out**.
 - Forgot-password and reset-password pages.
@@ -26,7 +27,7 @@ One login for the whole site, used for registering, submitting scores and gettin
 - You must be signed in and verified to register a team. Your account email fills in as Player 1 automatically.
 - Each account can register **only one team per tournament**.
 - Player 2 signs up with **any email**, then **picks their team** from a list of this tournament's teams that are still missing a second player. No code is needed.
-- Player 1 gets an email and a notice on My account to **confirm** their partner, so a stranger can't join the team. The admin can also confirm or remove a player.
+- Player 2 is added **straight away**, and Player 1 gets an email saying Player 2 has joined. If someone joins the wrong team, the admin can remove them in the admin page.
 - A team can have at most two accounts.
 - Protection against duplicates:
   - one team name per tournament
