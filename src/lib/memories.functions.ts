@@ -61,6 +61,7 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
     const { adminClient } = await import("./tournament.server");
     const client = adminClient();
 
+    try {
     const [settings, champions, photos] = await Promise.all([
       client
         .from("site_support_settings")
