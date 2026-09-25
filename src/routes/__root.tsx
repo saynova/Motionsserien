@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
 import {
   Outlet,
   Link,
@@ -137,16 +138,36 @@ const NAV = [
   { to: "/admin", label: "Admin" },
 ] as const;
 
+function useBrandedTitle() {
+  const { data } = useQuery(brandingQueryOptions());
+  const name = data?.tournamentName ?? DEFAULT_BRANDING.tournamentName;
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    const apply = () => {
+      if (document.title.includes(DEFAULT_BRANDING.tournamentName) && name !== DEFAULT_BRANDING.tournamentName) {
+        document.title = document.title.split(DEFAULT_BRANDING.tournamentName).join(name);
+      }
+    };
+    apply();
+    const t = window.setTimeout(apply, 50);
+    return () => window.clearTimeout(t);
+  }, [name, pathname]);
+}
+
 function SiteHeader() {
+  const { data } = useQuery(brandingQueryOptions());
+  const brand = data ?? DEFAULT_BRANDING;
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto w-full max-w-[96rem] px-3 py-3 sm:px-5 lg:px-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
           <Link to="/" className="col-start-1 row-start-1 flex min-w-0 items-baseline gap-1.5 sm:gap-2 lg:col-start-1">
             <span className="font-display text-xl font-bold text-primary sm:text-2xl">
-              Motionsserien
+              {brand.headerTitle}
             </span>
-            <span className="shrink-0 font-display text-xl font-bold text-foreground sm:text-2xl">HT-26</span>
+            {brand.headerSubtitle ? (
+              <span className="shrink-0 font-display text-xl font-bold text-foreground sm:text-2xl">{brand.headerSubtitle}</span>
+            ) : null}
           </Link>
           <nav className="col-span-2 row-start-2 flex min-w-0 flex-wrap items-center justify-center gap-1 lg:col-span-1 lg:col-start-2 lg:row-start-1">
             {NAV.map((item) => (
@@ -185,6 +206,11 @@ function VisitLogger() {
   return null;
 }
 
+function TitleSync() {
+  useBrandedTitle();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -195,6 +221,7 @@ function RootComponent() {
   if (isAdmin) {
     return (
       <QueryClientProvider client={queryClient}>
+        <TitleSync />
         <Outlet />
         <Toaster position="top-center" />
       </QueryClientProvider>
@@ -204,6 +231,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <VisitLogger />
+      <TitleSync />
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
         <SiteHeader />
         <main className="mx-auto w-full max-w-[96rem] flex-1 px-3 py-5 sm:px-5 sm:py-8 lg:px-8">

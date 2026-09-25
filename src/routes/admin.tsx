@@ -28,6 +28,9 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { BrandingAdmin } from "@/components/branding-admin";
+import { useQuery as useBrandQuery } from "@tanstack/react-query";
+import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
 import { NotificationsPanel, useAdminNotifications } from "@/components/admin-notifications";
 import { toast } from "sonner";
 
@@ -94,6 +97,7 @@ const SECTIONS = [
   { id: "email", label: "Send email", group: "Email", icon: Send },
   { id: "email-settings", label: "Email settings", group: "Email", icon: Settings2 },
   { id: "contacts", label: "Team contacts", group: "Email", icon: Contact },
+  { id: "branding", label: "Site name", group: "Season", icon: Settings2 },
   { id: "season", label: "Season settings", group: "Season", icon: CalendarCog },
   { id: "next-season", label: "Registration & seeding", group: "Season", icon: UserPlus },
   { id: "new-season", label: "Start new season", group: "Season", icon: Flag },
@@ -178,7 +182,7 @@ function AdminGate() {
             <ShieldCheck className="h-6 w-6" />
           </span>
           <h1 className="mt-3 font-display text-2xl font-bold tracking-tight">Admin sign-in</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Motionsserien HT-26 control panel</p>
+          <p className="mt-1 text-sm text-muted-foreground"><BrandName /> control panel</p>
         </div>
         <label className="block space-y-1">
           <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -358,7 +362,7 @@ function AdminConsole() {
         <ShieldCheck className="h-5 w-5" />
       </span>
       <div className="min-w-0 leading-tight">
-        <p className="truncate font-display text-sm font-bold">Motionsserien</p>
+        <p className="truncate font-display text-sm font-bold"><BrandName /></p>
         <p className="truncate text-xs text-muted-foreground">Admin console</p>
       </div>
     </div>
@@ -518,6 +522,7 @@ function AdminConsole() {
       ) : null}
 
       <div className="mt-6 space-y-6 first:mt-0">
+        {section === "branding" ? <BrandingAdmin /> : null}
         {section === "notifications" ? (
           <NotificationsPanel state={notifications} onOpen={goTo} />
         ) : null}
@@ -1311,4 +1316,9 @@ function ShuttleAdmin() {
       )}
     </section>
   );
+}
+
+function BrandName() {
+  const { data } = useBrandQuery(brandingQueryOptions());
+  return <>{data?.tournamentName ?? DEFAULT_BRANDING.tournamentName}</>;
 }

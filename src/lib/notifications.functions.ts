@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 export type AdminNotification = {
   id: string;
-  kind: "question" | "score" | "shuttle" | "registration";
+  kind: "question" | "score" | "shuttle" | "registration" | "champion" | "photo";
   title: string;
   detail: string;
   at: string;
@@ -16,7 +16,8 @@ export const getAdminNotifications = createServerFn({ method: "POST" }).handler(
     const { adminClient } = await import("./tournament.server");
     const client = adminClient();
 
-    const [messages, scores, shuttles, regs, teams] = await Promise.all([
+    const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    const [messages, scores, shuttles, regs, teams, champs, photos] = await Promise.all([
       client
         .from("messages")
         .select("id, name, email, topic, created_at")
@@ -42,6 +43,8 @@ export const getAdminNotifications = createServerFn({ method: "POST" }).handler(
         .order("created_at", { ascending: false })
         .limit(30),
       client.from("teams").select("id, name"),
+      client.from("champions").select("id, team_name, season_title, created_at").gte("created_at", since).limit(20),
+      client.from("gallery_photos").select("id, caption, created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(20),
     ]);
 
     const teamName = (id: string) => teams.data?.find((t) => t.id === id)?.name ?? "Team";
@@ -85,6 +88,27 @@ export const getAdminNotifications = createServerFn({ method: "POST" }).handler(
         detail: "Waiting for approval",
         at: r.created_at,
         section: "next-season",
+      });
+    }
+
+    for (const c of champs.data ?? []) {
+      out.push({
+        id: `c-${c.id}`,
+        kind: "champion",
+        title: `Champion added · ${c.team_name}`,
+        detail: c.season_title,
+        at: c.created_at,
+        section: "memories",
+      });
+    }
+    for (const p of photos.data ?? []) {
+      out.push({
+        id: `p-${p.id}`,
+        kind: "photo",
+        title: "New gallery photo",
+        detail: p.caption || "Match day photo",
+        at: p.created_at,
+        section: "memories",
       });
     }
 
