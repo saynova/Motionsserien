@@ -107,38 +107,45 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
   },
 );
 
-type ImageInput = { base64: string; mimeType: string } | null | undefined;
-
-function validateImage(image: ImageInput) {
-  if (!image) return null;
-  const allowed = ["image/png", "image/jpeg", "image/webp"];
-  if (!allowed.includes(image.mimeType)) {
-    throw new Error("Use a PNG, JPEG or WebP image.");
+function validPath(path: unknown, prefix: string): string | null {
+  if (typeof path !== "string" || path.length === 0) return null;
+  if (!new RegExp(`^${prefix}-\\d+-[a-f0-9]{8}\\.jpg$`).test(path)) {
+    throw new Error("Invalid photo reference. Please upload again.");
   }
-  if (image.base64.length > 9_500_000) {
-    throw new Error("Each photo must be smaller than 7 MB.");
-  }
-  return image;
-}
-
-function extensionFor(mimeType: string) {
-  return mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
-}
-
-async function uploadImage(
-  client: ReturnType<typeof import("./tournament.server").adminClient>,
-  image: { base64: string; mimeType: string },
-  prefix: string,
-) {
-  const path = `${prefix}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${extensionFor(image.mimeType)}`;
-  const bytes = Uint8Array.from(atob(image.base64), (character) => character.charCodeAt(0));
-  const uploaded = await client.storage.from("gallery").upload(path, bytes, {
-    contentType: image.mimeType,
-    upsert: false,
-  });
-  if (uploaded.error) throw new Error(uploaded.error.message);
   return path;
 }
+
+async function assertUploaded(
+  client: ReturnType<typeof import("./tournament.server").adminClient>,
+  path: string,
+) {
+  const { data, error } = await client.storage.from("gallery").createSignedUrl(path, 60);
+  if (error || !data?.signedUrl) throw new Error("The photo did not finish uploading. Please try again.");
+}
+
+/** Gives the admin browser one-time direct upload slots (avoids request size limits). */
+export const createImageUploads = createServerFn({ method: "POST" })
+  .inputValidator((data: { kind: "champion" | "photo"; count: number }) => {
+    const kind = data?.kind === "champion" ? "champion" : "photo";
+    const count = Math.max(1, Math.min(10, Math.trunc(Number(data?.count) || 1)));
+    return { kind, count };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const client = adminClient();
+    const slots: { path: string; token: string }[] = [];
+    for (let i = 0; i < data.count; i++) {
+      const path = `${data.kind}-${Date.now()}-${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}.jpg`;
+      const { data: signed, error } = await client.storage
+        .from("gallery")
+        .createSignedUploadUrl(path);
+      if (error || !signed) throw new Error(error?.message ?? "Could not prepare upload.");
+      slots.push({ path, token: signed.token });
+    }
+    return { slots };
+  });
 
 // ------------------------------------------------------------ champion hall
 
@@ -148,7 +155,7 @@ type ChampionInput = {
   year: number;
   teamName: string;
   players: string;
-  image?: { base64: string; mimeType: string } | null;
+  imagePath?: string | null;
 };
 
 export const saveChampion = createServerFn({ method: "POST" })
@@ -160,14 +167,14 @@ export const saveChampion = createServerFn({ method: "POST" })
     if (seasonTitle.length < 2) throw new Error("Add a season title (for example HT-26).");
     if (teamName.length < 2) throw new Error("Add the winning team name.");
     if (!Number.isInteger(year) || year < 2000 || year > 2100) throw new Error("Enter a valid year.");
-    validateImage(data?.image);
+    const imagePath = validPath(data?.imagePath, "champion");
     return {
       id: typeof data?.id === "string" && data.id.length > 10 ? data.id : null,
       seasonTitle,
       year,
       teamName,
       players,
-      image: data?.image ?? null,
+      imagePath,
     };
   })
   .handler(async ({ data }) => {
@@ -176,8 +183,8 @@ export const saveChampion = createServerFn({ method: "POST" })
     const { adminClient } = await import("./tournament.server");
     const client = adminClient();
 
-    let imagePath: string | null = null;
-    if (data.image) imagePath = await uploadImage(client, data.image, "champion");
+    const imagePath = data.imagePath;
+    if (imagePath) await assertUploaded(client, imagePath);
 
     if (data.id) {
       const existing = await client
@@ -240,13 +247,13 @@ export const deleteChampion = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------- gallery
 
 export const addGalleryPhotos = createServerFn({ method: "POST" })
-  .inputValidator((data: { caption: string; images: { base64: string; mimeType: string }[] }) => {
+  .inputValidator((data: { caption: string; paths: string[] }) => {
     const caption = (data?.caption ?? "").trim().slice(0, 160);
-    const images = Array.isArray(data?.images) ? data.images : [];
-    if (images.length === 0) throw new Error("Choose at least one photo.");
-    if (images.length > 6) throw new Error("Upload at most 6 photos at a time.");
-    for (const image of images) validateImage(image);
-    return { caption, images };
+    const raw = Array.isArray(data?.paths) ? data.paths : [];
+    if (raw.length === 0) throw new Error("Choose at least one photo.");
+    if (raw.length > 10) throw new Error("Upload at most 10 photos at a time.");
+    const paths = raw.map((p) => validPath(p, "photo") as string);
+    return { caption, paths };
   })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("./admin-session.server");
@@ -254,14 +261,14 @@ export const addGalleryPhotos = createServerFn({ method: "POST" })
     const { adminClient } = await import("./tournament.server");
     const client = adminClient();
 
-    for (const image of data.images) {
-      const path = await uploadImage(client, image, "photo");
+    for (const path of data.paths) {
+      await assertUploaded(client, path);
       const { error } = await client
         .from("gallery_photos")
         .insert({ caption: data.caption, image_path: path });
       if (error) throw new Error(error.message);
     }
-    return { ok: true as const, added: data.images.length };
+    return { ok: true as const, added: data.paths.length };
   });
 
 export const updateGalleryPhoto = createServerFn({ method: "POST" })
