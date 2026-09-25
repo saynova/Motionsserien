@@ -155,6 +155,7 @@ export const replyToMessage = createServerFn({ method: "POST" })
         closingEn: settings.closingEn,
         closingSv: settings.closingSv,
         signature: settings.signature,
+        footer: settings.footer,
       },
       idempotencyKey: `message-reply-${message.data.id}-${data.replyBody.length}-${crypto.randomUUID().slice(0, 8)}`,
     });

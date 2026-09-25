@@ -21,6 +21,7 @@ export function EmailSettingsAdmin() {
   const [closingEn, setClosingEn] = useState("");
   const [closingSv, setClosingSv] = useState("");
   const [signature, setSignature] = useState("");
+  const [footer, setFooter] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -28,12 +29,13 @@ export function EmailSettingsAdmin() {
     setClosingEn(settings.data.closingEn);
     setClosingSv(settings.data.closingSv);
     setSignature(settings.data.signature);
+    setFooter(settings.data.footer);
   }, [settings.data]);
 
   async function submit() {
     setBusy(true);
     try {
-      await save({ data: { closingEn, closingSv, signature } });
+      await save({ data: { closingEn, closingSv, signature, footer } });
       await queryClient.invalidateQueries({ queryKey: ["email-settings", "admin"] });
       toast.success("Email settings saved. They apply to the next email you send.");
     } catch (error) {
@@ -83,6 +85,14 @@ export function EmailSettingsAdmin() {
             />
             <span className="block text-xs text-muted-foreground">
               One line per row — each row appears on its own line in the email.
+            </span>
+          </label>
+
+          <label className="block space-y-1">
+            <span className={label}>Footer</span>
+            <input className={field} value={footer} onChange={(e) => setFooter(e.target.value)} />
+            <span className="block text-xs text-muted-foreground">
+              Small line at the very bottom of every email. Leave empty to use the standard footer.
             </span>
           </label>
 

@@ -208,6 +208,7 @@ export const sendScoreReminder = createServerFn({ method: "POST" })
           closingEn: settings.closingEn,
           closingSv: settings.closingSv,
           signature: settings.signature,
+          footer: settings.footer,
         },
         idempotencyKey: `score-reminder-${match.data.id}-${player.email}-${new Date()
           .toISOString()
@@ -378,6 +379,7 @@ export const sendGeneralEmail = createServerFn({ method: "POST" })
           closingEn: settings.closingEn,
           closingSv: settings.closingSv,
           signature: settings.signature,
+          footer: settings.footer,
         },
         idempotencyKey: `general-${tag}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });

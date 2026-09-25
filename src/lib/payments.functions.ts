@@ -164,6 +164,7 @@ async function remindTeams(teamIds: string[]) {
           closingEn: settings.closingEn,
           closingSv: settings.closingSv,
           signature: settings.signature,
+          footer: settings.footer,
         },
         idempotencyKey: `payment-${teamId}-${recipient.email}-${day}-${crypto.randomUUID().slice(0, 8)}`,
       });

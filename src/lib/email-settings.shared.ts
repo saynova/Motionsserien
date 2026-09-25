@@ -6,6 +6,7 @@ export type EmailSettings = {
   closingSv: string;
   /** Signature lines separated by newlines. */
   signature: string;
+  footer: string;
 };
 
 export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
@@ -14,4 +15,5 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
   closingSv:
     "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
   signature: "Best Regards\nThe General\nMd Rabiul Islam",
+  footer: "Motionsserien HT-26 · Ludvika Badmintonklubb",
 };

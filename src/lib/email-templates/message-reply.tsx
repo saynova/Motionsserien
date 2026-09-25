@@ -10,6 +10,7 @@ interface Props {
   closingEn?: string;
   closingSv?: string;
   signature?: string;
+  footer?: string;
 }
 
 const paragraphs = (value: string) =>
@@ -26,6 +27,7 @@ const Email = ({
   closingEn = "If you have any further questions, please feel free to contact me through the website’s contact form.",
   closingSv = "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
   signature = "Best Regards\nThe General\nMd Rabiul Islam",
+  footer = "Motionsserien HT-26 · Ludvika Badmintonklubb",
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -67,7 +69,7 @@ const Email = ({
         ) : null}
 
         <Hr style={hr} />
-        <Text style={muted}>Motionsserien HT-26 · Ludvika Badmintonklubb</Text>
+        <Text style={muted}>{footer}</Text>
       </Container>
     </Body>
   </Html>
