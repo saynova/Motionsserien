@@ -20,6 +20,11 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    // Pre-bundle React + router together up front so the dev optimizer never
+    // re-runs mid-session and serves two different React copies.
+    optimizeDeps: {
+      include: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "@tanstack/react-router"],
+    },
     resolve: {
       alias: {
         "entities/lib/decode.js": path.resolve(process.cwd(), "node_modules/entities/lib/decode.js"),
