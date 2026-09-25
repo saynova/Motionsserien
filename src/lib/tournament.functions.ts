@@ -49,7 +49,7 @@ const SEASON_COLUMNS = "id, name, start_monday, total_weeks, current_week, is_ac
 
 export const getTournament = createServerFn({ method: "GET" }).handler(
   async (): Promise<TournamentSnapshot> => {
-    const { adminClient, readClient } = await import("./tournament.server");
+    const { readClient } = await import("./tournament.server");
     const supabase = readClient();
 
     const seasonResult = await supabase
@@ -66,7 +66,7 @@ export const getTournament = createServerFn({ method: "GET" }).handler(
     const [teamsResult, playersResult, slotsResult, matchesResult] = await Promise.all([
       supabase.from("teams").select("id, name, start_division").order("name"),
       // Player names are public tournament information; contact details are never selected.
-      adminClient().from("team_players").select("team_id, player_no, name").order("player_no"),
+      supabase.from("team_players").select("team_id, player_no, name").order("player_no"),
       supabase.from("week_slots").select(SLOT_COLUMNS).eq("season_id", season.id),
       supabase.from("matches").select(MATCH_COLUMNS).eq("season_id", season.id),
     ]);
