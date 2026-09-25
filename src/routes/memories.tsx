@@ -30,7 +30,7 @@ function MemoriesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Memories"
+        eyebrow="Photos"
         title="Champions & Gallery"
         description="Our Hall of Fame and the best moments from Monday nights in the Rackethall."
       />
