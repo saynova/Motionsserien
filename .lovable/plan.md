@@ -25,8 +25,9 @@ One login for the whole site, used for registering, submitting scores and gettin
 ## 2. Team registration (next tournament onward)
 - You must be signed in and verified to register a team. Your account email fills in as Player 1 automatically.
 - Each account can register **only one team per tournament**.
-- After registering, Player 1 sees a short **team join code** on My account to share with their partner.
-- Player 2 signs in with **any email** and enters the code, and their account is linked to the team. A team can have at most two accounts.
+- Player 2 signs up with **any email**, then **picks their team** from a list of this tournament's teams that are still missing a second player. No code is needed.
+- Player 1 gets an email and a notice on My account to **confirm** their partner, so a stranger can't join the team. The admin can also confirm or remove a player.
+- A team can have at most two accounts.
 - Protection against duplicates:
   - one team name per tournament
   - an account can be on only one team per tournament
