@@ -1,6 +1,7 @@
 import React from "react";
 import { Body, Container, Head, Hr, Html, Preview, Section, Text } from "@react-email/components";
 import type { TemplateEntry } from "./registry";
+import { looksLikeHtml, sanitizeEmailHtml } from "../email-html";
 
 interface Props {
   name?: string;
@@ -36,20 +37,28 @@ const Email = ({
       <Container style={container}>
         <Text style={label}>English</Text>
         <Text style={text}>{name ? `Hi ${name},` : "Hi,"}</Text>
-        {paragraphs(englishReply).map((paragraph, index) => (
-          <Text key={index} style={text}>
-            {paragraph}
-          </Text>
-        ))}
+        {looksLikeHtml(englishReply) ? (
+          <div style={rich} dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(englishReply) }} />
+        ) : (
+          paragraphs(englishReply).map((paragraph, index) => (
+            <Text key={index} style={text}>
+              {paragraph}
+            </Text>
+          ))
+        )}
         <Text style={text}>{closingEn}</Text>
         <Hr style={hr} />
         <Text style={label}>Svenska</Text>
         <Text style={text}>{name ? `Hej ${name},` : "Hej,"}</Text>
-        {paragraphs(swedishReply).map((paragraph, index) => (
-          <Text key={index} style={text}>
-            {paragraph}
-          </Text>
-        ))}
+        {looksLikeHtml(swedishReply) ? (
+          <div style={rich} dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(swedishReply) }} />
+        ) : (
+          paragraphs(swedishReply).map((paragraph, index) => (
+            <Text key={index} style={text}>
+              {paragraph}
+            </Text>
+          ))
+        )}
         <Text style={text}>{closingSv}</Text>
         <Text style={signatureStyle}>
           {signatureLines(signature).map((line, index) => (
@@ -109,3 +118,5 @@ const label = {
 };
 const muted = { fontSize: "13px", lineHeight: "20px", color: "#6b7a70", margin: "0 0 8px" };
 const hr = { borderColor: "#e3e8e4", margin: "20px 0" };
+
+const rich = { fontSize: "15px", lineHeight: "24px", color: "#1d2a21", margin: "0 0 12px" };
