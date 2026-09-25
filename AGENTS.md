@@ -9,3 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Rich-text admin emails: HTML from the editor is cleaned with src/lib/email-html.ts before sending and after translation — keeps unsafe content out of emails.
+- Public team profiles derive performance from tournament snapshots and expose player names only, never contact details — keeps standings useful without leaking private data.

@@ -13,6 +13,7 @@ import {
   type ScoreInput,
   type SeasonRow,
   type SlotRow,
+  type TeamPlayerRow,
   type TeamRow,
   type TournamentSnapshot,
 } from "./tournament";
@@ -62,18 +63,22 @@ export const getTournament = createServerFn({ method: "GET" }).handler(
     const season = seasonResult.data as SeasonRow | null;
     if (!season) throw new Error("No active season found.");
 
-    const [teamsResult, slotsResult, matchesResult] = await Promise.all([
+    const [teamsResult, playersResult, slotsResult, matchesResult] = await Promise.all([
       supabase.from("teams").select("id, name, start_division").order("name"),
+      // Player names are public tournament information; contact details are never selected.
+      adminClient().from("team_players").select("team_id, player_no, name").order("player_no"),
       supabase.from("week_slots").select(SLOT_COLUMNS).eq("season_id", season.id),
       supabase.from("matches").select(MATCH_COLUMNS).eq("season_id", season.id),
     ]);
     if (teamsResult.error) throw new Error(teamsResult.error.message);
+    if (playersResult.error) throw new Error(playersResult.error.message);
     if (slotsResult.error) throw new Error(slotsResult.error.message);
     if (matchesResult.error) throw new Error(matchesResult.error.message);
 
     return {
       season,
       teams: (teamsResult.data ?? []) as TeamRow[],
+      teamPlayers: (playersResult.data ?? []) as TeamPlayerRow[],
       slots: (slotsResult.data ?? []) as SlotRow[],
       matches: (matchesResult.data ?? []) as MatchRow[],
     };
