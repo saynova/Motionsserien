@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { memoriesQueryOptions } from "@/lib/tournament-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   addGalleryPhotos,
+  createImageUploads,
   deleteChampion,
   deleteGalleryPhoto,
   saveChampion,
@@ -18,21 +20,44 @@ import {
 
 const control = "w-full rounded border border-input bg-card px-3 py-2 text-sm";
 
-async function readFiles(files: File[]) {
-  return Promise.all(
-    files.map(
-      (file) =>
-        new Promise<{ base64: string; mimeType: string }>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onerror = () => reject(new Error("Could not read the file."));
-          reader.onload = () => {
-            const result = String(reader.result ?? "");
-            resolve({ base64: result.split(",")[1] ?? "", mimeType: file.type });
-          };
-          reader.readAsDataURL(file);
-        }),
-    ),
+/** Resize to max 2400px and re-encode as high-quality JPEG so photos load fast everywhere. */
+async function prepareImage(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file).catch(() => {
+    throw new Error(`Could not read ${file.name}. Use a JPEG, PNG or WebP photo.`);
+  });
+  const max = 2400;
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Your browser could not process the photo.");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not process the photo."))), "image/jpeg", 0.88),
   );
+}
+
+async function uploadFiles(
+  files: File[],
+  kind: "champion" | "photo",
+  getSlots: (args: { data: { kind: "champion" | "photo"; count: number } }) => Promise<{ slots: { path: string; token: string }[] }>,
+) {
+  const { slots } = await getSlots({ data: { kind, count: files.length } });
+  const paths: string[] = [];
+  for (let i = 0; i < files.length; i++) {
+    const blob = await prepareImage(files[i]!);
+    const slot = slots[i]!;
+    const { error } = await supabase.storage
+      .from("gallery")
+      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType: "image/jpeg" });
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+    paths.push(slot.path);
+  }
+  return paths;
 }
 
 export function MemoriesAdmin() {
@@ -44,6 +69,7 @@ export function MemoriesAdmin() {
   const updatePhoto = useServerFn(updateGalleryPhoto);
   const removePhoto = useServerFn(deleteGalleryPhoto);
   const setFinished = useServerFn(setSeasonFinished);
+  const getSlots = useServerFn(createImageUploads);
 
   const [busy, setBusy] = useState(false);
   const [seasonTitle, setSeasonTitle] = useState("");
@@ -159,7 +185,7 @@ export function MemoriesAdmin() {
             <input
               className={control}
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/*"
               onChange={(event) => setChampionFile(event.target.files?.[0] ?? null)}
             />
           </label>
@@ -169,9 +195,11 @@ export function MemoriesAdmin() {
           disabled={busy}
           onClick={() =>
             run(async () => {
-              const image = championFile ? ((await readFiles([championFile]))[0] ?? null) : null;
+              const imagePath = championFile
+                ? ((await uploadFiles([championFile], "champion", getSlots))[0] ?? null)
+                : null;
               await saveOne({
-                data: { seasonTitle, year, teamName, players, image },
+                data: { seasonTitle, year, teamName, players, imagePath },
               });
               setSeasonTitle("");
               setTeamName("");
@@ -250,7 +278,7 @@ export function MemoriesAdmin() {
               className={control}
               type="file"
               multiple
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/*"
               onChange={(event) => setPhotoFiles([...(event.target.files ?? [])])}
             />
           </label>
@@ -260,8 +288,8 @@ export function MemoriesAdmin() {
           disabled={busy || photoFiles.length === 0}
           onClick={() =>
             run(async () => {
-              const images = await readFiles(photoFiles);
-              await addPhotos({ data: { caption, images } });
+              const paths = await uploadFiles(photoFiles, "photo", getSlots);
+              await addPhotos({ data: { caption, paths } });
               setCaption("");
               setPhotoFiles([]);
             }, "Photos uploaded.")
