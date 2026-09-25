@@ -16,6 +16,12 @@ export type TeamRow = {
   start_division: number;
 };
 
+export type TeamPlayerRow = {
+  team_id: string;
+  player_no: number;
+  name: string;
+};
+
 export type SlotRow = {
   id: string;
   week_no: number;
@@ -56,6 +62,7 @@ export type SeasonRow = {
 export type TournamentSnapshot = {
   season: SeasonRow;
   teams: TeamRow[];
+  teamPlayers: TeamPlayerRow[];
   slots: SlotRow[];
   matches: MatchRow[];
 };

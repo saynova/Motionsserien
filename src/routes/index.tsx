@@ -14,6 +14,7 @@ import {
 } from "@/lib/tournament";
 import { memoriesQueryOptions, tournamentQueryOptions } from "@/lib/tournament-query";
 import { MemoriesView } from "@/components/memories-view";
+import { TeamDetailsDialog } from "@/components/team-details-dialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +31,8 @@ export const Route = createFileRoute("/")({
         content:
           "Live division standings with promotion and relegation across all 10 divisions of the Monday badminton ladder.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   loader: ({ context }) =>
@@ -37,6 +40,8 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(tournamentQueryOptions),
       context.queryClient.ensureQueryData(memoriesQueryOptions),
     ]),
+  errorComponent: ({ error }) => <p role="alert">Could not load the standings: {error.message}</p>,
+  notFoundComponent: () => <p>Standings were not found.</p>,
   component: HomePage,
 });
 
@@ -153,6 +158,7 @@ function StandingsPage() {
   const { season, teams, slots, matches } = data;
   const currentWeek = season.current_week;
   const [week, setWeek] = useState(currentWeek);
+  const [detailTeamId, setDetailTeamId] = useState<string | null>(null);
 
   const availableWeeks = [...new Set(slots.map((s) => s.week_no))]
     .filter((w) => w <= currentWeek)
@@ -298,7 +304,14 @@ function StandingsPage() {
                         {row.rank}
                       </td>
                       <td className="min-w-0 px-1 py-2.5 font-semibold">
-                        <span className="block truncate" title={row.teamName}>{row.teamName}</span>
+                        <button
+                          type="button"
+                          onClick={() => setDetailTeamId(row.teamId)}
+                          className="block max-w-full truncate text-left text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          title={`View ${row.teamName} details`}
+                        >
+                          {row.teamName}
+                        </button>
                       </td>
                       <td className="tabnum px-1 py-2.5 text-right sm:px-2">{row.matchWins}</td>
                       <td className="tabnum px-1 py-2.5 text-right text-muted-foreground sm:px-2">
@@ -345,6 +358,7 @@ function StandingsPage() {
           );
         })}
       </div>
+      <TeamDetailsDialog data={data} teamId={detailTeamId} onClose={() => setDetailTeamId(null)} />
       <TermsNotice />
     </>
   );
