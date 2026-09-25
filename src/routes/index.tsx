@@ -151,7 +151,12 @@ function MissingScores({
 function StandingsPage() {
   const { data } = useSuspenseQuery(tournamentQueryOptions);
   const { season, teams, slots, matches } = data;
-  const week = season.current_week;
+  const currentWeek = season.current_week;
+  const [week, setWeek] = useState(currentWeek);
+
+  const availableWeeks = [...new Set(slots.map((s) => s.week_no))]
+    .filter((w) => w <= currentWeek)
+    .sort((a, b) => a - b);
 
   const weekSlots = slots.filter((s) => s.week_no === week);
   const weekMatches = matches.filter((m) => m.week_no === week);
