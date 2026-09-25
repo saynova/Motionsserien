@@ -14,11 +14,12 @@ export type Message = {
   status: "new" | "answered";
   created_at: string;
   reply_body: string | null;
+  body_en: string | null;
   replied_at: string | null;
 };
 
 const MESSAGE_COLUMNS =
-  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at";
+  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at, body_en";
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -63,7 +64,10 @@ export const sendMessage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
+    const { translateIncomingToEnglish } = await import("./translate-email.server");
+    const bodyEn = await translateIncomingToEnglish(data.body);
     const { error } = await adminClient().from("messages").insert({
+      body_en: bodyEn,
       topic: data.topic,
       email: data.email,
       name: data.name,
@@ -87,7 +91,21 @@ export const listMessages = createServerFn({ method: "POST" }).handler(
       .select(MESSAGE_COLUMNS)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return (data ?? []) as Message[];
+    const rows = (data ?? []) as Message[];
+    // Fill in translations for older messages that were never checked (a few per load).
+    const pending = rows.filter((row) => row.body_en === null).slice(0, 5);
+    if (pending.length > 0) {
+      const { translateIncomingToEnglish } = await import("./translate-email.server");
+      await Promise.all(
+        pending.map(async (row) => {
+          const bodyEn = await translateIncomingToEnglish(row.body);
+          if (bodyEn === null) return;
+          row.body_en = bodyEn;
+          await adminClient().from("messages").update({ body_en: bodyEn }).eq("id", row.id);
+        }),
+      );
+    }
+    return rows;
   },
 );
 

@@ -167,9 +167,24 @@ export function MessagesAdmin() {
 
                 {isOpen ? (
                   <div className="border-t border-border px-3 py-3">
-                    <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
-                      {message.body}
-                    </p>
+                    {message.body_en ? (
+                      <>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-primary">
+                          Translated to English
+                        </p>
+                        <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-foreground">
+                          {message.body_en}
+                        </p>
+                        <details className="mt-2 text-xs text-muted-foreground">
+                          <summary className="cursor-pointer">Show original message</summary>
+                          <p className="mt-1 whitespace-pre-line">{message.body}</p>
+                        </details>
+                      </>
+                    ) : (
+                      <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
+                        {message.body}
+                      </p>
+                    )}
 
                     {message.reply_body ? (
                       <div className="mt-3 rounded border border-border bg-background/40 p-3">
