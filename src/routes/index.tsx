@@ -307,7 +307,7 @@ function StandingsPage() {
                         <button
                           type="button"
                           onClick={() => setDetailTeamId(row.teamId)}
-                          className="block max-w-full truncate text-left text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="block max-w-full truncate text-left underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           title={`View ${row.teamName} details`}
                         >
                           {row.teamName}
