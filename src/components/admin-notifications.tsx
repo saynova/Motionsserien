@@ -60,7 +60,7 @@ export function useAdminNotifications() {
     if (!query.data) return;
     if (known) {
       const fresh = query.data.filter((i) => !known.has(i.id) && !seen.has(i.id));
-      if (fresh.length > 0) toast.info(fresh.length === 1 ? fresh[0].title : `${fresh.length} new notifications`);
+      if (fresh.length > 0) toast.info(fresh.length === 1 ? fresh[0]!.title : `${fresh.length} new notifications`);
     }
     setKnown(new Set(query.data.map((i) => i.id)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
