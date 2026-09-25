@@ -39,8 +39,12 @@ One login for the whole site, used for registering, submitting scores and gettin
 - While registration is open, the Register page has a second option: **"I don't have a partner – find me one"**.
 - A signed-in player fills in their name, level (previous division or new), availability, and an optional note. Their email comes from their account.
 - This information is visible **only to the admin**, never publicly.
-- A new admin **Find a partner** list shows every solo player. The admin picks two players and clicks **Pair up**. The team is created, and both players get an email with their partner's name and the team name.
-- The player can see their status on My account (Waiting / Paired) and can withdraw their request.
+- A solo player is **not confirmed** until the admin approves them. They get no team, can't submit scores and don't appear anywhere public.
+- A new admin **Find a partner** list shows every solo player, each with **Approve** or **Reject**.
+- The admin picks two approved solo players and clicks **Pair up**. This creates a team that stays **pending** until the admin approves it in the normal registration list. Only then is the team confirmed.
+- If the admin can't find a match yet, the player simply stays waiting on the list until another solo player registers.
+- Emails go out when a player is approved, when they are paired (with their partner's name and team name), and when the team is confirmed.
+- On My account the player sees their status (Waiting for approval, Approved – looking for a partner, Paired – awaiting team approval, or Team confirmed) and can withdraw.
 - Paired players then work exactly like any other team.
 - New partner requests also appear in admin Notifications.
 
@@ -78,7 +82,7 @@ One login for the whole site, used for registering, submitting scores and gettin
 - Forms: use a real `<form>` with `autocomplete` values `email`, `current-password` and `new-password`, and keep the session between visits so password managers work.
 - New tables, each with grants and row-level security:
   - `team_members` (season, team, player number, user id). Unique by season and user, with at most 2 per team. Player 2 joins through a server function that adds the row straight away and emails Player 1 a "partner added" message using a new app email template. The admin can remove a member.
-  - `partner_requests` (season, user id, name, level/previous division, availability, note, status open/matched/withdrawn). Unique per season and user. Players read only their own request. The admin reads all of them through the admin session. "Pair up" creates the team and both `team_members` rows in one step.
+  - `partner_requests` (season, user id, name, level/previous division, availability, note, status pending/approved/rejected/paired/withdrawn). Unique per season and user. Players read only their own request. The admin reads all of them through the admin session. "Pair up" accepts only two approved requests and creates a `pending` registration plus both member links in one step. The team goes live only after normal registration approval.
   - `invoices` (season, team, player, user id, amount of 400 or 800, receipt number, status, created time). A locked database function checks the team's 800 kr total, using a row lock so two players claiming at once can't both succeed. A unique constraint allows one active receipt per user per season.
   - Season settings: `require_login_for_scores` and `invoices_open`.
 - `matches` gains `submitted_user_id` and `submitted_team_id`. The submit server function uses `requireSupabaseAuth` when the season needs it, and checks that the user belongs to team A or team B.
