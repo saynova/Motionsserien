@@ -1,8 +1,34 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronDown, Mail, Menu, QrCode } from "lucide-react";
+import {
+  ArrowLeft,
+  Bell,
+  CalendarCog,
+  ChevronDown,
+  ClipboardCheck,
+  Contact,
+  Eye,
+  Flag,
+  Heart,
+  ImageIcon,
+  ListChecks,
+  LogOut,
+  Mail,
+  Megaphone,
+  Menu,
+  MessageSquare,
+  Package,
+  QrCode,
+  Send,
+  Settings2,
+  ShieldCheck,
+  UserPlus,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
+import { NotificationsPanel, useAdminNotifications } from "@/components/admin-notifications";
 import { toast } from "sonner";
 
 import { PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
@@ -56,24 +82,25 @@ import {
 } from "@/lib/tournament.functions";
 
 const SECTIONS = [
-  { id: "matches", label: "Match scores", group: "Weekly work" },
-  { id: "procedure", label: "Weekly procedure", group: "Weekly work" },
-  { id: "payments", label: "Payments", group: "Weekly work" },
-  { id: "messages", label: "Questions", group: "Weekly work" },
-  { id: "banner", label: "Weekly banner", group: "Content" },
-  { id: "memories", label: "Champions & Gallery", group: "Content" },
-  { id: "support", label: "Donation & sponsor", group: "Content" },
-  { id: "shuttles", label: "Shuttle purchases", group: "Content" },
-  { id: "email", label: "Send email", group: "Email" },
-  { id: "email-settings", label: "Email settings", group: "Email" },
-  { id: "contacts", label: "Team contacts", group: "Email" },
-  { id: "season", label: "Season settings", group: "Season" },
-  { id: "next-season", label: "Registration & seeding", group: "Season" },
-  { id: "new-season", label: "Start new season", group: "Season" },
-  { id: "visitors", label: "Visitors", group: "Season" },
-] as const;
+  { id: "notifications", label: "Notifications", group: "Overview", icon: Bell },
+  { id: "matches", label: "Match scores", group: "Weekly work", icon: ClipboardCheck },
+  { id: "procedure", label: "Weekly procedure", group: "Weekly work", icon: ListChecks },
+  { id: "payments", label: "Payments", group: "Weekly work", icon: Wallet },
+  { id: "messages", label: "Questions", group: "Weekly work", icon: MessageSquare },
+  { id: "banner", label: "Weekly banner", group: "Content", icon: Megaphone },
+  { id: "memories", label: "Champions & Gallery", group: "Content", icon: ImageIcon },
+  { id: "support", label: "Donation & sponsor", group: "Content", icon: Heart },
+  { id: "shuttles", label: "Shuttle purchases", group: "Content", icon: Package },
+  { id: "email", label: "Send email", group: "Email", icon: Send },
+  { id: "email-settings", label: "Email settings", group: "Email", icon: Settings2 },
+  { id: "contacts", label: "Team contacts", group: "Email", icon: Contact },
+  { id: "season", label: "Season settings", group: "Season", icon: CalendarCog },
+  { id: "next-season", label: "Registration & seeding", group: "Season", icon: UserPlus },
+  { id: "new-season", label: "Start new season", group: "Season", icon: Flag },
+  { id: "visitors", label: "Visitors", group: "Season", icon: Eye },
+] as const satisfies readonly { id: string; label: string; group: string; icon: LucideIcon }[];
 
-const SECTION_GROUPS = ["Weekly work", "Content", "Email", "Season"] as const;
+const SECTION_GROUPS = ["Overview", "Weekly work", "Content", "Email", "Season"] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -141,13 +168,18 @@ function AdminGate() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Restricted"
-        title="Admin sign-in"
-        description="Enter the shared admin password to approve scores and roll the ladder forward."
-      />
-      <form onSubmit={onSubmit} className="max-w-sm space-y-4 rounded-lg border border-border bg-card p-6">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-background via-secondary/40 to-primary/10 px-4 py-10">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card p-7 shadow-xl"
+      >
+        <div className="flex flex-col items-center text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow">
+            <ShieldCheck className="h-6 w-6" />
+          </span>
+          <h1 className="mt-3 font-display text-2xl font-bold tracking-tight">Admin sign-in</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Motionsserien HT-26 control panel</p>
+        </div>
         <label className="block space-y-1">
           <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Admin password
@@ -160,11 +192,17 @@ function AdminGate() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
-        <button type="submit" className={btn} disabled={busy}>
+        <button type="submit" className={`${btn} w-full`} disabled={busy}>
           {busy ? "Checking…" : "Sign in"}
         </button>
       </form>
-    </>
+      <Link
+        to="/"
+        className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to site
+      </Link>
+    </div>
   );
 }
 
@@ -192,6 +230,7 @@ function AdminConsole() {
   const [seasonStart, setSeasonStart] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
+  const notifications = useAdminNotifications();
 
   const { section } = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -250,13 +289,175 @@ function AdminConsole() {
     }
   }
 
+  const current = SECTIONS.find((item) => item.id === section) ?? SECTIONS[1];
+  const goTo = (id: string) => {
+    const match = SECTIONS.find((item) => item.id === id);
+    if (!match) return;
+    navigate({ search: { section: match.id } });
+    setMenuOpen(false);
+  };
+  const doSignOut = () =>
+    run(async () => {
+      await signOut();
+      await queryClient.invalidateQueries({ queryKey: ["admin-status"] });
+    }, "Signed out.");
+
+  const navList = (
+    <nav aria-label="Admin sections" className="space-y-5">
+      {SECTION_GROUPS.map((group) => (
+        <div key={group}>
+          <p className="px-3 text-[0.68rem] font-bold uppercase tracking-widest text-muted-foreground">
+            {group}
+          </p>
+          <ul className="mt-1.5 space-y-0.5">
+            {SECTIONS.filter((item) => item.group === group).map((item) => {
+              const active = item.id === section;
+              const Icon = item.icon;
+              const badge =
+                item.id === "matches"
+                  ? pending.length
+                  : item.id === "notifications"
+                    ? notifications.unreadCount
+                    : 0;
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => goTo(item.id)}
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-foreground/80 hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1 truncate text-left">{item.label}</span>
+                    {badge > 0 ? (
+                      <span
+                        className={`min-w-5 rounded-full px-1.5 py-0.5 text-center text-[0.65rem] font-bold ${
+                          active ? "bg-primary-foreground text-primary" : "bg-destructive text-destructive-foreground"
+                        }`}
+                      >
+                        {badge > 99 ? "99+" : badge}
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+
+  const brand = (
+    <div className="flex items-center gap-2.5 px-3">
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <ShieldCheck className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 leading-tight">
+        <p className="truncate font-display text-sm font-bold">Motionsserien</p>
+        <p className="truncate text-xs text-muted-foreground">Admin console</p>
+      </div>
+    </div>
+  );
+
   return (
-    <>
-      <PageHeader
-        eyebrow={`${season.name} · Current week ${season.current_week} of ${season.total_weeks}`}
-        title="Admin console"
-        description="Approve submitted results, correct any score, then finalise the week to generate the next one with promotion and relegation applied."
-      >
+    <div className="flex min-h-dvh bg-secondary/30">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
+        <div className="border-b border-border py-4">{brand}</div>
+        <div className="flex-1 overflow-y-auto px-2 py-4">{navList}</div>
+        <div className="space-y-1 border-t border-border p-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to site
+          </Link>
+          <button
+            type="button"
+            onClick={doSignOut}
+            disabled={busy}
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
+          >
+            <LogOut className="h-4 w-4" /> Sign out
+          </button>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-card/90 px-3 py-2.5 backdrop-blur sm:px-6">
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                aria-label="Open admin menu"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border hover:bg-secondary lg:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[18rem] overflow-y-auto p-0">
+              <SheetHeader className="border-b border-border py-4">
+                <SheetTitle className="sr-only">Admin sections</SheetTitle>
+                {brand}
+              </SheetHeader>
+              <div className="px-2 py-4">{navList}</div>
+              <div className="space-y-1 border-t border-border p-2 pb-6">
+                <Link
+                  to="/"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium hover:bg-secondary"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back to site
+                </Link>
+                <button
+                  type="button"
+                  onClick={doSignOut}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-4 w-4" /> Sign out
+                </button>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[0.68rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {current.group} · {season.name} · Week {season.current_week}/{season.total_weeks}
+            </p>
+            <h1 className="flex items-center gap-2 truncate text-base font-bold tracking-tight sm:text-lg">
+              <current.icon className="h-4 w-4 shrink-0 text-primary" />
+              {current.label}
+            </h1>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => goTo("notifications")}
+            aria-label={`Notifications, ${notifications.unreadCount} unread`}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border hover:bg-secondary"
+          >
+            <Bell className="h-5 w-5" />
+            {notifications.unreadCount > 0 ? (
+              <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-destructive px-1 text-center text-[0.65rem] font-bold leading-5 text-destructive-foreground">
+                {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
+              </span>
+            ) : null}
+          </button>
+          <Link
+            to="/"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-secondary"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to site</span>
+          </Link>
+        </header>
+
+        <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-5 sm:px-6 sm:py-8">
+      {section === "matches" || section === "procedure" ? (
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
         <div className="flex flex-wrap items-end gap-3">
           <label className="space-y-1">
             <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -312,86 +513,14 @@ function AdminConsole() {
             Rebuild week {season.current_week} from last week
           </button>
 
-          <button className={btnGhost} disabled={busy} onClick={() => run(async () => {
-            await signOut();
-            await queryClient.invalidateQueries({ queryKey: ["admin-status"] });
-          }, "Signed out.")}>
-            Sign out
-          </button>
         </div>
-      </PageHeader>
-
-      <div className="glass-surface mt-6 flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3">
-        <div className="min-w-0">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-widest text-muted-foreground">
-            {SECTIONS.find((item) => item.id === section)?.group ?? "Admin"}
-          </p>
-          <h2 className="truncate text-lg font-bold tracking-tight">
-            {SECTIONS.find((item) => item.id === section)?.label ?? "Admin"}
-          </h2>
-        </div>
-
-        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              aria-label="Open admin menu"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-secondary"
-            >
-              <Menu className="h-5 w-5" />
-              <span className="hidden sm:inline">Menu</span>
-            </button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[19rem] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Admin sections</SheetTitle>
-            </SheetHeader>
-            <nav aria-label="Admin sections" className="mt-4 space-y-5 pb-8">
-              {SECTION_GROUPS.map((group) => (
-                <div key={group}>
-                  <p className="px-2 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">
-                    {group}
-                  </p>
-                  <ul className="mt-2 space-y-1">
-                    {SECTIONS.filter((item) => item.group === group).map((item) => {
-                      const active = item.id === section;
-                      const badge =
-                        item.id === "matches" && pending.length > 0 ? pending.length : null;
-                      return (
-                        <li key={item.id}>
-                          <button
-                            type="button"
-                            aria-current={active ? "page" : undefined}
-                            onClick={() => {
-                              navigate({ search: { section: item.id }, resetScroll: false });
-                              setMenuOpen(false);
-                            }}
-                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                              active
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-foreground hover:bg-secondary"
-                            }`}
-                          >
-                            <span>{item.label}</span>
-                            {badge ? (
-                              <span className="rounded-full bg-accent px-1.5 py-0.5 text-[0.65rem] font-bold text-accent-foreground">
-                                {badge}
-                              </span>
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
       </div>
+      ) : null}
 
-
-      <div className="mt-6 space-y-6">
+      <div className="mt-6 space-y-6 first:mt-0">
+        {section === "notifications" ? (
+          <NotificationsPanel state={notifications} onOpen={goTo} />
+        ) : null}
         {section === "banner" ? <BannerEditor /> : null}
         {section === "shuttles" ? <ShuttleAdmin /> : null}
         {section === "support" ? <SupportSettingsEditor /> : null}
@@ -546,7 +675,9 @@ function AdminConsole() {
           </section>
         ) : null}
       </div>
-    </>
+        </main>
+      </div>
+    </div>
   );
 }
 

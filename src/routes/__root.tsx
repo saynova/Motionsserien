@@ -188,6 +188,19 @@ function VisitLogger() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  const isAdmin = useRouterState({
+    select: (state) => state.location.pathname.startsWith("/admin"),
+  });
+
+  if (isAdmin) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+        <Toaster position="top-center" />
+      </QueryClientProvider>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <VisitLogger />
