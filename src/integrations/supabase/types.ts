@@ -100,6 +100,7 @@ export type Database = {
           closing_en: string
           closing_sv: string
           created_at: string
+          footer: string
           id: string
           signature: string
           updated_at: string
@@ -108,6 +109,7 @@ export type Database = {
           closing_en?: string
           closing_sv?: string
           created_at?: string
+          footer?: string
           id?: string
           signature?: string
           updated_at?: string
@@ -116,6 +118,7 @@ export type Database = {
           closing_en?: string
           closing_sv?: string
           created_at?: string
+          footer?: string
           id?: string
           signature?: string
           updated_at?: string

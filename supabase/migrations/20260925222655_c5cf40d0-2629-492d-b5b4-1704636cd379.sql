@@ -1,0 +1,1 @@
+ALTER TABLE public.email_settings ADD COLUMN IF NOT EXISTS footer text NOT NULL DEFAULT 'Motionsserien HT-26 · Ludvika Badmintonklubb';
