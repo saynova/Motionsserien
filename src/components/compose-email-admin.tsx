@@ -6,8 +6,10 @@ import { toast } from "sonner";
 
 import { divisionPlayersQueryOptions } from "@/lib/tournament-query";
 import { sendGeneralEmail } from "@/lib/reminders.functions";
+import { RichTextEditor } from "@/components/rich-text-editor";
+import { htmlToText } from "@/lib/email-html";
 
-type Mode = "player" | "division" | "address";
+type Mode = "player" | "division" | "address" | "all";
 
 const btn =
   "rounded border border-border bg-secondary px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors hover:bg-secondary/70 disabled:opacity-40";
@@ -40,7 +42,10 @@ export function ComposeEmailAdmin() {
   const divisions = Array.from(new Set(rows.map((r) => r.division))).sort((a, b) => a - b);
   const inDivision = rows.filter((r) => r.division === division);
 
+  const allCount = new Set(rows.map((r) => r.email.toLowerCase())).size;
+
   async function submit() {
+    if (mode === "all" && !window.confirm(`Send this email to all teams (${allCount} players)? Each gets their own copy.`)) return;
     setBusy(true);
     try {
       const result = await send({
@@ -54,7 +59,8 @@ export function ComposeEmailAdmin() {
       });
       toast.success(
         `Email sent to ${result.sent} recipient${result.sent === 1 ? "" : "s"}.` +
-          (result.suppressed > 0 ? ` ${result.suppressed} address(es) blocked.` : ""),
+          (result.suppressed > 0 ? ` ${result.suppressed} address(es) blocked.` : "") +
+          (result.failed > 0 ? ` ${result.failed} failed.` : ""),
       );
       setSubject("");
       setBody("");
@@ -67,8 +73,9 @@ export function ComposeEmailAdmin() {
 
   const canSend =
     subject.trim().length >= 2 &&
-    body.trim().length >= 2 &&
-    (mode === "division" ||
+    htmlToText(body).length >= 2 &&
+    ((mode === "all" && allCount > 0) ||
+      mode === "division" ||
       (mode === "player" && email.length > 0) ||
       (mode === "address" && parsedAddresses.length > 0));
 
@@ -100,6 +107,7 @@ export function ComposeEmailAdmin() {
                 ["player", "One player"],
                 ["division", "Whole division"],
                 ["address", "Any address"],
+                ["all", "All teams"],
               ] as const
             ).map(([value, text]) => (
               <button
@@ -117,7 +125,7 @@ export function ComposeEmailAdmin() {
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {mode !== "address" ? (
+            {mode === "player" || mode === "division" ? (
               <label className="space-y-1">
                 <span className={label}>Division</span>
                 <select
@@ -170,6 +178,13 @@ export function ComposeEmailAdmin() {
             ) : null}
           </div>
 
+          {mode === "all" ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {allCount} player{allCount === 1 ? "" : "s"} across all teams have an email saved. Each
+              gets their own separate copy.
+            </p>
+          ) : null}
+
           {mode === "division" ? (
             <p className="mt-2 text-xs text-muted-foreground">
               {inDivision.length} player{inDivision.length === 1 ? "" : "s"} in Division {division}{" "}
@@ -186,16 +201,13 @@ export function ComposeEmailAdmin() {
                 onChange={(e) => setSubject(e.target.value)}
               />
             </label>
-            <label className="block space-y-1">
+            <div className="block space-y-1">
               <span className={label}>Message</span>
-              <textarea
-                rows={5}
-                className={field}
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Write in English. Swedish is added automatically. Leave a blank line between paragraphs."
-              />
-            </label>
+              <RichTextEditor value={body} onChange={setBody} placeholder="Message" />
+              <span className="block text-xs text-muted-foreground">
+                Write in English. Swedish is added automatically with the same formatting.
+              </span>
+            </div>
           </div>
 
           <button className={`${btn} mt-4`} disabled={busy || !canSend} onClick={submit}>

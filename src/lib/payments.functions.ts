@@ -124,6 +124,30 @@ export const saveTeamPayment = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const bulkSetPaid = createServerFn({ method: "POST" })
+  .inputValidator((data: { teamIds: string[] }) => {
+    const ids = Array.isArray(data?.teamIds)
+      ? data.teamIds.filter((id) => typeof id === "string" && id.length >= 10)
+      : [];
+    if (ids.length === 0) throw new Error("Choose at least one team.");
+    if (ids.length > 200) throw new Error("Too many teams selected.");
+    return { teamIds: Array.from(new Set(ids)) };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const client = adminClient();
+    const season = await loadSeason(client);
+    const now = new Date().toISOString();
+    const { error } = await client.from("team_payments").upsert(
+      data.teamIds.map((teamId) => ({ season_id: season.id, team_id: teamId, is_paid: true, paid_at: now })),
+      { onConflict: "season_id,team_id" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true as const, count: data.teamIds.length };
+  });
+
 async function remindTeams(teamIds: string[]) {
   const { adminClient } = await import("./tournament.server");
   const { sendTemplateEmail } = await import("./email-templates/send-email");

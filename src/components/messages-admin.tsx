@@ -5,6 +5,8 @@ import { ChevronDown, ChevronUp, Mail, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { messagesQueryOptions } from "@/lib/tournament-query";
+import { RichTextEditor } from "@/components/rich-text-editor";
+import { htmlToText } from "@/lib/email-html";
 import { deleteMessage, replyToMessage, setMessageStatus } from "@/lib/messages.functions";
 import type { Message, MessageTopic } from "@/lib/messages.functions";
 
@@ -181,7 +183,7 @@ export function MessagesAdmin() {
                             : ""}
                         </p>
                         <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">
-                          {message.reply_body}
+                          {htmlToText(message.reply_body)}
                         </p>
                       </div>
                     ) : null}
@@ -256,19 +258,13 @@ function ReplyBox({ message }: { message: Message }) {
 
   return (
     <div className="mt-3 space-y-2">
-      <label className="block space-y-1">
+      <div className="block space-y-1">
         <span className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Reply from the website
+          Reply from the website · write in English, Swedish is added automatically
         </span>
-        <textarea
-          rows={3}
-          className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
-          placeholder="Write in English. Swedish is added automatically before the reply is sent."
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-        />
-      </label>
-      <button className={btnGhost} disabled={busy || body.trim().length < 2} onClick={send}>
+        <RichTextEditor value={body} onChange={setBody} placeholder="Reply" minHeight={110} />
+      </div>
+      <button className={btnGhost} disabled={busy || htmlToText(body).length < 2} onClick={send}>
         <Send className="mr-1.5 inline size-3.5" aria-hidden="true" />
         {busy ? "Sending…" : "Send reply"}
       </button>

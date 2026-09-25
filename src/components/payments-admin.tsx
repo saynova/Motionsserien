@@ -1,13 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { BellRing, CheckCircle2, CircleAlert, Wallet } from "lucide-react";
+import { BellRing, CheckCheck, CheckCircle2, CircleAlert, Search, Wallet } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { teamPaymentsQueryOptions } from "@/lib/tournament-query";
-import { remindAllUnpaid, saveTeamPayment, sendPaymentReminder } from "@/lib/payments.functions";
+import { bulkSetPaid, remindAllUnpaid, saveTeamPayment, sendPaymentReminder } from "@/lib/payments.functions";
 
 function formatDate(value: string | null) {
   if (!value) return null;
@@ -29,7 +30,47 @@ export function PaymentsAdmin() {
   const [busyAll, setBusyAll] = useState(false);
   const [notes, setNotes] = useState<Record<string, string>>({});
 
-  const rows = payments.data?.rows ?? [];
+  const bulk = useServerFn(bulkSetPaid);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "paid" | "unpaid">("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [busyBulk, setBusyBulk] = useState(false);
+
+  const allRows = payments.data?.rows ?? [];
+  const rows = allRows;
+  const shown = allRows.filter(
+    (row) =>
+      row.teamName.toLowerCase().includes(search.trim().toLowerCase()) &&
+      (filter === "all" || (filter === "paid" ? row.isPaid : !row.isPaid)),
+  );
+  const shownUnpaid = shown.filter((row) => !row.isPaid);
+  const selectedUnpaid = allRows.filter((row) => selected.has(row.teamId) && !row.isPaid);
+  const allShownSelected = shownUnpaid.length > 0 && shownUnpaid.every((r) => selected.has(r.teamId));
+
+  function toggleSelect(teamId: string, on: boolean) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(teamId);
+      else next.delete(teamId);
+      return next;
+    });
+  }
+
+  async function markPaid(ids: string[]) {
+    if (ids.length === 0) return;
+    if (!window.confirm(`Mark ${ids.length} team${ids.length === 1 ? "" : "s"} as paid?`)) return;
+    setBusyBulk(true);
+    try {
+      await bulk({ data: { teamIds: ids } });
+      setSelected(new Set());
+      await refresh();
+      toast.success(`${ids.length} team${ids.length === 1 ? "" : "s"} marked as paid.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update payments.");
+    } finally {
+      setBusyBulk(false);
+    }
+  }
   const paid = rows.filter((row) => row.isPaid).length;
   const due = rows.length - paid;
 
@@ -127,8 +168,62 @@ export function PaymentsAdmin() {
       ) : rows.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">No teams in the running season yet.</p>
       ) : (
-        <ul className="mt-5 space-y-2">
-          {rows.map((row) => {
+        <>
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[12rem] flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter by team name"
+              aria-label="Filter by team name"
+              className="w-full rounded-lg border border-input bg-card py-2 pl-8 pr-3 text-sm"
+            />
+          </div>
+          <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+            {(["all", "paid", "unpaid"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                  filter === f ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-secondary/40 px-3 py-2">
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={allShownSelected}
+              disabled={shownUnpaid.length === 0}
+              onCheckedChange={(on) =>
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  shownUnpaid.forEach((r) => (on ? next.add(r.teamId) : next.delete(r.teamId)));
+                  return next;
+                })
+              }
+            />
+            Select all shown unpaid
+          </label>
+          <span className="text-xs text-muted-foreground">{selectedUnpaid.length} selected</span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button size="sm" disabled={busyBulk || selectedUnpaid.length === 0} onClick={() => markPaid(selectedUnpaid.map((r) => r.teamId))}>
+              <CheckCheck className="mr-1.5 h-4 w-4" /> Mark selected as paid
+            </Button>
+            <Button size="sm" variant="outline" disabled={busyBulk || due === 0} onClick={() => markPaid(allRows.filter((r) => !r.isPaid).map((r) => r.teamId))}>
+              Mark all unpaid as paid
+            </Button>
+          </div>
+        </div>
+        {shown.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">No teams match this filter.</p>
+        ) : null}
+        <ul className="mt-3 space-y-2">
+          {shown.map((row) => {
             const note = notes[row.teamId] ?? row.note;
             const busy = busyTeam === row.teamId;
             return (
@@ -137,6 +232,12 @@ export function PaymentsAdmin() {
                 className="rounded-xl border border-border bg-card/60 p-4 transition-shadow hover:shadow-sm"
               >
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                  <Checkbox
+                    checked={selected.has(row.teamId)}
+                    disabled={row.isPaid}
+                    onCheckedChange={(on) => toggleSelect(row.teamId, on === true)}
+                    aria-label={`Select ${row.teamName}`}
+                  />
                   <div className="min-w-[10rem] flex-1">
                     <p className="font-semibold">{row.teamName}</p>
                     <p className="text-xs text-muted-foreground">
@@ -196,6 +297,7 @@ export function PaymentsAdmin() {
             );
           })}
         </ul>
+        </>
       )}
     </section>
   );
