@@ -62,7 +62,7 @@ const Email = ({
 
 export const template = {
   component: Email,
-  subject: (d: Record<string, any>) => String(d.subject ?? "Motionsserien"),
+  subject: (d: Record<string, any>) => String(d['subject'] ?? "Motionsserien"),
   displayName: "Player notice",
   previewData: {
     subject: "Your partner has joined",
