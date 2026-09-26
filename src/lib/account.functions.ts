@@ -394,12 +394,31 @@ async function assertNotAlreadyInSeason(userId: string, key: string) {
 export const registerMyTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (d: { teamName: string; playerName: string; phone: string; previousDivision: string | number | null }) => ({
-      teamName: text(d?.teamName, 2, 60, "Team name"),
-      playerName: text(d?.playerName, 2, 60, "Your name"),
-      phone: String(d?.phone ?? "").trim().slice(0, 40),
-      previousDivision: division(d?.previousDivision),
-    }),
+    (d: {
+      teamName: string;
+      playerName: string;
+      phone: string;
+      player2Name?: string;
+      player2Email?: string;
+      player2Phone?: string;
+      previousDivision: string | number | null;
+    }) => {
+      const p2Email = String(d?.player2Email ?? "").trim().toLowerCase().slice(0, 255);
+      if (!p2Email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p2Email)) throw new Error("Enter a valid Player 2 email.");
+      const phone = String(d?.phone ?? "").trim().slice(0, 40);
+      const p2Phone = String(d?.player2Phone ?? "").trim().slice(0, 40);
+      if (phone.length < 5) throw new Error("Enter Player 1 phone number.");
+      if (p2Phone.length < 5) throw new Error("Enter Player 2 phone number.");
+      return {
+        teamName: text(d?.teamName, 2, 60, "Team name"),
+        playerName: text(d?.playerName, 2, 60, "Player 1 name"),
+        phone,
+        player2Name: text(d?.player2Name, 2, 60, "Player 2 name"),
+        player2Email: p2Email,
+        player2Phone: p2Phone,
+        previousDivision: division(d?.previousDivision),
+      };
+    },
   )
   .handler(async ({ data, context }) => {
     const { adminClient } = await import("./tournament.server");
@@ -409,6 +428,7 @@ export const registerMyTeam = createServerFn({ method: "POST" })
     const { key, isOpen } = await currentRegistrationKey();
     if (!isOpen) throw new Error("Registration is closed right now.");
     await assertNotAlreadyInSeason(context.userId, key);
+    if (data.player2Email === email.toLowerCase()) throw new Error("Player 2 needs a different email from yours.");
 
     const dup = await db
       .from("registrations")
@@ -425,9 +445,10 @@ export const registerMyTeam = createServerFn({ method: "POST" })
         team_name: data.teamName,
         player1_name: data.playerName,
         player1_email: email,
-        player2_name: "",
-        player2_email: "",
+        player2_name: data.player2Name,
+        player2_email: data.player2Email,
         phone: data.phone,
+        player2_phone: data.player2Phone,
         previous_division: data.previousDivision,
         status: "pending",
         user_id: context.userId,

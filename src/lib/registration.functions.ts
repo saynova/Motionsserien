@@ -23,6 +23,7 @@ export type Registration = {
   player2_name: string;
   player2_email: string;
   phone: string;
+  player2_phone: string;
   previous_division: number | null;
   status: string;
   created_at: string;
@@ -43,7 +44,7 @@ export type RegistrationInfo = {
 };
 
 const REG_COLUMNS =
-  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, previous_division, status, created_at";
+  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, previous_division, status, created_at";
 const SEED_COLUMNS = "id, target_season, team_name, division, position";
 
 function cleanText(value: unknown, min: number, max: number, label: string): string {
@@ -222,9 +223,12 @@ export const listRegistrations = createServerFn({ method: "GET" }).handler(
     const { requireAdmin } = await import("./admin-session.server");
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
-    const { data, error } = await adminClient()
+    const db = adminClient();
+    const settings = await db.from("registration_settings").select("target_season").order("created_at", { ascending: true }).limit(1).maybeSingle();
+    const { data, error } = await db
       .from("registrations")
       .select(REG_COLUMNS)
+      .eq("target_season", settings.data?.target_season ?? "")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []) as Registration[];
@@ -241,11 +245,46 @@ export const setRegistrationStatus = createServerFn({ method: "POST" })
     const { requireAdmin } = await import("./admin-session.server");
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
-    const { error } = await adminClient()
+    const db = adminClient();
+    const { data: reg, error } = await db
       .from("registrations")
       .update({ status: data.status })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .select("team_name, target_season, previous_division")
+      .single();
     if (error) throw new Error(error.message);
+    // Keep the seeding board in sync: approved teams join it, others leave it.
+    const seeds = await db
+      .from("season_seeds")
+      .select("team_name, division, position")
+      .eq("target_season", reg.target_season);
+    if (seeds.error) throw new Error(seeds.error.message);
+    const list = seeds.data ?? [];
+    const onBoard = list.find((s) => s.team_name.toLowerCase() === reg.team_name.toLowerCase());
+    if (data.status === "accepted" && !onBoard) {
+      const pref = reg.previous_division ?? DIVISION_COUNT;
+      const order = Array.from({ length: DIVISION_COUNT }, (_, i) => i + 1).sort(
+        (a, b) => Math.abs(a - pref) - Math.abs(b - pref) || b - a,
+      );
+      let division = pref;
+      for (const d of order) {
+        if (list.filter((s) => s.division === d).length < TEAMS_PER_DIVISION) {
+          division = d;
+          break;
+        }
+      }
+      const position = Math.max(0, ...list.filter((s) => s.division === division).map((s) => s.position)) + 1;
+      const ins = await db
+        .from("season_seeds")
+        .insert({ target_season: reg.target_season, team_name: reg.team_name, division, position });
+      if (ins.error) throw new Error(ins.error.message);
+    } else if (data.status !== "accepted" && onBoard) {
+      await db
+        .from("season_seeds")
+        .delete()
+        .eq("target_season", reg.target_season)
+        .eq("team_name", onBoard.team_name);
+    }
     return { ok: true as const };
   });
 
@@ -326,7 +365,7 @@ async function loadSeedContext() {
   const targetSeason = settings.data?.target_season ?? "";
 
   const [regs, seeds] = await Promise.all([
-    supabase.from("registrations").select(REG_COLUMNS).eq("status", "accepted"),
+    supabase.from("registrations").select(REG_COLUMNS).eq("status", "accepted").eq("target_season", targetSeason),
     supabase.from("season_seeds").select(SEED_COLUMNS).eq("target_season", targetSeason),
   ]);
   if (regs.error) throw new Error(regs.error.message);

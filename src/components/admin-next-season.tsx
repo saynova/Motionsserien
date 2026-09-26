@@ -289,14 +289,11 @@ export function NextSeasonAdmin() {
                 <tr key={reg.id} className="border-b border-border/60 last:border-0">
                   <td className="px-3 py-2 font-semibold">
                     {reg.team_name}
-                    {reg.phone ? (
-                      <span className="block text-xs text-muted-foreground">{reg.phone}</span>
-                    ) : null}
                   </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {reg.player1_name} · {reg.player1_email}
+                    {reg.player1_name} · {reg.player1_email}{reg.phone ? ` · ${reg.phone}` : ""}
                     <br />
-                    {reg.player2_name} · {reg.player2_email}
+                    {reg.player2_name} · {reg.player2_email}{reg.player2_phone ? ` · ${reg.player2_phone}` : ""}
                   </td>
                   <td className="tabnum px-3 py-2">
                     {reg.previous_division ? `Div ${reg.previous_division}` : "New"}
