@@ -42,7 +42,9 @@ export const saveBranding = createServerFn({ method: "POST" })
       headerTitle: clean(input?.headerTitle, 60),
       headerSubtitle: clean(input?.headerSubtitle, 40),
       tournamentName: clean(input?.tournamentName, 100),
+      showSignIn: input?.showSignIn !== false,
     };
+
     if (out.headerTitle.length < 2) throw new Error("Header title needs at least 2 characters.");
     if (out.tournamentName.length < 2) throw new Error("Tournament name needs at least 2 characters.");
     return out;
