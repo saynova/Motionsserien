@@ -46,13 +46,6 @@ import { EmailSettingsAdmin } from "@/components/email-settings-admin";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { PaymentsAdmin } from "@/components/payments-admin";
 import { PartnerRequestsAdmin, ReceiptsAdmin } from "@/components/account-admin";
 import { MemoriesAdmin } from "@/components/memories-admin";
