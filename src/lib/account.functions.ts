@@ -97,10 +97,12 @@ export const getMyAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<MyAccount> => {
     const { adminClient } = await import("./tournament.server");
-    const { currentRegistrationKey } = await import("./account.server");
+    const { currentRegistrationKey, autoLinkByEmail } = await import("./account.server");
     const db = adminClient();
     const email = await userEmail(context.userId);
     const registration = await currentRegistrationKey();
+    await autoLinkByEmail(context.userId, email);
+
 
     const links = await db
       .from("account_links")
