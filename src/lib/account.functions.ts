@@ -534,22 +534,30 @@ export const claimReceipt = createServerFn({ method: "POST" })
       `Ditt kvitto på ${data.amount} kr är klart. Du kan ladda ner det när som helst under Mitt konto på webbplatsen.`,
       `receipt-${invoiceId}`,
     );
-    return { url: await signedReceiptUrl(path) };
+    return {
+      base64: Buffer.from(pdf).toString("base64"),
+      filename: receiptFilename(data.amount, key),
+    };
   });
 
-export const getMyReceiptUrl = createServerFn({ method: "POST" })
+export const getMyReceiptFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => ({ id: String(d?.id ?? "") }))
   .handler(async ({ data, context }) => {
     const { adminClient } = await import("./tournament.server");
+    const { receiptBase64 } = await import("./account.server");
     const inv = await adminClient()
       .from("invoices")
-      .select("file_path, user_id, status")
+      .select("file_path, user_id, status, amount, season_key")
       .eq("id", data.id)
       .maybeSingle();
     if (!inv.data || inv.data.user_id !== context.userId || !inv.data.file_path) {
       throw new Error("Receipt not found.");
     }
     if (inv.data.status !== "issued") throw new Error("This receipt was cancelled.");
-    return { url: await signedReceiptUrl(inv.data.file_path) };
+    return {
+      base64: await receiptBase64(inv.data.file_path),
+      filename: receiptFilename(inv.data.amount, inv.data.season_key),
+    };
   });
+
