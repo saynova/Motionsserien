@@ -23,6 +23,7 @@ export type Registration = {
   player2_name: string;
   player2_email: string;
   phone: string;
+  player2_phone: string;
   previous_division: number | null;
   status: string;
   created_at: string;
@@ -43,7 +44,7 @@ export type RegistrationInfo = {
 };
 
 const REG_COLUMNS =
-  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, previous_division, status, created_at";
+  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, previous_division, status, created_at";
 const SEED_COLUMNS = "id, target_season, team_name, division, position";
 
 function cleanText(value: unknown, min: number, max: number, label: string): string {
@@ -222,9 +223,12 @@ export const listRegistrations = createServerFn({ method: "GET" }).handler(
     const { requireAdmin } = await import("./admin-session.server");
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
-    const { data, error } = await adminClient()
+    const db = adminClient();
+    const settings = await db.from("registration_settings").select("target_season").order("created_at", { ascending: true }).limit(1).maybeSingle();
+    const { data, error } = await db
       .from("registrations")
       .select(REG_COLUMNS)
+      .eq("target_season", settings.data?.target_season ?? "")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []) as Registration[];
