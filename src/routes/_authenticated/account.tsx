@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
@@ -12,6 +13,7 @@ import {
   getMyAccount,
   getMyReceiptFile,
   withdrawPartnerRequest,
+  type TeamHistoryPoint,
 } from "@/lib/account.functions";
 
 
