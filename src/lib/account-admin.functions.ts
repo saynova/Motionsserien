@@ -156,6 +156,7 @@ export type AdminReceiptTeam = {
   teamName: string;
   players: string[];
   used: number;
+  paid: boolean;
   receipts: Array<{ id: string; playerName: string; amount: number; invoiceNo: number; status: string; createdAt: string }>;
 };
 
@@ -171,12 +172,19 @@ export const listReceipts = createServerFn({ method: "GET" }).handler(async () =
   const key = season.data?.registration_key ?? null;
   let teams: AdminReceiptTeam[] = [];
   if (key) {
-    const [regs, invs] = await Promise.all([
+    const [regs, invs, teamRows, payRows] = await Promise.all([
       db.from("registrations").select("id, team_name, player1_name, player2_name").eq("target_season", key).eq("status", "accepted").order("team_name"),
       db.from("invoices").select("id, registration_id, player_name, amount, invoice_no, status, created_at").eq("season_key", key).order("created_at"),
+      db.from("teams").select("id, name"),
+      season.data ? db.from("team_payments").select("team_id, is_paid").eq("season_id", season.data.id) : Promise.resolve({ data: [], error: null }),
     ]);
     if (regs.error) throw new Error(regs.error.message);
     if (invs.error) throw new Error(invs.error.message);
+    const paidByName = new Map<string, boolean>();
+    for (const t of teamRows.data ?? []) {
+      const pay = (payRows.data ?? []).find((p) => p.team_id === t.id);
+      paidByName.set(t.name.toLowerCase(), pay?.is_paid === true);
+    }
     teams = (regs.data ?? []).map((r) => {
       const receipts = (invs.data ?? [])
         .filter((i) => i.registration_id === r.id)
@@ -186,10 +194,12 @@ export const listReceipts = createServerFn({ method: "GET" }).handler(async () =
         teamName: r.team_name,
         players: [r.player1_name, r.player2_name].filter(Boolean),
         used: receipts.filter((x) => x.status === "issued").reduce((s, x) => s + x.amount, 0),
+        paid: paidByName.get(r.team_name.toLowerCase()) === true,
         receipts,
       };
     });
   }
+
   return {
     season: season.data
       ? {
