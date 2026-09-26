@@ -396,17 +396,53 @@ function AdminConsole() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-card/90 px-3 py-2.5 backdrop-blur sm:px-6">
+          <Link
+            to="/"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary sm:px-3"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to site</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => goTo(section === "notifications" ? "matches" : "notifications")}
+            aria-label={`Notifications, ${notifications.unreadCount} unread`}
+            aria-pressed={section === "notifications"}
+            className={`relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border transition-colors ${
+              section === "notifications" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
+            }`}
+          >
+            <Bell className="h-5 w-5" />
+            {notifications.unreadCount > 0 ? (
+              <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-destructive px-1 text-center text-[0.65rem] font-bold leading-5 text-destructive-foreground">
+                {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
+              </span>
+            ) : null}
+          </button>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[0.68rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {current.group} · {season.name} · Week {season.current_week}/{season.total_weeks}
+            </p>
+            <h1 className="flex items-center gap-2 truncate text-base font-bold tracking-tight sm:text-lg">
+              <current.icon className="h-4 w-4 shrink-0 text-primary" />
+              {current.label}
+            </h1>
+          </div>
+
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <button
                 type="button"
                 aria-label="Open admin menu"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border hover:bg-secondary lg:hidden"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary lg:hidden sm:px-3"
               >
                 <Menu className="h-5 w-5" />
+                <span className="hidden sm:inline">Menu</span>
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[18rem] overflow-y-auto p-0">
+            <SheetContent side="right" className="w-[18rem] overflow-y-auto p-0">
               <SheetHeader className="border-b border-border py-4">
                 <SheetTitle className="sr-only">Admin sections</SheetTitle>
                 {brand}
@@ -429,38 +465,8 @@ function AdminConsole() {
               </div>
             </SheetContent>
           </Sheet>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[0.68rem] font-semibold uppercase tracking-widest text-muted-foreground">
-              {current.group} · {season.name} · Week {season.current_week}/{season.total_weeks}
-            </p>
-            <h1 className="flex items-center gap-2 truncate text-base font-bold tracking-tight sm:text-lg">
-              <current.icon className="h-4 w-4 shrink-0 text-primary" />
-              {current.label}
-            </h1>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => goTo("notifications")}
-            aria-label={`Notifications, ${notifications.unreadCount} unread`}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border hover:bg-secondary"
-          >
-            <Bell className="h-5 w-5" />
-            {notifications.unreadCount > 0 ? (
-              <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-destructive px-1 text-center text-[0.65rem] font-bold leading-5 text-destructive-foreground">
-                {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
-              </span>
-            ) : null}
-          </button>
-          <Link
-            to="/"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-secondary"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back to site</span>
-          </Link>
         </header>
+
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-5 sm:px-6 sm:py-8">
       {section === "matches" || section === "procedure" ? (
