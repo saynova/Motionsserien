@@ -15,6 +15,7 @@ import {
 import { memoriesQueryOptions, tournamentQueryOptions } from "@/lib/tournament-query";
 import { MemoriesView } from "@/components/memories-view";
 import { TeamDetailsDialog } from "@/components/team-details-dialog";
+import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
