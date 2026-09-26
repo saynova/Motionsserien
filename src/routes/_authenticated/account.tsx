@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
@@ -49,12 +49,46 @@ const TEAM_STATUS: Record<string, string> = {
 function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
   if (history.length === 0) return null;
   const data = history.map((h) => ({ ...h, label: `W${h.week}` }));
+  const first = history[0]!;
+  const last = history[history.length - 1]!;
+  const trend = last.division - first.division; // negative = climbed to a better division
   return (
-    <div className="mt-2">
-      <div className="h-36 w-full">
+    <div className="mt-3 rounded-xl border border-border bg-gradient-to-b from-secondary/50 to-transparent p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progress</h3>
+        {history.length > 1 ? (
+          <span
+            className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+              trend < 0
+                ? "bg-emerald-100 text-emerald-700"
+                : trend > 0
+                  ? "bg-red-100 text-red-700"
+                  : "bg-secondary text-muted-foreground"
+            }`}
+          >
+            {trend < 0 ? `▲ Promoted ${-trend}` : trend > 0 ? `▼ Relegated ${trend}` : "Holding division"}
+          </span>
+        ) : null}
+      </div>
+      <div className="h-40 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="currentColor" className="text-muted-foreground" />
+          <AreaChart data={data} margin={{ top: 8, right: 10, bottom: 0, left: -14 }}>
+            <defs>
+              <linearGradient id="divisionFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="4 4" />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 11 }}
+              stroke="currentColor"
+              className="text-muted-foreground"
+              tickLine={false}
+              axisLine={false}
+              dy={4}
+            />
             <YAxis
               reversed
               domain={[1, 10]}
@@ -64,26 +98,38 @@ function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
               className="text-muted-foreground"
               tickFormatter={(v: number) => `D${v}`}
               allowDecimals={false}
+              tickLine={false}
+              axisLine={false}
             />
             <Tooltip
-              formatter={(_value, _name, item) => [
-                `Division ${(item.payload as TeamHistoryPoint).division} · Rank ${(item.payload as TeamHistoryPoint).rank} · Wins ${(item.payload as TeamHistoryPoint).wins}/${(item.payload as TeamHistoryPoint).played}`,
-                "Week " + (item.payload as TeamHistoryPoint).week,
-              ]}
-              labelFormatter={() => ""}
+              cursor={{ stroke: "hsl(var(--primary))", strokeOpacity: 0.3, strokeDasharray: "4 4" }}
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const p = payload[0]!.payload as TeamHistoryPoint;
+                return (
+                  <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-lg">
+                    <p className="font-bold">Week {p.week}</p>
+                    <p className="mt-0.5 text-muted-foreground">
+                      Division {p.division} · Rank #{p.rank} · Wins {p.wins}/{p.played}
+                    </p>
+                  </div>
+                );
+              }}
             />
-            <Line
+            <Area
               type="monotone"
               dataKey="division"
-              stroke="#4F46E5"
-              strokeWidth={2}
-              dot={{ r: 3, fill: "#4F46E5" }}
+              stroke="hsl(var(--primary))"
+              strokeWidth={2.5}
+              fill="url(#divisionFill)"
+              dot={{ r: 3.5, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              activeDot={{ r: 5, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
               isAnimationActive={false}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-1 text-[11px] text-muted-foreground">
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
         Division per week — lower is better. Hover a point for rank and wins.
       </p>
     </div>
