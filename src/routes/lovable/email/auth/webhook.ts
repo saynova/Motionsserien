@@ -9,7 +9,8 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "Md Rabiul Islam"
+const SITE_NAME = "Motionsserien"
+const SENDER_NAME = "Md Rabiul Islam"
 const SENDER_DOMAIN = "notify.motionsserien.se"
 const ROOT_DOMAIN = "motionsserien.se"
 const FROM_DOMAIN = "motionsserien.se"
