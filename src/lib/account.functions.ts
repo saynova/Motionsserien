@@ -159,7 +159,7 @@ export const getMyAccount = createServerFn({ method: "GET" })
       const { computeStandings } = await import("./tournament");
       const standings = computeStandings(
         slotRows.data ?? [],
-        (matchRows.data ?? []) as never,
+        (matchRows.data ?? []) as import("./tournament").MatchRow[],
         teamRows.data ?? [],
       );
       for (const rows of standings.values()) {
