@@ -228,6 +228,10 @@ export const getMyAccount = createServerFn({ method: "GET" })
             isActiveSeason && r.status === "accepted"
               ? (perfByName.get(r.team_name.toLowerCase()) ?? null)
               : null,
+          history:
+            isActiveSeason && r.status === "accepted"
+              ? (historyByName.get(r.team_name.toLowerCase()) ?? [])
+              : [],
         },
       ];
     });
