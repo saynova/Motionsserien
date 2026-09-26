@@ -239,3 +239,16 @@ export const adminReceiptUrl = createServerFn({ method: "POST" })
     if (signed.error || !signed.data) throw new Error("Could not prepare the download.");
     return { url: signed.data.signedUrl };
   });
+
+export const sampleReceiptPdf = createServerFn({ method: "POST" })
+  .inputValidator((d: { amount: number; name?: string }) => {
+    const amount = Number(d?.amount);
+    if (amount !== 400 && amount !== 800) throw new Error("Choose 400 kr or 800 kr.");
+    return { amount: amount as 400 | 800, name: String(d?.name ?? "").trim().slice(0, 80) };
+  })
+  .handler(async ({ data }) => {
+    await gate();
+    const { buildReceiptPdf, todayStockholm } = await import("./account.server");
+    const pdf = await buildReceiptPdf(data.amount, data.name || "Sample Player", todayStockholm());
+    return { base64: Buffer.from(pdf).toString("base64") };
+  });
