@@ -273,9 +273,24 @@ export const getMyAccount = createServerFn({ method: "GET" })
             isActiveSeason && r.status === "accepted"
               ? (historyByName.get(r.team_name.toLowerCase()) ?? [])
               : [],
+          matches:
+            isActiveSeason && r.status === "accepted"
+              ? (resultsByName.get(r.team_name.toLowerCase()) ?? [])
+              : [],
+          teamPaid: null,
         },
       ];
     });
+
+    // Payment status for teams in the active season.
+    if (season.data) {
+      const { isTeamPaid } = await import("./account.server");
+      for (const t of teams) {
+        if (t.seasonKey === season.data.registration_key && t.status === "accepted") {
+          t.teamPaid = await isTeamPaid(t.teamName);
+        }
+      }
+    }
 
     let receiptOffer: MyAccount["receiptOffer"] = null;
     const activeKey = season.data?.registration_key;
