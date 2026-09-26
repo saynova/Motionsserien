@@ -145,17 +145,18 @@ const btnGhost =
 
 function AdminPage() {
   const status = useQuery(adminStatusQueryOptions);
-  return status.data?.unlocked ? <AdminConsole /> : <AdminGate />;
+  if (status.data?.unlocked) return <AdminConsole />;
+  return <AdminGate awaitingCode={status.data?.pending === true} />;
 }
 
-function AdminGate() {
+function AdminGate({ awaitingCode = false }: { awaitingCode?: boolean }) {
   const queryClient = useQueryClient();
   const signIn = useServerFn(adminSignIn);
   const verifyCode = useServerFn(verifyAdminCode);
   const resendCode = useServerFn(resendAdminCode);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState<"password" | "code">("password");
+  const [step, setStep] = useState<"password" | "code">(awaitingCode ? "code" : "password");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [appAvailable, setAppAvailable] = useState(false);
   const [code, setCode] = useState("");
