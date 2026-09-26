@@ -134,8 +134,8 @@ export function ReceiptsAdmin() {
   const list = useServerFn(listReceipts);
   const setFlags = useServerFn(setSeasonAccountFlags);
   const voidFn = useServerFn(voidReceipt);
-  const urlFn = useServerFn(adminReceiptUrl);
   const fileFn = useServerFn(adminReceiptFile);
+
   const sampleReceiptPdf = useServerFn(sampleReceiptPdfFn);
   const [doc, setDoc] = useState<PdfDoc | null>(null);
 
