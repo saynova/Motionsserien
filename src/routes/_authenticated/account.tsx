@@ -100,6 +100,7 @@ function AccountPage() {
   const { data, isLoading, error } = useQuery({ queryKey: ["my-account"], queryFn: () => fetchAccount() });
   const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState<PdfDoc | null>(null);
+  const [openTeam, setOpenTeam] = useState<string | null>(null);
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -160,7 +161,27 @@ function AccountPage() {
               <ul className="space-y-2">
                 {data.teams.map((t) => (
                   <li key={t.registrationId} className="rounded border border-border p-3 text-sm">
-                    <div className="font-semibold">{t.teamName}</div>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setOpenTeam(openTeam === t.registrationId ? null : t.registrationId)}
+                        className="font-semibold underline-offset-2 hover:underline"
+                        aria-expanded={openTeam === t.registrationId}
+                      >
+                        {t.teamName}
+                      </button>
+                      {t.teamPaid !== null ? (
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                            t.teamPaid
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {t.teamPaid ? "Paid" : "Unpaid"}
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="text-muted-foreground">
                       {t.seasonKey} · {TEAM_STATUS[t.status] ?? t.status}
                     </div>
@@ -169,9 +190,14 @@ function AccountPage() {
                       {t.player2Name ? ` & ${t.player2Name}` : " · waiting for your partner to join"}
                     </div>
                     {t.performance ? (
-                      <div className="mt-2 rounded border border-border bg-secondary/40 p-2">
-                        <div className="font-semibold">
-                          Division {t.performance.division} · Rank {t.performance.rank}
+                      <div className="mt-2 flex items-center gap-3 rounded border border-border bg-secondary/40 p-2">
+                        <div className="text-center">
+                          <div className="text-3xl font-extrabold leading-none text-emerald-600">
+                            #{t.performance.rank}
+                          </div>
+                          <div className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Division {t.performance.division}
+                          </div>
                         </div>
                         <div className="tabnum text-muted-foreground">
                           Matches {t.performance.matchWins}/{t.performance.played} won · Sets {t.performance.setsWon}–{t.performance.setsLost} · Points {t.performance.pointsFor}–{t.performance.pointsAgainst}
@@ -179,6 +205,42 @@ function AccountPage() {
                       </div>
                     ) : null}
                     <TeamHistoryChart history={t.history} />
+                    {openTeam === t.registrationId ? (
+                      <div className="mt-3 rounded border border-border bg-card p-3">
+                        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Match results
+                        </h3>
+                        {t.matches.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No completed matches yet.</p>
+                        ) : (
+                          <ul className="space-y-1.5">
+                            {t.matches.map((m, i) => (
+                              <li
+                                key={`${m.week}-${i}`}
+                                className="flex flex-wrap items-center justify-between gap-2 rounded border border-border/60 px-2.5 py-1.5"
+                              >
+                                <span>
+                                  <span className="font-semibold">Week {m.week}</span>
+                                  <span className="text-muted-foreground"> vs {m.opponent}</span>
+                                </span>
+                                <span className="flex items-center gap-2">
+                                  <span className="tabnum text-muted-foreground">
+                                    {m.setsFor}–{m.setsAgainst} ({m.score})
+                                  </span>
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                                      m.won ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                                    }`}
+                                  >
+                                    {m.won ? "Won" : "Lost"}
+                                  </span>
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ul>

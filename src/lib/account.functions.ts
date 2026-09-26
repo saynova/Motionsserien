@@ -23,6 +23,15 @@ export type TeamHistoryPoint = {
   played: number;
 };
 
+export type MyMatchResult = {
+  week: number;
+  opponent: string;
+  setsFor: number;
+  setsAgainst: number;
+  score: string;
+  won: boolean;
+};
+
 export type MyTeam = {
   registrationId: string;
   seasonKey: string;
@@ -34,6 +43,8 @@ export type MyTeam = {
   hasPartnerAccount: boolean;
   performance: MyTeamPerformance | null;
   history: TeamHistoryPoint[];
+  matches: MyMatchResult[];
+  teamPaid: boolean | null;
 };
 
 export type SignedUpTeam = {
@@ -159,9 +170,10 @@ export const getMyAccount = createServerFn({ method: "GET" })
 
     const regById = new Map((regs.data ?? []).map((r) => [r.id, r]));
 
-    // Performance and week-by-week history for teams in the active season.
+    // Performance, week-by-week history and match results for teams in the active season.
     const perfByName = new Map<string, MyTeamPerformance>();
     const historyByName = new Map<string, TeamHistoryPoint[]>();
+    const resultsByName = new Map<string, MyMatchResult[]>();
     if (season.data) {
       const seasonId = season.data.id;
       const currentWeek = season.data.current_week;
@@ -175,6 +187,35 @@ export const getMyAccount = createServerFn({ method: "GET" })
       const allSlots = slotRows.data ?? [];
       const allMatches = (matchRows.data ?? []) as import("./tournament").MatchRow[];
       const allTeams = teamRows.data ?? [];
+
+      const teamNameById = new Map(allTeams.map((t) => [t.id, t.name]));
+      const pushResult = (name: string, result: MyMatchResult) => {
+        const key = name.toLowerCase();
+        resultsByName.set(key, [...(resultsByName.get(key) ?? []), result]);
+      };
+      for (const m of allMatches.filter((x) => x.status === "final")) {
+        const aName = teamNameById.get(m.team_a_id);
+        const bName = teamNameById.get(m.team_b_id);
+        if (!aName || !bName) continue;
+        let aSets = 0;
+        let bSets = 0;
+        const parts: string[] = [];
+        for (const [x, y] of [
+          [m.s1a, m.s1b],
+          [m.s2a, m.s2b],
+          [m.s3a, m.s3b],
+        ] as const) {
+          if (x === null || y === null || x === undefined || y === undefined) continue;
+          parts.push(`${x}–${y}`);
+          if (x > y) aSets++;
+          else if (y > x) bSets++;
+        }
+        const score = parts.join(", ");
+        pushResult(aName, { week: m.week_no, opponent: bName, setsFor: aSets, setsAgainst: bSets, score, won: aSets > bSets });
+        pushResult(bName, { week: m.week_no, opponent: aName, setsFor: bSets, setsAgainst: aSets, score, won: bSets > aSets });
+      }
+      for (const list of resultsByName.values()) list.sort((a, b) => a.week - b.week);
+
       for (let w = 1; w <= currentWeek; w++) {
         const standings = computeStandings(
           allSlots.filter((s) => s.week_no === w),
@@ -232,9 +273,24 @@ export const getMyAccount = createServerFn({ method: "GET" })
             isActiveSeason && r.status === "accepted"
               ? (historyByName.get(r.team_name.toLowerCase()) ?? [])
               : [],
+          matches:
+            isActiveSeason && r.status === "accepted"
+              ? (resultsByName.get(r.team_name.toLowerCase()) ?? [])
+              : [],
+          teamPaid: null,
         },
       ];
     });
+
+    // Payment status for teams in the active season.
+    if (season.data) {
+      const { isTeamPaid } = await import("./account.server");
+      for (const t of teams) {
+        if (t.seasonKey === season.data.registration_key && t.status === "accepted") {
+          t.teamPaid = await isTeamPaid(t.teamName);
+        }
+      }
+    }
 
     let receiptOffer: MyAccount["receiptOffer"] = null;
     const activeKey = season.data?.registration_key;
