@@ -59,7 +59,9 @@ export const saveBranding = createServerFn({ method: "POST" })
       header_title: data.headerTitle,
       header_subtitle: data.headerSubtitle,
       tournament_name: data.tournamentName,
+      show_signin: data.showSignIn,
     };
+
     const res = existing.data
       ? await client.from("site_branding").update(payload).eq("id", existing.data.id)
       : await client.from("site_branding").insert(payload);
