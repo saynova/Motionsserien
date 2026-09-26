@@ -210,16 +210,12 @@ export function ReceiptsAdmin() {
                 onClick={async () => {
                   try {
                     const { base64 } = await sampleReceiptPdf({ data: { amount } });
-                    const bin = atob(base64);
-                    const buf = new Uint8Array(bin.length);
-                    for (let i = 0; i < bin.length; i += 1) buf[i] = bin.charCodeAt(i);
-                    const url = URL.createObjectURL(new Blob([buf], { type: "application/pdf" }));
-                    window.open(url, "_blank");
-                    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+                    setDoc({ base64, filename: `Kvitto-sample-${amount}kr.pdf`, title: `Sample receipt · ${amount} kr` });
                   } catch (e) {
                     toast.error(e instanceof Error ? e.message : "Could not open the sample.");
                   }
                 }}
+
               >
                 Preview {amount} kr receipt
               </Button>
