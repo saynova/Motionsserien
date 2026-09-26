@@ -16,7 +16,7 @@ export const getBranding = createServerFn({ method: "GET" }).handler(async (): P
     const { adminClient } = await import("./tournament.server");
     const { data } = await adminClient()
       .from("site_branding")
-      .select("header_title, header_subtitle, tournament_name, show_signin")
+      .select("header_title, header_subtitle, tournament_name, show_signin, show_missing_banner")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
@@ -26,6 +26,7 @@ export const getBranding = createServerFn({ method: "GET" }).handler(async (): P
       headerSubtitle: data.header_subtitle,
       tournamentName: data.tournament_name || DEFAULT_BRANDING.tournamentName,
       showSignIn: data.show_signin !== false,
+      showMissingBanner: data.show_missing_banner !== false,
     };
   } catch {
     return DEFAULT_BRANDING;
