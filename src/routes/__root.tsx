@@ -10,7 +10,11 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+// Keeps browser calls to the backend on this domain (restricted office networks
+// block the backend's own address). Must load before the client is used.
+import "@/integrations/supabase/same-origin";
 import { supabase } from "@/integrations/supabase/client";
+
 
 import { Toaster } from "@/components/ui/sonner";
 import { DonationButton, SponsorBanner } from "@/components/support-ui";
