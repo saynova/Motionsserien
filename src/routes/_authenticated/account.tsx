@@ -75,11 +75,11 @@ function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
           <AreaChart data={data} margin={{ top: 8, right: 10, bottom: 0, left: -14 }}>
             <defs>
               <linearGradient id="divisionFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="4 4" />
+            <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="4 4" />
             <XAxis
               dataKey="label"
               tick={{ fontSize: 11 }}
@@ -102,7 +102,7 @@ function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
               axisLine={false}
             />
             <Tooltip
-              cursor={{ stroke: "hsl(var(--primary))", strokeOpacity: 0.3, strokeDasharray: "4 4" }}
+              cursor={{ stroke: "var(--primary)", strokeOpacity: 0.3, strokeDasharray: "4 4" }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null;
                 const p = payload[0]!.payload as TeamHistoryPoint;
@@ -119,11 +119,11 @@ function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
             <Area
               type="monotone"
               dataKey="division"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth={2.5}
               fill="url(#divisionFill)"
-              dot={{ r: 3.5, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
-              activeDot={{ r: 5, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              dot={{ r: 3.5, fill: "var(--primary)", strokeWidth: 2, stroke: "var(--card)" }}
+              activeDot={{ r: 5, fill: "var(--primary)", strokeWidth: 2, stroke: "var(--card)" }}
               isAnimationActive={false}
             />
           </AreaChart>
