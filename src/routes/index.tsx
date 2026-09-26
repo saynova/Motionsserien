@@ -171,6 +171,10 @@ function StandingsPage() {
   const weekMatches = matches.filter((m) => m.week_no === week);
   const standings = computeStandings(weekSlots, weekMatches, teams);
   const divisions = [...standings.keys()].sort((a, b) => a - b);
+  const [divFilter, setDivFilter] = useState<string>("all");
+  const shownDivisions = divisions.filter((d) =>
+    divFilter === "all" ? true : divFilter === "top" ? d <= 5 : divFilter === "bottom" ? d > 5 : d === Number(divFilter),
+  );
 
   const finalCount = weekMatches.filter((m) => m.status === "final").length;
   const pendingCount = weekMatches.filter((m) => m.status === "pending").length;
@@ -187,11 +191,12 @@ function StandingsPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Week {currentWeek} scores
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{season.name} Badminton Ladder</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Monday nights · 10 divisions · report your result for admin approval.</p>
             <div className="mt-4 flex flex-wrap items-start gap-4">
               <Button
                 size="default"
-                className="h-10 shrink-0 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
+                className="h-11 shrink-0 gap-2 rounded-full px-6 font-semibold shadow-[0_8px_24px_-6px_color-mix(in_oklab,var(--color-primary)_60%,transparent)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_-6px_color-mix(in_oklab,var(--color-primary)_70%,transparent)] active:translate-y-px"
                 asChild
               >
                 <Link to="/submit">
@@ -207,16 +212,16 @@ function StandingsPage() {
         </div>
 
         <dl className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
-            <Users className="size-5 text-primary" aria-hidden="true" />
+          <div className="glass-surface flex items-center gap-3 rounded-xl border border-border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-md">
+            <span className="grid size-10 place-items-center rounded-lg bg-primary/10"><Users className="size-5 text-primary" aria-hidden="true" /></span><span hidden aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{teams.length}</dd><dt className="text-xs text-muted-foreground">Active teams</dt></div>
           </div>
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
-            <CalendarRange className="size-5 text-primary" aria-hidden="true" />
+          <div className="glass-surface flex items-center gap-3 rounded-xl border border-border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-md">
+            <span className="grid size-10 place-items-center rounded-lg bg-primary/10"><CalendarRange className="size-5 text-primary" aria-hidden="true" /></span><span hidden aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{currentWeek} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
-            <Layers3 className="size-5 text-primary" aria-hidden="true" />
+          <div className="glass-surface flex items-center gap-3 rounded-xl border border-border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-md">
+            <span className="grid size-10 place-items-center rounded-lg bg-primary/10"><Layers3 className="size-5 text-primary" aria-hidden="true" /></span><span hidden aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{divisions.length}</dd><dt className="text-xs text-muted-foreground">Divisions</dt></div>
           </div>
         </dl>
@@ -247,8 +252,22 @@ function StandingsPage() {
         </div>
       </PageHeader>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {divisions.map((division) => {
+      <nav aria-label="Divisions" className="-mx-1 mb-6 flex gap-2 overflow-x-auto px-1 pb-1">
+        {[["all", "All"], ["top", "Div 1–5"], ["bottom", "Div 6–10"], ...divisions.map((d) => [String(d), `D${d}`])].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setDivFilter(key!)}
+            aria-pressed={divFilter === key}
+            className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-semibold transition-all ${divFilter === key ? "border-primary bg-primary text-primary-foreground shadow-md" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div key={divFilter} className="grid gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300 lg:grid-cols-2">
+        {shownDivisions.map((division) => {
           const rows = standings.get(division) ?? [];
           const divisionMatches = weekMatches
             .filter((m) => m.division === division)
@@ -256,7 +275,7 @@ function StandingsPage() {
           return (
             <section
               key={division}
-              className="glass-surface overflow-hidden rounded-lg border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="glass-surface overflow-hidden rounded-2xl border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-secondary/50 px-4 py-2.5">
                 <h2 className="text-xl font-bold text-primary">
@@ -302,7 +321,7 @@ function StandingsPage() {
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={row.teamId} className="border-b border-border/60 last:border-0">
+                    <tr key={row.teamId} className="border-b border-border/60 transition-colors last:border-0 hover:bg-primary/5">
                       <td className="tabnum px-2 py-2.5 font-bold text-muted-foreground sm:px-3">
                         {row.rank}
                       </td>
@@ -344,9 +363,9 @@ function StandingsPage() {
                   return (
                     <li
                       key={match.id}
-                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 text-xs sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2.5 text-xs transition-colors hover:bg-secondary/50 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
                     >
-                      <span className="tabnum text-muted-foreground">{match.start_time}</span>
+                      <span className="tabnum rounded-md bg-secondary px-1.5 py-0.5 font-semibold text-muted-foreground">{match.start_time}</span>
                       <span className="min-w-0 break-words font-medium">
                         {teamName(match.team_a_id)} <span className="text-muted-foreground">v</span>{" "}
                         {teamName(match.team_b_id)}
