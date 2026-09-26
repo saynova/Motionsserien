@@ -229,16 +229,24 @@ export const voidReceipt = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-export const adminReceiptUrl = createServerFn({ method: "POST" })
+export const adminReceiptFile = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string }) => ({ id: String(d?.id ?? "") }))
   .handler(async ({ data }) => {
     const db = await gate();
-    const inv = await db.from("invoices").select("file_path").eq("id", data.id).maybeSingle();
+    const inv = await db
+      .from("invoices")
+      .select("file_path, amount, season_key, player_name")
+      .eq("id", data.id)
+      .maybeSingle();
     if (!inv.data?.file_path) throw new Error("Receipt file not found.");
-    const signed = await db.storage.from("invoices").createSignedUrl(inv.data.file_path, 600, { download: true });
-    if (signed.error || !signed.data) throw new Error("Could not prepare the download.");
-    return { url: signed.data.signedUrl };
+    const { receiptBase64 } = await import("./account.server");
+    const safe = (v: string) => v.replace(/[^\w-]+/g, "-");
+    return {
+      base64: await receiptBase64(inv.data.file_path),
+      filename: `Kvitto-${safe(inv.data.season_key)}-${safe(inv.data.player_name)}-${inv.data.amount}kr.pdf`,
+    };
   });
+
 
 export const sampleReceiptPdf = createServerFn({ method: "POST" })
   .inputValidator((d: { amount: number; name?: string }) => {
