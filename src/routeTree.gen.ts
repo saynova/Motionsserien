@@ -24,6 +24,7 @@ import { Route as ShuttlesRouteImport } from './routes/shuttles'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ApiPublicCronAutoFinalizeRouteImport } from './routes/api/public/cron/auto-finalize'
 import { Route as ApiPublicCronScoreRemindersRouteImport } from './routes/api/public/cron/score-reminders'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -103,6 +104,12 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicCronAutoFinalizeRoute =
+  ApiPublicCronAutoFinalizeRouteImport.update({
+    id: '/api/public/cron/auto-finalize',
+    path: '/api/public/cron/auto-finalize',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronScoreRemindersRoute =
   ApiPublicCronScoreRemindersRouteImport.update({
     id: '/api/public/cron/score-reminders',
@@ -141,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/submit': typeof SubmitRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -161,6 +169,7 @@ export interface FileRoutesByTo {
   '/submit': typeof SubmitRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -183,6 +192,7 @@ export interface FileRoutesById {
   '/submit': typeof SubmitRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/submit'
     | '/terms'
     | '/account'
+    | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/submit'
     | '/terms'
     | '/account'
+    | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -246,6 +258,7 @@ export interface FileRouteTypes {
     | '/submit'
     | '/terms'
     | '/_authenticated/account'
+    | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -267,6 +280,7 @@ export interface RootRouteChildren {
   ShuttlesRoute: typeof ShuttlesRoute
   SubmitRoute: typeof SubmitRoute
   TermsRoute: typeof TermsRoute
+  ApiPublicCronAutoFinalizeRoute: typeof ApiPublicCronAutoFinalizeRoute
   ApiPublicCronScoreRemindersRoute: typeof ApiPublicCronScoreRemindersRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -380,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/cron/auto-finalize': {
+      id: '/api/public/cron/auto-finalize'
+      path: '/api/public/cron/auto-finalize'
+      fullPath: '/api/public/cron/auto-finalize'
+      preLoaderRoute: typeof ApiPublicCronAutoFinalizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/score-reminders': {
       id: '/api/public/cron/score-reminders'
       path: '/api/public/cron/score-reminders'
@@ -437,6 +458,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShuttlesRoute: ShuttlesRoute,
   SubmitRoute: SubmitRoute,
   TermsRoute: TermsRoute,
+  ApiPublicCronAutoFinalizeRoute: ApiPublicCronAutoFinalizeRoute,
   ApiPublicCronScoreRemindersRoute: ApiPublicCronScoreRemindersRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

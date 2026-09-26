@@ -13,7 +13,7 @@ export function BrandingAdmin() {
   const qc = useQueryClient();
   const { data } = useQuery(brandingQueryOptions());
   const save = useServerFn(saveBranding);
-  const [form, setForm] = useState({ headerTitle: "", headerSubtitle: "", tournamentName: "", showSignIn: true });
+  const [form, setForm] = useState({ headerTitle: "", headerSubtitle: "", tournamentName: "", showSignIn: true, showMissingBanner: true });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -67,6 +67,21 @@ export function BrandingAdmin() {
             <span className="block text-xs text-muted-foreground">
               Turn this off while players don&apos;t need accounts. Turn it on when receipts open or
               when registration for the next tournament starts.
+            </span>
+          </span>
+        </label>
+      </div>
+      <div className="rounded-xl border border-border p-4">
+        <label className="flex items-start gap-3">
+          <Switch
+            checked={form.showMissingBanner}
+            onCheckedChange={(v) => setForm({ ...form, showMissingBanner: v })}
+          />
+          <span>
+            <span className="block text-sm font-semibold">Show the &quot;Missing scores&quot; box on the standings page</span>
+            <span className="block text-xs text-muted-foreground">
+              The red box lists matches with no score yet, between Tuesday and Thursday morning.
+              Turn it off to hide it from everyone.
             </span>
           </span>
         </label>

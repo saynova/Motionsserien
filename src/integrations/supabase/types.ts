@@ -668,6 +668,7 @@ export type Database = {
           header_subtitle: string
           header_title: string
           id: string
+          show_missing_banner: boolean
           show_signin: boolean
           tournament_name: string
           updated_at: string
@@ -677,6 +678,7 @@ export type Database = {
           header_subtitle?: string
           header_title?: string
           id?: string
+          show_missing_banner?: boolean
           show_signin?: boolean
           tournament_name?: string
           updated_at?: string
@@ -686,6 +688,7 @@ export type Database = {
           header_subtitle?: string
           header_title?: string
           id?: string
+          show_missing_banner?: boolean
           show_signin?: boolean
           tournament_name?: string
           updated_at?: string

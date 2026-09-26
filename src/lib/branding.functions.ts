@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { queryOptions } from "@tanstack/react-query";
 
-export type SiteBranding = { headerTitle: string; headerSubtitle: string; tournamentName: string; showSignIn: boolean };
+export type SiteBranding = { headerTitle: string; headerSubtitle: string; tournamentName: string; showSignIn: boolean; showMissingBanner: boolean };
 
 export const DEFAULT_BRANDING: SiteBranding = {
   headerTitle: "Motionsserien",
   headerSubtitle: "HT-26",
   tournamentName: "Motionsserien HT-26",
   showSignIn: true,
+  showMissingBanner: true,
 };
 
 export const getBranding = createServerFn({ method: "GET" }).handler(async (): Promise<SiteBranding> => {
@@ -15,7 +16,7 @@ export const getBranding = createServerFn({ method: "GET" }).handler(async (): P
     const { adminClient } = await import("./tournament.server");
     const { data } = await adminClient()
       .from("site_branding")
-      .select("header_title, header_subtitle, tournament_name, show_signin")
+      .select("header_title, header_subtitle, tournament_name, show_signin, show_missing_banner")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
@@ -25,6 +26,7 @@ export const getBranding = createServerFn({ method: "GET" }).handler(async (): P
       headerSubtitle: data.header_subtitle,
       tournamentName: data.tournament_name || DEFAULT_BRANDING.tournamentName,
       showSignIn: data.show_signin !== false,
+      showMissingBanner: data.show_missing_banner !== false,
     };
   } catch {
     return DEFAULT_BRANDING;
@@ -43,6 +45,7 @@ export const saveBranding = createServerFn({ method: "POST" })
       headerSubtitle: clean(input?.headerSubtitle, 40),
       tournamentName: clean(input?.tournamentName, 100),
       showSignIn: input?.showSignIn !== false,
+      showMissingBanner: input?.showMissingBanner !== false,
     };
 
     if (out.headerTitle.length < 2) throw new Error("Header title needs at least 2 characters.");
@@ -60,6 +63,7 @@ export const saveBranding = createServerFn({ method: "POST" })
       header_subtitle: data.headerSubtitle,
       tournament_name: data.tournamentName,
       show_signin: data.showSignIn,
+      show_missing_banner: data.showMissingBanner,
     };
 
     const res = existing.data

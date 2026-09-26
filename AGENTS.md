@@ -12,3 +12,5 @@
 - Public team profiles derive performance from tournament snapshots and expose player names only, never contact details — keeps standings useful without leaking private data.
 
 - Player accounts link to teams via account_links keyed by registration target season (seasons.registration_key); receipts are issued only through the claim_invoice DB function — enforces the 800 kr team cap atomically.
+
+- Automatic week finalise lives in src/lib/auto-finalize.server.ts, called by the token-protected route src/routes/api/public/cron/auto-finalize.ts on a Monday-morning cron; it approves pending scores, records 0-0 no-shows and generates the next week at 11:00 Stockholm (8 h before the 19:00 games) — keeps the ladder moving when the admin is unavailable.
