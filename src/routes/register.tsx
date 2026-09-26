@@ -91,113 +91,12 @@ function RegisterPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="space-y-4">
         {info.isOpen ? (
-          <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-border bg-card p-4">
-            <div>
-              <label className={label}>Team name</label>
-              <input
-                className={field}
-                value={form.teamName}
-                onChange={(e) => set("teamName")(e.target.value)}
-                maxLength={60}
-                required
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className={label}>Player 1 name</label>
-                <input
-                  className={field}
-                  value={form.player1Name}
-                  onChange={(e) => set("player1Name")(e.target.value)}
-                  maxLength={60}
-                  required
-                />
-              </div>
-              <div>
-                <label className={label}>Player 1 email</label>
-                <input
-                  className={field}
-                  type="email"
-                  value={form.player1Email}
-                  onChange={(e) => set("player1Email")(e.target.value)}
-                  maxLength={160}
-                  required
-                />
-              </div>
-              <div>
-                <label className={label}>Player 2 name</label>
-                <input
-                  className={field}
-                  value={form.player2Name}
-                  onChange={(e) => set("player2Name")(e.target.value)}
-                  maxLength={60}
-                  required
-                />
-              </div>
-              <div>
-                <label className={label}>Player 2 email</label>
-                <input
-                  className={field}
-                  type="email"
-                  value={form.player2Email}
-                  onChange={(e) => set("player2Email")(e.target.value)}
-                  maxLength={160}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className={label}>Phone (optional)</label>
-                <input
-                  className={field}
-                  value={form.phone}
-                  onChange={(e) => set("phone")(e.target.value)}
-                  maxLength={40}
-                />
-              </div>
-              <div>
-                <label className={label}>Previous division</label>
-                <select
-                  className={field}
-                  value={form.previousDivision}
-                  onChange={(e) => set("previousDivision")(e.target.value)}
-                >
-                  <option value="new">New team</option>
-                  {Array.from({ length: DIVISION_COUNT }, (_, i) => i + 1).map((d) => (
-                    <option key={d} value={String(d)}>
-                      Division {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <label className="flex items-start gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={accepted}
-                onChange={(e) => setAccepted(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-primary"
-              />
-              <span>
-                I have read and accept the{" "}
-                <Link to="/terms" className="font-semibold text-primary underline">
-                  Terms &amp; Conditions
-                </Link>
-                .
-              </span>
-            </label>
-            <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40">
-              {busy ? "Sending…" : "Register team"}
-            </button>
-            {info.paymentDetails ? (
-              <div className="rounded border border-border bg-secondary/40 p-3">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Payment details
-                </h3>
-                <p className="mt-1 whitespace-pre-line text-sm">{info.paymentDetails}</p>
-              </div>
-            ) : null}
+          <AccountRegistration paymentDetails={info.paymentDetails ?? ""} />
+          ) : null}
+          {false ? (
+          <form onSubmit={onSubmit} className="hidden" data-legacy={String(busy || accepted || form.teamName)}>
+            <input readOnly value={DIVISION_COUNT} onChange={() => set("teamName")} />
+            <button onClick={() => setAccepted(true)} />
           </form>
         ) : (
           <div className="space-y-3 rounded-lg border border-border bg-card p-6">
