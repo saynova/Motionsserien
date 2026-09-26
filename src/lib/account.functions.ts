@@ -23,6 +23,15 @@ export type TeamHistoryPoint = {
   played: number;
 };
 
+export type MyMatchResult = {
+  week: number;
+  opponent: string;
+  setsFor: number;
+  setsAgainst: number;
+  score: string;
+  won: boolean;
+};
+
 export type MyTeam = {
   registrationId: string;
   seasonKey: string;
@@ -34,6 +43,8 @@ export type MyTeam = {
   hasPartnerAccount: boolean;
   performance: MyTeamPerformance | null;
   history: TeamHistoryPoint[];
+  matches: MyMatchResult[];
+  teamPaid: boolean | null;
 };
 
 export type SignedUpTeam = {
