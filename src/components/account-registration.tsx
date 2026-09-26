@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { getMyAccount, joinTeam, listJoinableTeams, registerMyTeam, requestPartner } from "@/lib/account.functions";
+import { getMyAccount, registerMyTeam, requestPartner } from "@/lib/account.functions";
 import { DIVISION_COUNT } from "@/lib/tournament";
 
 const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font-medium";
@@ -40,7 +40,7 @@ export function AccountRegistration({ paymentDetails }: { paymentDetails: string
       <div className="space-y-3 rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-bold">Sign in to register</h2>
         <p className="text-sm text-muted-foreground">
-          You need a player account to register a team, join your partner or find a partner. The same account works for scores and receipts in every future tournament.
+          You need a player account to register a team or to ask us to find you a partner. The same account works for scores and receipts in every future tournament.
         </p>
         <Link to="/auth" className="inline-block rounded bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
           Sign in or create account
@@ -54,14 +54,11 @@ export function AccountRegistration({ paymentDetails }: { paymentDetails: string
 function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
   const queryClient = useQueryClient();
   const fetchAccount = useServerFn(getMyAccount);
-  const fetchJoinable = useServerFn(listJoinableTeams);
   const doRegister = useServerFn(registerMyTeam);
-  const doJoin = useServerFn(joinTeam);
   const doPartner = useServerFn(requestPartner);
   const account = useQuery({ queryKey: ["my-account"], queryFn: () => fetchAccount() });
-  const joinable = useQuery({ queryKey: ["joinable-teams"], queryFn: () => fetchJoinable() });
 
-  const [mode, setMode] = useState<"team" | "join" | "partner">("team");
+  const [mode, setMode] = useState<"team" | "partner">("team");
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [phone, setPhone] = useState("");
@@ -72,7 +69,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
   const [payLater, setPayLater] = useState(false);
   const [lateAck, setLateAck] = useState(false);
   const [division, setDivision] = useState("new");
-  const [joinId, setJoinId] = useState("");
   const [availability, setAvailability] = useState("");
   const [note, setNote] = useState("");
   const [accepted, setAccepted] = useState(false);
@@ -118,7 +114,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
 
   const tabs = [
     ["team", "Register a team"],
-    ["join", "Join my partner's team"],
     ["partner", "Find me a partner"],
   ] as const;
 
@@ -129,13 +124,11 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
         e.preventDefault();
         if (mode === "team")
           void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: lateAck, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
-        else if (mode === "join")
-          void run(() => doJoin({ data: { registrationId: joinId, playerName: name } }), "You've joined the team.");
         else
           void run(() => doPartner({ data: { name, previousDivision: division, availability, note } }), "Request sent. The admin will review it.");
       }}
     >
-      <div className="grid grid-cols-3 gap-1 rounded bg-secondary p-1 text-xs font-semibold">
+      <div className="grid grid-cols-2 gap-1 rounded bg-secondary p-1 text-xs font-semibold">
         {tabs.map(([id, text]) => (
           <button key={id} type="button" onClick={() => setMode(id)} className={`rounded px-2 py-1.5 ${mode === id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
             {text}
@@ -210,18 +203,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
         </>
       ) : null}
 
-      {mode === "join" ? (
-        <div>
-          <label className={label}>Your partner's team</label>
-          <select className={field} value={joinId} onChange={(e) => setJoinId(e.target.value)} required>
-            <option value="">Choose team…</option>
-            {(joinable.data ?? []).map((t) => (
-              <option key={t.id} value={t.id}>{t.teamName} ({t.player1Name})</option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-muted-foreground">Only teams still missing a second player are listed. Your partner gets an email when you join.</p>
-        </div>
-      ) : null}
 
       {mode === "partner" ? (
         <>
@@ -248,7 +229,7 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
         </span>
       </label>
       <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
-        {busy ? "Sending…" : mode === "team" ? "Register team" : mode === "join" ? "Join team" : "Send request"}
+        {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
       {paymentDetails ? (
         <div className="rounded border border-border bg-secondary/40 p-3">

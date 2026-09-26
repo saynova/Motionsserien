@@ -40,7 +40,7 @@ function RegisterPage() {
       <PageHeader
         eyebrow={info.targetSeason ? `Registration · ${info.targetSeason}` : "Registration"}
         title="Team registration"
-        description="Sign in, then register your team, join your partner's team, or ask us to find you a partner. An admin reviews every entry. Emails and phone numbers are never shown publicly."
+        description="Sign in, then register your team with both players, or ask us to find you a partner. An admin reviews every entry. Emails and phone numbers are never shown publicly."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">

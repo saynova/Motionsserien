@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -50,6 +51,11 @@ const AskRoute = AskRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmRoute = ConfirmRouteImport.update({
+  id: '/confirm',
+  path: '/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MemoriesRoute = MemoriesRouteImport.update({
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
+  '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
+  '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
+  '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ask'
     | '/auth'
+    | '/confirm'
     | '/memories'
     | '/progress'
     | '/register'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ask'
     | '/auth'
+    | '/confirm'
     | '/memories'
     | '/progress'
     | '/register'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ask'
     | '/auth'
+    | '/confirm'
     | '/memories'
     | '/progress'
     | '/register'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AskRoute: typeof AskRoute
   AuthRoute: typeof AuthRoute
+  ConfirmRoute: typeof ConfirmRoute
   MemoriesRoute: typeof MemoriesRoute
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
@@ -295,6 +308,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirm': {
+      id: '/confirm'
+      path: '/confirm'
+      fullPath: '/confirm'
+      preLoaderRoute: typeof ConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/memories': {
@@ -408,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AskRoute: AskRoute,
   AuthRoute: AuthRoute,
+  ConfirmRoute: ConfirmRoute,
   MemoriesRoute: MemoriesRoute,
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
