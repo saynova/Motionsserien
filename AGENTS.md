@@ -14,3 +14,5 @@
 - Player accounts link to teams via account_links keyed by registration target season (seasons.registration_key); receipts are issued only through the claim_invoice DB function — enforces the 800 kr team cap atomically.
 
 - Automatic week finalise lives in src/lib/auto-finalize.server.ts, called by the token-protected route src/routes/api/public/cron/auto-finalize.ts on a Monday-morning cron; it approves pending scores, records 0-0 no-shows and generates the next week at 11:00 Stockholm (8 h before the 19:00 games) — keeps the ladder moving when the admin is unavailable.
+
+- All browser traffic to the backend stays same-origin: gallery images are proxied by src/routes/api/public/gallery/$.ts and every client Supabase call is rewritten to src/routes/api/public/sb/$.ts by src/integrations/supabase/same-origin.ts (imported in __root) — corporate networks block the backend subdomain while allowing motionsserien.se.
