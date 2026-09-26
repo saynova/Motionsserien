@@ -145,9 +145,43 @@ export const getMyAccount = createServerFn({ method: "GET" })
     for (const r of [regs, allLinks, partner, receipts, season, signedUp]) if (r.error) throw new Error(r.error.message);
 
     const regById = new Map((regs.data ?? []).map((r) => [r.id, r]));
+
+    // Performance for teams in the active season, from current-week standings.
+    const perfByName = new Map<string, MyTeamPerformance>();
+    if (season.data) {
+      const seasonId = season.data.id;
+      const [slotRows, matchRows, teamRows] = await Promise.all([
+        db.from("week_slots").select("team_id, division, position, tie_break_adj").eq("season_id", seasonId).eq("week_no", season.data.current_week),
+        db.from("matches").select("team_a_id, team_b_id, status, s1a, s1b, s2a, s2b, s3a, s3b").eq("season_id", seasonId),
+        db.from("teams").select("id, name"),
+      ]);
+      for (const r of [slotRows, matchRows, teamRows]) if (r.error) throw new Error(r.error.message);
+      const { computeStandings } = await import("./tournament");
+      const standings = computeStandings(
+        (slotRows.data ?? []).map((s) => ({ ...s, season_id: seasonId, week_no: season.data.current_week })),
+        (matchRows.data ?? []) as never,
+        (teamRows.data ?? []).map((t) => ({ ...t, start_division: 1, created_at: "" })),
+      );
+      for (const rows of standings.values()) {
+        for (const row of rows) {
+          perfByName.set(row.teamName.toLowerCase(), {
+            division: row.division,
+            rank: row.rank,
+            played: row.played,
+            matchWins: row.matchWins,
+            setsWon: row.setsWon,
+            setsLost: row.setsLost,
+            pointsFor: row.pointsFor,
+            pointsAgainst: row.pointsAgainst,
+          });
+        }
+      }
+    }
+
     const teams: MyTeam[] = (links.data ?? []).flatMap((l) => {
       const r = regById.get(l.registration_id);
       if (!r) return [];
+      const isActiveSeason = season.data?.registration_key === l.season_key;
       return [
         {
           registrationId: r.id,
@@ -159,6 +193,10 @@ export const getMyAccount = createServerFn({ method: "GET" })
           player2Name: r.player2_name,
           hasPartnerAccount:
             (allLinks.data ?? []).filter((x) => x.registration_id === r.id).length >= 2,
+          performance:
+            isActiveSeason && r.status === "accepted"
+              ? (perfByName.get(r.team_name.toLowerCase()) ?? null)
+              : null,
         },
       ];
     });
@@ -189,6 +227,13 @@ export const getMyAccount = createServerFn({ method: "GET" })
       email,
       registration,
       teams,
+      signedUpTeams: (signedUp.data ?? []).map((t) => ({
+        teamName: t.team_name,
+        player1Name: t.player1_name,
+        player2Name: t.player2_name,
+        status: t.status,
+        previousDivision: t.previous_division,
+      })),
       partnerRequest: partner.data
         ? { id: partner.data.id, seasonKey: partner.data.season_key, status: partner.data.status, name: partner.data.name }
         : null,
