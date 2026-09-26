@@ -135,12 +135,15 @@ export function ReceiptsAdmin() {
   const setFlags = useServerFn(setSeasonAccountFlags);
   const voidFn = useServerFn(voidReceipt);
   const urlFn = useServerFn(adminReceiptUrl);
+  const fileFn = useServerFn(adminReceiptFile);
   const sampleReceiptPdf = useServerFn(sampleReceiptPdfFn);
+  const [doc, setDoc] = useState<PdfDoc | null>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ["admin-receipts"], queryFn: () => list() });
   const [filter, setFilter] = useState<"all" | "received" | "partly" | "none">("all");
   const [q, setQ] = useState("");
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-receipts"] });
+
 
   const teams = useMemo(() => {
     const s = q.trim().toLowerCase();
