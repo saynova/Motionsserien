@@ -190,7 +190,16 @@ function AccountPage() {
           <section className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
             <h2 className="mb-3 text-lg font-bold">Receipts</h2>
             {data.receiptOffer && !data.receiptOffer.alreadyClaimed ? (
-              data.receiptOffer.remaining > 0 ? (
+              !data.receiptOffer.teamPaid ? (
+                <div className="mb-4 rounded border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                  <p className="font-semibold">Team fee not registered as paid</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Receipts for <strong>{data.receiptOffer.teamName}</strong> open as soon as your team fee is
+                    registered as paid. Pay with Swish to <strong>1234785069</strong> (Ludvika Badmintonklubb) and
+                    the button appears here once it is registered.
+                  </p>
+                </div>
+              ) : data.receiptOffer.remaining > 0 ? (
                 <div className="mb-4 rounded border border-primary/20 bg-primary/5 p-3 text-sm">
                   <p className="mb-2">
                     Get your receipt for <strong>{data.receiptOffer.teamName}</strong>. {data.receiptOffer.remaining} kr of 800 kr is still available for your team.
@@ -210,6 +219,7 @@ function AccountPage() {
                 <p className="mb-4 text-sm text-muted-foreground">Your team's full 800 kr has already been used for receipts.</p>
               )
             ) : null}
+
             {data.receipts.length === 0 ? (
               <p className="text-sm text-muted-foreground">No receipts yet. They become available when the tournament is finished.</p>
             ) : (
