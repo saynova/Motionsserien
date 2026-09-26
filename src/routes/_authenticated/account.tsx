@@ -178,6 +178,7 @@ function AccountPage() {
                         </div>
                       </div>
                     ) : null}
+                    <TeamHistoryChart history={t.history} />
                   </li>
                 ))}
               </ul>
