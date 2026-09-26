@@ -1,13 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { toast } from "sonner";
+import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { AccountRegistration } from "@/components/account-registration";
 import { PageHeader } from "@/components/tournament-ui";
-import { DIVISION_COUNT } from "@/lib/tournament";
 import { registeredTeamsQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
-import { submitRegistration } from "@/lib/registration.functions";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -39,65 +35,18 @@ const label = "mb-1 block text-xs uppercase tracking-widest text-muted-foregroun
 function RegisterPage() {
   const info = useSuspenseQuery(registrationInfoQueryOptions).data;
   const teams = useSuspenseQuery(registeredTeamsQueryOptions).data;
-  const queryClient = useQueryClient();
-  const send = useServerFn(submitRegistration);
-
-  const [form, setForm] = useState({
-    teamName: "",
-    player1Name: "",
-    player1Email: "",
-    player2Name: "",
-    player2Email: "",
-    phone: "",
-    previousDivision: "new",
-  });
-  const [busy, setBusy] = useState(false);
-  const [accepted, setAccepted] = useState(false);
-
-  const set = (key: keyof typeof form) => (value: string) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
-
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    try {
-      await send({ data: { ...form } });
-      toast.success("Registration sent. Your team appears in the list once it is approved.");
-      setForm({
-        teamName: "",
-        player1Name: "",
-        player1Email: "",
-        player2Name: "",
-        player2Email: "",
-        phone: "",
-        previousDivision: "new",
-      });
-      await queryClient.invalidateQueries({ queryKey: ["registered-teams"] });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send the registration.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <>
       <PageHeader
         eyebrow={info.targetSeason ? `Registration · ${info.targetSeason}` : "Registration"}
         title="Team registration"
-        description="Sign your team up for the next season. An admin reviews every entry; approved teams are listed below with their division and both player names. Emails and phone numbers are never shown publicly."
+        description="Sign in, then register your team, join your partner's team, or ask us to find you a partner. An admin reviews every entry. Emails and phone numbers are never shown publicly."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="space-y-4">
         {info.isOpen ? (
           <AccountRegistration paymentDetails={info.paymentDetails ?? ""} />
-          ) : null}
-          {false ? (
-          <form onSubmit={onSubmit} className="hidden" data-legacy={String(busy || accepted || form.teamName)}>
-            <input readOnly value={DIVISION_COUNT} onChange={() => set("teamName")} />
-            <button onClick={() => setAccepted(true)} />
-          </form>
         ) : (
           <div className="space-y-3 rounded-lg border border-border bg-card p-6">
             <h2 className="text-xl font-bold uppercase tracking-wide">Registration is closed</h2>
