@@ -240,6 +240,7 @@ export function ReceiptsAdmin() {
               <thead className="bg-secondary text-left text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="p-2">Team</th>
+                  <th className="p-2">Payment</th>
                   <th className="p-2">Used / left</th>
                   <th className="p-2">Receipts</th>
                 </tr>
@@ -251,9 +252,18 @@ export function ReceiptsAdmin() {
                       <div className="font-semibold">{t.teamName}</div>
                       <div className="text-xs text-muted-foreground">{t.players.join(" & ")}</div>
                     </td>
+                    <td className="p-2 whitespace-nowrap">
+                      {t.paid ? (
+                        <span className="font-medium text-emerald-600">Paid</span>
+                      ) : (
+                        <span className="font-medium text-destructive">Unpaid</span>
+                      )}
+                    </td>
                     <td className="p-2 whitespace-nowrap">{t.used} kr / {800 - t.used} kr</td>
                     <td className="p-2">
-                      {t.receipts.length === 0 ? <span className="text-muted-foreground">None</span> : null}
+                      {t.receipts.length === 0 ? (
+                        <span className="text-muted-foreground">{t.paid ? "None" : "None (team unpaid)"}</span>
+                      ) : null}
                       {t.receipts.map((r) => (
                         <div key={r.id} className="mb-1 flex flex-wrap items-center gap-2">
                           <span className={r.status !== "issued" ? "line-through text-muted-foreground" : ""}>
@@ -261,7 +271,21 @@ export function ReceiptsAdmin() {
                           </span>
                           {r.status === "issued" ? (
                             <>
-                              <Button size="sm" variant="outline" onClick={async () => window.open((await urlFn({ data: { id: r.id } })).url, "_blank")}>Download</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  try {
+                                    const f = await fileFn({ data: { id: r.id } });
+                                    setDoc({ ...f, title: `Receipt #${r.invoiceNo} · ${r.playerName}` });
+                                  } catch (e) {
+                                    toast.error(e instanceof Error ? e.message : "Could not open the receipt.");
+                                  }
+                                }}
+                              >
+                                View / download
+                              </Button>
+
                               <Button
                                 size="sm"
                                 variant="outline"
