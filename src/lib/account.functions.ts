@@ -498,11 +498,15 @@ export const claimReceipt = createServerFn({ method: "POST" })
     if (!link.data) throw new Error("Your account is not on a team in this tournament.");
     const reg = await db
       .from("registrations")
-      .select("id, status, player1_name, player2_name")
+      .select("id, status, team_name, player1_name, player2_name")
       .eq("id", link.data.registration_id)
       .single();
     if (reg.error || reg.data.status !== "accepted") throw new Error("Your team is not confirmed.");
+    if (!(await isTeamPaid(reg.data.team_name))) {
+      throw new Error("Your team fee is not registered as paid yet, so a receipt cannot be created.");
+    }
     const playerName = link.data.player_no === 1 ? reg.data.player1_name : reg.data.player2_name;
+
 
     const claim = await db.rpc("claim_invoice", {
       _registration_id: reg.data.id,
