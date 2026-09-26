@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 - Rich-text admin emails: HTML from the editor is cleaned with src/lib/email-html.ts before sending and after translation — keeps unsafe content out of emails.
 - Public team profiles derive performance from tournament snapshots and expose player names only, never contact details — keeps standings useful without leaking private data.
+
+- Player accounts link to teams via account_links keyed by registration target season (seasons.registration_key); receipts are issued only through the claim_invoice DB function — enforces the 800 kr team cap atomically.
