@@ -210,18 +210,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
         </>
       ) : null}
 
-      {mode === "join" ? (
-        <div>
-          <label className={label}>Your partner's team</label>
-          <select className={field} value={joinId} onChange={(e) => setJoinId(e.target.value)} required>
-            <option value="">Choose team…</option>
-            {(joinable.data ?? []).map((t) => (
-              <option key={t.id} value={t.id}>{t.teamName} ({t.player1Name})</option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-muted-foreground">Only teams still missing a second player are listed. Your partner gets an email when you join.</p>
-        </div>
-      ) : null}
 
       {mode === "partner" ? (
         <>
@@ -248,7 +236,7 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
         </span>
       </label>
       <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
-        {busy ? "Sending…" : mode === "team" ? "Register team" : mode === "join" ? "Join team" : "Send request"}
+        {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
       {paymentDetails ? (
         <div className="rounded border border-border bg-secondary/40 p-3">
