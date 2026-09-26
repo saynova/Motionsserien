@@ -118,7 +118,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
 
   const tabs = [
     ["team", "Register a team"],
-    ["join", "Join my partner's team"],
     ["partner", "Find me a partner"],
   ] as const;
 
@@ -129,13 +128,11 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
         e.preventDefault();
         if (mode === "team")
           void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: lateAck, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
-        else if (mode === "join")
-          void run(() => doJoin({ data: { registrationId: joinId, playerName: name } }), "You've joined the team.");
         else
           void run(() => doPartner({ data: { name, previousDivision: division, availability, note } }), "Request sent. The admin will review it.");
       }}
     >
-      <div className="grid grid-cols-3 gap-1 rounded bg-secondary p-1 text-xs font-semibold">
+      <div className="grid grid-cols-2 gap-1 rounded bg-secondary p-1 text-xs font-semibold">
         {tabs.map(([id, text]) => (
           <button key={id} type="button" onClick={() => setMode(id)} className={`rounded px-2 py-1.5 ${mode === id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
             {text}
