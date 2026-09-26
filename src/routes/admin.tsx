@@ -148,10 +148,17 @@ function AdminPage() {
 function AdminGate() {
   const queryClient = useQueryClient();
   const signIn = useServerFn(adminSignIn);
+  const verifyCode = useServerFn(verifyAdminCode);
+  const resendCode = useServerFn(resendAdminCode);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<"password" | "code">("password");
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [appAvailable, setAppAvailable] = useState(false);
+  const [code, setCode] = useState("");
+  const [trust, setTrust] = useState(true);
 
-  async function onSubmit(event: React.FormEvent) {
+  async function onPassword(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     try {
@@ -160,7 +167,14 @@ function AdminGate() {
         toast.error("Incorrect password.");
         return;
       }
-      await queryClient.invalidateQueries({ queryKey: ["admin-status"] });
+      if (result.unlocked) {
+        await queryClient.invalidateQueries({ queryKey: ["admin-status"] });
+        return;
+      }
+      setSentTo(result.sentTo ?? null);
+      setAppAvailable(result.totpEnabled === true);
+      setStep("code");
+      if (result.sentTo) toast.success(`Code sent to ${result.sentTo}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not sign in.");
     } finally {
@@ -169,35 +183,139 @@ function AdminGate() {
     }
   }
 
+  async function onCode(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const result = await verifyCode({ data: { code, trustBrowser: trust } });
+      if (!result.ok) {
+        toast.error("That code is not right or has expired.");
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["admin-status"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not verify the code.");
+    } finally {
+      setBusy(false);
+      setCode("");
+    }
+  }
+
+  async function onResend() {
+    setBusy(true);
+    try {
+      const result = await resendCode();
+      setSentTo(result.sentTo);
+      toast.success(`New code sent to ${result.sentTo}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send a new code.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-background via-secondary/40 to-primary/10 px-4 py-10">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card p-7 shadow-xl"
-      >
-        <div className="flex flex-col items-center text-center">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow">
-            <ShieldCheck className="h-6 w-6" />
-          </span>
-          <h1 className="mt-3 font-display text-2xl font-bold tracking-tight">Admin sign-in</h1>
-          <p className="mt-1 text-sm text-muted-foreground"><BrandName /> control panel</p>
-        </div>
-        <label className="block space-y-1">
-          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Admin password
-          </span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            className={`${control} w-full`}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <button type="submit" className={`${btn} w-full`} disabled={busy}>
-          {busy ? "Checking…" : "Sign in"}
-        </button>
-      </form>
+      {step === "password" ? (
+        <form
+          onSubmit={onPassword}
+          className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card p-7 shadow-xl"
+        >
+          <div className="flex flex-col items-center text-center">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow">
+              <ShieldCheck className="h-6 w-6" />
+            </span>
+            <h1 className="mt-3 font-display text-2xl font-bold tracking-tight">Admin sign-in</h1>
+            <p className="mt-1 text-sm text-muted-foreground"><BrandName /> control panel</p>
+          </div>
+          <label className="block space-y-1">
+            <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Admin password
+            </span>
+            <input
+              type="password"
+              autoComplete="current-password"
+              className={`${control} w-full`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <button type="submit" className={`${btn} w-full`} disabled={busy}>
+            {busy ? "Checking…" : "Sign in"}
+          </button>
+        </form>
+      ) : (
+        <form
+          onSubmit={onCode}
+          className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card p-7 shadow-xl"
+        >
+          <div className="flex flex-col items-center text-center">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow">
+              <ShieldCheck className="h-6 w-6" />
+            </span>
+            <h1 className="mt-3 font-display text-2xl font-bold tracking-tight">Enter your code</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {sentTo
+                ? `We emailed a 6-digit code to ${sentTo}. It is valid for 10 minutes.`
+                : "Enter the 6-digit code from your authenticator app."}
+            </p>
+            {sentTo && appAvailable ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                You can also use the code from your authenticator app.
+              </p>
+            ) : null}
+          </div>
+          <label className="block space-y-1">
+            <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              6-digit code
+            </span>
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              maxLength={11}
+              className={`${control} w-full text-center text-lg tracking-[0.3em]`}
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+            />
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={trust}
+              onChange={(e) => setTrust(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>Trust this browser for 30 days (no code next time)</span>
+          </label>
+          <button type="submit" className={`${btn} w-full`} disabled={busy || code.length < 6}>
+            {busy ? "Checking…" : "Verify and sign in"}
+          </button>
+          <div className="flex items-center justify-between text-xs">
+            <button
+              type="button"
+              className="font-semibold text-primary hover:underline"
+              disabled={busy}
+              onClick={onResend}
+            >
+              Send a new code
+            </button>
+            <button
+              type="button"
+              className="font-semibold text-muted-foreground hover:underline"
+              onClick={() => {
+                setStep("password");
+                setCode("");
+              }}
+            >
+              Start over
+            </button>
+          </div>
+          <p className="text-center text-xs text-muted-foreground">
+            Lost access? Enter one of your emergency backup codes above.
+          </p>
+        </form>
+      )}
       <Link
         to="/"
         className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
