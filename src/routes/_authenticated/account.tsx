@@ -75,9 +75,9 @@ function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
             <Line
               type="monotone"
               dataKey="division"
-              stroke="hsl(var(--primary))"
+              stroke="#4F46E5"
               strokeWidth={2}
-              dot={{ r: 3 }}
+              dot={{ r: 3, fill: "#4F46E5" }}
               isAnimationActive={false}
             />
           </LineChart>
