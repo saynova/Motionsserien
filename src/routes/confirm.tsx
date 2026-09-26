@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/tournament-ui";
 import { supabase } from "@/integrations/supabase/client";
 
-type Search = { token?: string; email?: string; type?: string };
+type Search = { token: string | undefined; email: string | undefined; type: string | undefined };
 
 export const Route = createFileRoute("/confirm")({
   head: () => ({
@@ -22,9 +22,9 @@ export const Route = createFileRoute("/confirm")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>): Search => ({
-    token: typeof search.token === "string" ? search.token : undefined,
-    email: typeof search.email === "string" ? search.email : undefined,
-    type: typeof search.type === "string" ? search.type : undefined,
+    token: typeof search["token"] === "string" ? search["token"] : undefined,
+    email: typeof search["email"] === "string" ? search["email"] : undefined,
+    type: typeof search["type"] === "string" ? search["type"] : undefined,
   }),
   component: ConfirmPage,
 });
