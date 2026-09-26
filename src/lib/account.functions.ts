@@ -457,12 +457,10 @@ export const withdrawPartnerRequest = createServerFn({ method: "POST" })
 
 // ------------------------------------------------------------------ receipts
 
-async function signedReceiptUrl(path: string) {
-  const { adminClient } = await import("./tournament.server");
-  const { data, error } = await adminClient().storage.from("invoices").createSignedUrl(path, 600, { download: true });
-  if (error || !data) throw new Error("Could not prepare the download.");
-  return data.signedUrl;
+function receiptFilename(amount: number, seasonKey: string) {
+  return `Kvitto-${seasonKey.replace(/[^\w-]+/g, "-")}-${amount}kr.pdf`;
 }
+
 
 export const claimReceipt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
