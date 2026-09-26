@@ -310,6 +310,8 @@ export function ReceiptsAdmin() {
           </div>
         </>
       ) : null}
+      <PdfViewerDialog doc={doc} onClose={() => setDoc(null)} />
     </div>
+
   );
 }
