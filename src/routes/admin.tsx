@@ -373,26 +373,7 @@ function AdminConsole() {
 
   return (
     <div className="flex min-h-dvh bg-secondary/30">
-      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
-        <div className="border-b border-border py-4">{brand}</div>
-        <div className="flex-1 overflow-y-auto px-2 py-4">{navList}</div>
-        <div className="space-y-1 border-t border-border p-2">
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to site
-          </Link>
-          <button
-            type="button"
-            onClick={doSignOut}
-            disabled={busy}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
-          >
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
-        </div>
-      </aside>
+
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-card/90 px-3 py-2.5 backdrop-blur sm:px-6">
@@ -436,7 +417,7 @@ function AdminConsole() {
               <button
                 type="button"
                 aria-label="Open admin menu"
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary lg:hidden sm:px-3"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary sm:px-3"
               >
                 <Menu className="h-5 w-5" />
                 <span className="hidden sm:inline">Menu</span>
