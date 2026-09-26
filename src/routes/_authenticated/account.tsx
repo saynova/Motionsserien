@@ -232,8 +232,9 @@ function AccountPage() {
                     </span>
                     {r.status === "issued" ? (
                       <button onClick={() => download(r.id)} className="rounded border border-input px-3 py-1 font-semibold hover:bg-secondary">
-                        Download PDF
+                        View / download
                       </button>
+
                     ) : null}
                   </li>
                 ))}
