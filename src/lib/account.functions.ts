@@ -65,7 +65,9 @@ export type MyAccount = {
     seasonKey: string;
     remaining: number;
     alreadyClaimed: boolean;
+    teamPaid: boolean;
   };
+
 };
 
 function text(value: unknown, min: number, max: number, label: string) {
