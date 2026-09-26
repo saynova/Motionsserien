@@ -13,7 +13,7 @@ export function BrandingAdmin() {
   const qc = useQueryClient();
   const { data } = useQuery(brandingQueryOptions());
   const save = useServerFn(saveBranding);
-  const [form, setForm] = useState({ headerTitle: "", headerSubtitle: "", tournamentName: "", showSignIn: true });
+  const [form, setForm] = useState({ headerTitle: "", headerSubtitle: "", tournamentName: "", showSignIn: true, showMissingBanner: true });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
