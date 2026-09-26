@@ -5,13 +5,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
+import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   claimReceipt,
   getMyAccount,
-  getMyReceiptUrl,
+  getMyReceiptFile,
   withdrawPartnerRequest,
 } from "@/lib/account.functions";
+
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
