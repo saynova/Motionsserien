@@ -405,40 +405,19 @@ function AdminConsole() {
             </h1>
           </div>
 
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label="Open admin menu"
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary sm:px-3"
-              >
-                <Menu className="h-5 w-5" />
-                <span className="hidden sm:inline">Menu</span>
-              </button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[18rem] overflow-y-auto p-0">
-              <SheetHeader className="border-b border-border py-4">
-                <SheetTitle className="sr-only">Admin sections</SheetTitle>
-                {brand}
-              </SheetHeader>
-              <div className="px-2 py-4">{navList}</div>
-              <div className="space-y-1 border-t border-border p-2 pb-6">
-                <Link
-                  to="/"
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium hover:bg-secondary"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back to site
-                </Link>
-                <button
-                  type="button"
-                  onClick={doSignOut}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
-                >
-                  <LogOut className="h-4 w-4" /> Sign out
-                </button>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Close admin menu" : "Open admin menu"}
+            className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold transition-colors sm:px-3 ${
+              menuOpen ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
+            }`}
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <span className="hidden sm:inline">Menu</span>
+          </button>
+
         </header>
 
 
