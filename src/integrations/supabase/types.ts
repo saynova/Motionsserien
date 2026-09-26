@@ -49,6 +49,96 @@ export type Database = {
           },
         ]
       }
+      admin_2fa_settings: {
+        Row: {
+          backup_code_hashes: string[]
+          created_at: string
+          id: string
+          notify_email: string
+          totp_enabled: boolean
+          totp_secret: string | null
+          trust_days: number
+          updated_at: string
+        }
+        Insert: {
+          backup_code_hashes?: string[]
+          created_at?: string
+          id?: string
+          notify_email?: string
+          totp_enabled?: boolean
+          totp_secret?: string | null
+          trust_days?: number
+          updated_at?: string
+        }
+        Update: {
+          backup_code_hashes?: string[]
+          created_at?: string
+          id?: string
+          notify_email?: string
+          totp_enabled?: boolean
+          totp_secret?: string | null
+          trust_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_login_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          sent_to: string | null
+          used_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          sent_to?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          sent_to?: string | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      admin_trusted_devices: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          label: string | null
+          last_used_at: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          label?: string | null
+          last_used_at?: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          label?: string | null
+          last_used_at?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           created_at: string
