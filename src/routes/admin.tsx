@@ -54,6 +54,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { PaymentsAdmin } from "@/components/payments-admin";
+import { PartnerRequestsAdmin, ReceiptsAdmin } from "@/components/account-admin";
 import { MemoriesAdmin } from "@/components/memories-admin";
 import {
   adminShuttleOrdersQueryOptions,
@@ -101,6 +102,8 @@ const SECTIONS = [
   { id: "season", label: "Season settings", group: "Season", icon: CalendarCog },
   { id: "next-season", label: "Registration & seeding", group: "Season", icon: UserPlus },
   { id: "new-season", label: "Start new season", group: "Season", icon: Flag },
+  { id: "partners", label: "Find a partner", group: "Season", icon: UserPlus },
+  { id: "receipts", label: "Receipts", group: "Season", icon: Wallet },
   { id: "visitors", label: "Visitors", group: "Season", icon: Eye },
 ] as const satisfies readonly { id: string; label: string; group: string; icon: LucideIcon }[];
 
@@ -547,6 +550,8 @@ function AdminConsole() {
         {section === "next-season" ? <NextSeasonAdmin /> : null}
         {section === "visitors" ? <VisitorsAdmin /> : null}
         {section === "payments" ? <PaymentsAdmin /> : null}
+        {section === "partners" ? <PartnerRequestsAdmin /> : null}
+        {section === "receipts" ? <ReceiptsAdmin /> : null}
         {section === "memories" ? <MemoriesAdmin /> : null}
 
         {section === "matches" ? (

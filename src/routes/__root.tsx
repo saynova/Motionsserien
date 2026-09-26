@@ -9,7 +9,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import { Toaster } from "@/components/ui/sonner";
 import { DonationButton, SponsorBanner } from "@/components/support-ui";
@@ -154,6 +155,30 @@ function useBrandedTitle() {
   }, [name, pathname]);
 }
 
+function AccountLink() {
+  const [signedIn, setSignedIn] = useState(false);
+  const router = useRouter();
+  const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      setSignedIn(!!session);
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      void router.invalidate();
+      if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
+  return (
+    <Link
+      to={signedIn ? "/account" : "/auth"}
+      className="rounded-md border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary sm:text-sm"
+    >
+      {signedIn ? "My account" : "Sign in"}
+    </Link>
+  );
+}
+
 function SiteHeader() {
   const { data } = useQuery(brandingQueryOptions());
   const brand = data ?? DEFAULT_BRANDING;
@@ -182,7 +207,8 @@ function SiteHeader() {
               </Link>
             ))}
           </nav>
-          <div className="col-start-2 row-start-1 shrink-0 lg:col-start-3">
+          <div className="col-start-2 row-start-1 flex shrink-0 items-center gap-2 lg:col-start-3">
+            <AccountLink />
             <DonationButton />
           </div>
         </div>

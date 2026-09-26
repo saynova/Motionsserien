@@ -112,6 +112,16 @@ export const getAdminNotifications = createServerFn({ method: "POST" }).handler(
       });
     }
 
+    const [partners, receipts] = await Promise.all([
+      client.from("partner_requests").select("id, name, created_at").eq("status", "pending").limit(30),
+      client.from("invoices").select("id, player_name, team_name, amount, created_at").gte("created_at", since).limit(30),
+    ]);
+    for (const p of partners.data ?? []) {
+      out.push({ id: `p-${p.id}`, kind: "registration", title: `Partner request from ${p.name}`, detail: "Waiting for approval", at: p.created_at, section: "partners" });
+    }
+    for (const r of receipts.data ?? []) {
+      out.push({ id: `i-${r.id}`, kind: "registration", title: `Receipt issued · ${r.amount} kr`, detail: `${r.player_name} · ${r.team_name}`, at: r.created_at, section: "receipts" });
+    }
     return out.sort((a, b) => b.at.localeCompare(a.at));
   },
 );

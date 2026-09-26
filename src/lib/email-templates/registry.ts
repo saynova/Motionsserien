@@ -4,6 +4,7 @@ import { template as missingScoreReminder } from './missing-score-reminder'
 import { template as messageReply } from './message-reply'
 import { template as generalEmail } from './general-email'
 import { template as paymentReminder } from './payment-reminder'
+import { template as playerNotice } from './player-notice'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -27,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'message-reply': messageReply,
   'general-email': generalEmail,
   'payment-reminder': paymentReminder,
+  'player-notice': playerNotice,
 }

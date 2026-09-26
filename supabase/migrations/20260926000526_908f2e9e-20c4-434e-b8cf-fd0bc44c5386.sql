@@ -1,0 +1,1 @@
+ALTER TABLE public.seasons ADD COLUMN IF NOT EXISTS registration_key text;
