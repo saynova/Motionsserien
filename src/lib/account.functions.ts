@@ -109,7 +109,7 @@ export const getMyAccount = createServerFn({ method: "GET" })
     if (links.error) throw new Error(links.error.message);
     const regIds = (links.data ?? []).map((l) => l.registration_id);
 
-    const [regs, allLinks, partner, receipts, season] = await Promise.all([
+    const [regs, allLinks, partner, receipts, season, signedUp] = await Promise.all([
       regIds.length
         ? db.from("registrations").select("id, team_name, status, player1_name, player2_name").in("id", regIds)
         : Promise.resolve({ data: [], error: null }),
@@ -142,8 +142,7 @@ export const getMyAccount = createServerFn({ method: "GET" })
             .order("team_name")
         : Promise.resolve({ data: [], error: null }),
     ]);
-    const signedUp = r5;
-    for (const r of [regs, allLinks, partner, receipts, season]) if (r.error) throw new Error(r.error.message);
+    for (const r of [regs, allLinks, partner, receipts, season, signedUp]) if (r.error) throw new Error(r.error.message);
 
     const regById = new Map((regs.data ?? []).map((r) => [r.id, r]));
     const teams: MyTeam[] = (links.data ?? []).flatMap((l) => {
