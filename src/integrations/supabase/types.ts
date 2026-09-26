@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_links: {
+        Row: {
+          created_at: string
+          id: string
+          player_no: number
+          registration_id: string
+          season_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          player_no: number
+          registration_id: string
+          season_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player_no?: number
+          registration_id?: string
+          season_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_links_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcements: {
         Row: {
           created_at: string
@@ -152,6 +187,62 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          email: string
+          file_path: string | null
+          id: string
+          invoice_no: number
+          player_name: string
+          registration_id: string
+          season_key: string
+          status: string
+          team_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          email: string
+          file_path?: string | null
+          id?: string
+          invoice_no?: number
+          player_name: string
+          registration_id: string
+          season_key: string
+          status?: string
+          team_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          email?: string
+          file_path?: string | null
+          id?: string
+          invoice_no?: number
+          player_name?: string
+          registration_id?: string
+          season_key?: string
+          status?: string
+          team_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           approved_at: string | null
@@ -173,7 +264,9 @@ export type Database = {
           submitted_device: string | null
           submitted_ip: string | null
           submitted_location: string | null
+          submitted_team_id: string | null
           submitted_user_agent: string | null
+          submitted_user_id: string | null
           team_a_id: string
           team_b_id: string
           week_no: number
@@ -198,7 +291,9 @@ export type Database = {
           submitted_device?: string | null
           submitted_ip?: string | null
           submitted_location?: string | null
+          submitted_team_id?: string | null
           submitted_user_agent?: string | null
+          submitted_user_id?: string | null
           team_a_id: string
           team_b_id: string
           week_no: number
@@ -223,7 +318,9 @@ export type Database = {
           submitted_device?: string | null
           submitted_ip?: string | null
           submitted_location?: string | null
+          submitted_team_id?: string | null
           submitted_user_agent?: string | null
+          submitted_user_id?: string | null
           team_a_id?: string
           team_b_id?: string
           week_no?: number
@@ -297,6 +394,59 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_requests: {
+        Row: {
+          availability: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          note: string
+          previous_division: number | null
+          registration_id: string | null
+          season_key: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability?: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          note?: string
+          previous_division?: number | null
+          registration_id?: string | null
+          season_key: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          note?: string
+          previous_division?: number | null
+          registration_id?: string | null
+          season_key?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registration_settings: {
         Row: {
           created_at: string
@@ -335,6 +485,7 @@ export type Database = {
           target_season: string
           team_name: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -342,13 +493,14 @@ export type Database = {
           phone?: string
           player1_email: string
           player1_name: string
-          player2_email: string
-          player2_name: string
+          player2_email?: string
+          player2_name?: string
           previous_division?: number | null
           status?: string
           target_season?: string
           team_name: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -363,6 +515,7 @@ export type Database = {
           target_season?: string
           team_name?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -430,9 +583,11 @@ export type Database = {
           created_at: string
           current_week: number
           id: string
+          invoices_open: boolean
           is_active: boolean
           name: string
           payment_details: string | null
+          require_login_for_scores: boolean
           start_monday: string
           total_weeks: number
         }
@@ -440,9 +595,11 @@ export type Database = {
           created_at?: string
           current_week?: number
           id?: string
+          invoices_open?: boolean
           is_active?: boolean
           name: string
           payment_details?: string | null
+          require_login_for_scores?: boolean
           start_monday: string
           total_weeks?: number
         }
@@ -450,9 +607,11 @@ export type Database = {
           created_at?: string
           current_week?: number
           id?: string
+          invoices_open?: boolean
           is_active?: boolean
           name?: string
           payment_details?: string | null
+          require_login_for_scores?: boolean
           start_monday?: string
           total_weeks?: number
         }
@@ -760,7 +919,16 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      claim_invoice: {
+        Args: {
+          _amount: number
+          _email: string
+          _player_name: string
+          _registration_id: string
+          _user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
