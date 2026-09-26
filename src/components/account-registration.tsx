@@ -24,7 +24,7 @@ function useSignedIn() {
 function DivisionSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <select className={field} value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="new">New player / no previous division</option>
+      <option value="new">New Team (did not play last session)</option>
       {Array.from({ length: DIVISION_COUNT }, (_, i) => i + 1).map((d) => (
         <option key={d} value={d}>Division {d}</option>
       ))}
@@ -65,6 +65,9 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [phone, setPhone] = useState("");
+  const [p2Name, setP2Name] = useState("");
+  const [p2Email, setP2Email] = useState("");
+  const [p2Phone, setP2Phone] = useState("");
   const [division, setDivision] = useState("new");
   const [joinId, setJoinId] = useState("");
   const [availability, setAvailability] = useState("");
@@ -122,7 +125,7 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         if (mode === "team")
-          void run(() => doRegister({ data: { teamName, playerName: name, phone, previousDivision: division } }), "Team registered. Your partner can now sign up and join it.");
+          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
         else if (mode === "join")
           void run(() => doJoin({ data: { registrationId: joinId, playerName: name } }), "You've joined the team.");
         else
@@ -138,7 +141,7 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
       </div>
       <p className="text-xs text-muted-foreground">Signed in as {account.data?.email}. This email is used for your registration.</p>
       <div>
-        <label className={label}>Your name</label>
+        <label className={label}>{mode === "team" ? "Player 1 name (you)" : "Your name"}</label>
         <input className={field} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required />
       </div>
 
@@ -149,15 +152,27 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
             <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
           </div>
           <div>
-            <label className={label}>Phone (optional)</label>
-            <input className={field} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <label className={label}>Player 1 phone number</label>
+            <input className={field} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
           </div>
           <div>
-            <label className={label}>Previous division</label>
+            <label className={label}>Player 2 name</label>
+            <input className={field} autoComplete="off" value={p2Name} onChange={(e) => setP2Name(e.target.value)} required />
+          </div>
+          <div>
+            <label className={label}>Player 2 email</label>
+            <input className={field} type="email" autoComplete="off" value={p2Email} onChange={(e) => setP2Email(e.target.value)} required />
+          </div>
+          <div>
+            <label className={label}>Player 2 phone number</label>
+            <input className={field} type="tel" autoComplete="off" value={p2Phone} onChange={(e) => setP2Phone(e.target.value)} required />
+          </div>
+          <div>
+            <label className={label}>Division last session (1–10) or New Team</label>
             <DivisionSelect value={division} onChange={setDivision} />
           </div>
           <p className="text-xs text-muted-foreground">
-            You are Player 1. Your partner signs up with any email and chooses this team under "Join my partner's team".
+            You are Player 1 (your account email is used). Player 2 can later sign in with the email above to see the team. The team appears under Approved teams and on the seeding board only after admin approval.
           </p>
         </>
       ) : null}
