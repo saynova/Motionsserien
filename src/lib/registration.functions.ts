@@ -514,6 +514,8 @@ export const lockSeedingAndStartSeason = createServerFn({ method: "POST" })
         total_weeks: 10,
         current_week: 1,
         is_active: true,
+        registration_key: targetSeason,
+        require_login_for_scores: true,
       })
       .select("id")
       .single();
