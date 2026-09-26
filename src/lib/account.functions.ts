@@ -401,8 +401,15 @@ export const registerMyTeam = createServerFn({ method: "POST" })
       player2Name?: string;
       player2Email?: string;
       player2Phone?: string;
+      swishRef?: string;
+      payLater?: boolean;
+      lateCancelAck?: boolean;
       previousDivision: string | number | null;
     }) => {
+      const swishRef = String(d?.swishRef ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+      const payLater = d?.payLater === true;
+      if (d?.lateCancelAck !== true) throw new Error("Please accept the late cancellation notice.");
+      if (!payLater && !/^\d[\d ]{3,}$/.test(swishRef)) throw new Error("Enter your Swish reference number (numbers only) or choose \"I will pay later\".");
       const p2Email = String(d?.player2Email ?? "").trim().toLowerCase().slice(0, 255);
       if (!p2Email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p2Email)) throw new Error("Enter a valid Player 2 email.");
       const phone = String(d?.phone ?? "").trim().slice(0, 40);
@@ -416,6 +423,8 @@ export const registerMyTeam = createServerFn({ method: "POST" })
         player2Name: text(d?.player2Name, 2, 60, "Player 2 name"),
         player2Email: p2Email,
         player2Phone: p2Phone,
+        swishRef: payLater ? "" : swishRef,
+        payLater,
         previousDivision: division(d?.previousDivision),
       };
     },
@@ -449,6 +458,8 @@ export const registerMyTeam = createServerFn({ method: "POST" })
         player2_email: data.player2Email,
         phone: data.phone,
         player2_phone: data.player2Phone,
+        swish_ref: data.swishRef,
+        late_cancel_ack: true,
         previous_division: data.previousDivision,
         status: "pending",
         user_id: context.userId,

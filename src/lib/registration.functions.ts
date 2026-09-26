@@ -24,6 +24,8 @@ export type Registration = {
   player2_email: string;
   phone: string;
   player2_phone: string;
+  swish_ref: string;
+  is_paid: boolean;
   previous_division: number | null;
   status: string;
   created_at: string;
@@ -44,7 +46,7 @@ export type RegistrationInfo = {
 };
 
 const REG_COLUMNS =
-  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, previous_division, status, created_at";
+  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, swish_ref, is_paid, previous_division, status, created_at";
 const SEED_COLUMNS = "id, target_season, team_name, division, position";
 
 function cleanText(value: unknown, min: number, max: number, label: string): string {
@@ -600,4 +602,15 @@ export const lockSeedingAndStartSeason = createServerFn({ method: "POST" })
     }
 
     return { ok: true as const, seasonId: created.data.id };
+  });
+
+export const setRegistrationPaid = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: string; isPaid: boolean }) => ({ id: String(data?.id ?? ""), isPaid: data?.isPaid === true }))
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient().from("registrations").update({ is_paid: data.isPaid }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
   });
