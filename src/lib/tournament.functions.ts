@@ -143,6 +143,47 @@ export const submitScore = createServerFn({ method: "POST" })
       throw new Error(ALREADY_SUBMITTED_MESSAGE);
     }
 
+    // Account-based seasons: only a signed-in player of team A or B may submit.
+    let submittedUserId: string | null = null;
+    let submittedTeamId: string | null = null;
+    const matchInfo = await supabase
+      .from("matches")
+      .select("team_a_id, team_b_id, season_id")
+      .eq("id", data.matchId)
+      .single();
+    if (matchInfo.error) throw new Error(matchInfo.error.message);
+    const season = await supabase
+      .from("seasons")
+      .select("require_login_for_scores, registration_key")
+      .eq("id", matchInfo.data.season_id)
+      .single();
+    if (season.error) throw new Error(season.error.message);
+    if (season.data.require_login_for_scores) {
+      const { optionalUser } = await import("./account.server");
+      const user = await optionalUser();
+      if (!user) throw new Error("Please sign in to submit scores.");
+      const key = season.data.registration_key ?? "";
+      const link = await supabase
+        .from("account_links")
+        .select("registration_id")
+        .eq("user_id", user.id)
+        .eq("season_key", key)
+        .maybeSingle();
+      const reg = link.data
+        ? await supabase.from("registrations").select("team_name").eq("id", link.data.registration_id).single()
+        : null;
+      const teams = await supabase
+        .from("teams")
+        .select("id, name")
+        .in("id", [matchInfo.data.team_a_id, matchInfo.data.team_b_id]);
+      const myTeam = (teams.data ?? []).find(
+        (t) => reg?.data && t.name.toLowerCase() === reg.data.team_name.toLowerCase(),
+      );
+      if (!myTeam) throw new Error("You can only submit scores for your own team's matches.");
+      submittedUserId = user.id;
+      submittedTeamId = myTeam.id;
+    }
+
     const { describeVisitor } = await import("./visitors.server");
     const visitor = describeVisitor();
 
@@ -153,6 +194,8 @@ export const submitScore = createServerFn({ method: "POST" })
         submitted_user_agent: visitor.userAgent,
         submitted_device: visitor.device,
         submitted_location: visitor.location,
+        submitted_user_id: submittedUserId,
+        submitted_team_id: submittedTeamId,
         status: "pending",
         s1a: data.s1a,
         s1b: data.s1b,
