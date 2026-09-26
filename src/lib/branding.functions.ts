@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { queryOptions } from "@tanstack/react-query";
 
-export type SiteBranding = { headerTitle: string; headerSubtitle: string; tournamentName: string; showSignIn: boolean };
+export type SiteBranding = { headerTitle: string; headerSubtitle: string; tournamentName: string; showSignIn: boolean; showMissingBanner: boolean };
 
 export const DEFAULT_BRANDING: SiteBranding = {
   headerTitle: "Motionsserien",
   headerSubtitle: "HT-26",
   tournamentName: "Motionsserien HT-26",
   showSignIn: true,
+  showMissingBanner: true,
 };
 
 export const getBranding = createServerFn({ method: "GET" }).handler(async (): Promise<SiteBranding> => {
