@@ -208,9 +208,10 @@ function SiteHeader() {
             ))}
           </nav>
           <div className="col-start-2 row-start-1 flex shrink-0 items-center gap-2 lg:col-start-3">
-            <AccountLink />
+            {brand.showSignIn ? <AccountLink /> : null}
             <DonationButton />
           </div>
+
         </div>
       </div>
     </header>

@@ -10,10 +10,12 @@ import {
   listPartnerRequests,
   listReceipts,
   pairPartners,
+  sampleReceiptPdf as sampleReceiptPdfFn,
   setPartnerRequestStatus,
   setSeasonAccountFlags,
   voidReceipt,
 } from "@/lib/account-admin.functions";
+
 
 const card = "rounded-lg border border-border bg-card p-4";
 
@@ -131,6 +133,8 @@ export function ReceiptsAdmin() {
   const setFlags = useServerFn(setSeasonAccountFlags);
   const voidFn = useServerFn(voidReceipt);
   const urlFn = useServerFn(adminReceiptUrl);
+  const sampleReceiptPdf = useServerFn(sampleReceiptPdfFn);
+
   const { data, isLoading } = useQuery({ queryKey: ["admin-receipts"], queryFn: () => list() });
   const [filter, setFilter] = useState<"all" | "received" | "partly" | "none">("all");
   const [q, setQ] = useState("");
@@ -187,7 +191,38 @@ export function ReceiptsAdmin() {
         ) : (
           <p className="text-sm text-muted-foreground">No active season.</p>
         )}
+        <div className="mt-4 border-t border-border pt-3">
+          <p className="text-sm font-semibold">Check the receipt document</p>
+          <p className="text-xs text-muted-foreground">
+            Opens a sample receipt with today&apos;s date so you can see exactly what players get.
+          </p>
+          <div className="mt-2 flex gap-2">
+            {([400, 800] as const).map((amount) => (
+              <Button
+                key={amount}
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const { base64 } = await sampleReceiptPdf({ data: { amount } });
+                    const bin = atob(base64);
+                    const buf = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i += 1) buf[i] = bin.charCodeAt(i);
+                    const url = URL.createObjectURL(new Blob([buf], { type: "application/pdf" }));
+                    window.open(url, "_blank");
+                    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Could not open the sample.");
+                  }
+                }}
+              >
+                Preview {amount} kr receipt
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
+
 
       {season?.accountBased ? (
         <>
