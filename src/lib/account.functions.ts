@@ -15,6 +15,14 @@ export type MyTeamPerformance = {
   pointsAgainst: number;
 };
 
+export type TeamHistoryPoint = {
+  week: number;
+  division: number;
+  rank: number;
+  wins: number;
+  played: number;
+};
+
 export type MyTeam = {
   registrationId: string;
   seasonKey: string;
@@ -25,6 +33,7 @@ export type MyTeam = {
   player2Name: string;
   hasPartnerAccount: boolean;
   performance: MyTeamPerformance | null;
+  history: TeamHistoryPoint[];
 };
 
 export type SignedUpTeam = {
