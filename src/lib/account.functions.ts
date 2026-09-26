@@ -4,6 +4,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { DIVISION_COUNT } from "./tournament";
 
+export type MyTeamPerformance = {
+  division: number;
+  rank: number;
+  played: number;
+  matchWins: number;
+  setsWon: number;
+  setsLost: number;
+  pointsFor: number;
+  pointsAgainst: number;
+};
+
 export type MyTeam = {
   registrationId: string;
   seasonKey: string;
@@ -13,6 +24,15 @@ export type MyTeam = {
   player1Name: string;
   player2Name: string;
   hasPartnerAccount: boolean;
+  performance: MyTeamPerformance | null;
+};
+
+export type SignedUpTeam = {
+  teamName: string;
+  player1Name: string;
+  player2Name: string;
+  status: string;
+  previousDivision: number | null;
 };
 
 export type MyReceipt = {
@@ -36,6 +56,7 @@ export type MyAccount = {
   email: string;
   registration: { key: string; isOpen: boolean };
   teams: MyTeam[];
+  signedUpTeams: SignedUpTeam[];
   partnerRequest: MyPartnerRequest | null;
   receipts: MyReceipt[];
   receiptOffer: null | {
