@@ -100,6 +100,7 @@ function AccountPage() {
   const { data, isLoading, error } = useQuery({ queryKey: ["my-account"], queryFn: () => fetchAccount() });
   const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState<PdfDoc | null>(null);
+  const [openTeam, setOpenTeam] = useState<string | null>(null);
 
   async function signOut() {
     await queryClient.cancelQueries();
