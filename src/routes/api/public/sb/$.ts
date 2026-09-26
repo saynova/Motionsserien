@@ -72,7 +72,7 @@ async function relay(request: Request, splat: string | undefined): Promise<Respo
     const upstream = await fetch(target, {
       method,
       headers: forwardHeaders(request),
-      body: hasBody ? await request.arrayBuffer() : undefined,
+      body: hasBody ? await request.arrayBuffer() : null,
       redirect: "manual",
     });
 
