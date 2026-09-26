@@ -15,6 +15,14 @@ export type MyTeamPerformance = {
   pointsAgainst: number;
 };
 
+export type TeamHistoryPoint = {
+  week: number;
+  division: number;
+  rank: number;
+  wins: number;
+  played: number;
+};
+
 export type MyTeam = {
   registrationId: string;
   seasonKey: string;
@@ -25,6 +33,7 @@ export type MyTeam = {
   player2Name: string;
   hasPartnerAccount: boolean;
   performance: MyTeamPerformance | null;
+  history: TeamHistoryPoint[];
 };
 
 export type SignedUpTeam = {
@@ -150,34 +159,52 @@ export const getMyAccount = createServerFn({ method: "GET" })
 
     const regById = new Map((regs.data ?? []).map((r) => [r.id, r]));
 
-    // Performance for teams in the active season, from current-week standings.
+    // Performance and week-by-week history for teams in the active season.
     const perfByName = new Map<string, MyTeamPerformance>();
+    const historyByName = new Map<string, TeamHistoryPoint[]>();
     if (season.data) {
       const seasonId = season.data.id;
+      const currentWeek = season.data.current_week;
       const [slotRows, matchRows, teamRows] = await Promise.all([
-        db.from("week_slots").select("id, week_no, team_id, division, position, tie_break_adj").eq("season_id", seasonId).eq("week_no", season.data.current_week),
+        db.from("week_slots").select("id, week_no, team_id, division, position, tie_break_adj").eq("season_id", seasonId),
         db.from("matches").select("id, week_no, division, match_no, team_a_id, team_b_id, court, start_time, status, s1a, s1b, s2a, s2b, s3a, s3b, submitted_by").eq("season_id", seasonId),
         db.from("teams").select("id, name, start_division"),
       ]);
       for (const r of [slotRows, matchRows, teamRows]) if (r.error) throw new Error(r.error.message);
       const { computeStandings } = await import("./tournament");
-      const standings = computeStandings(
-        slotRows.data ?? [],
-        (matchRows.data ?? []) as import("./tournament").MatchRow[],
-        teamRows.data ?? [],
-      );
-      for (const rows of standings.values()) {
-        for (const row of rows) {
-          perfByName.set(row.teamName.toLowerCase(), {
-            division: row.division,
-            rank: row.rank,
-            played: row.played,
-            matchWins: row.matchWins,
-            setsWon: row.setsWon,
-            setsLost: row.setsLost,
-            pointsFor: row.pointsFor,
-            pointsAgainst: row.pointsAgainst,
-          });
+      const allSlots = slotRows.data ?? [];
+      const allMatches = (matchRows.data ?? []) as import("./tournament").MatchRow[];
+      const allTeams = teamRows.data ?? [];
+      for (let w = 1; w <= currentWeek; w++) {
+        const standings = computeStandings(
+          allSlots.filter((s) => s.week_no === w),
+          allMatches.filter((m) => m.week_no <= w),
+          allTeams,
+        );
+        for (const rows of standings.values()) {
+          for (const row of rows) {
+            const key = row.teamName.toLowerCase();
+            const point: TeamHistoryPoint = {
+              week: w,
+              division: row.division,
+              rank: row.rank,
+              wins: row.matchWins,
+              played: row.played,
+            };
+            historyByName.set(key, [...(historyByName.get(key) ?? []), point]);
+            if (w === currentWeek) {
+              perfByName.set(key, {
+                division: row.division,
+                rank: row.rank,
+                played: row.played,
+                matchWins: row.matchWins,
+                setsWon: row.setsWon,
+                setsLost: row.setsLost,
+                pointsFor: row.pointsFor,
+                pointsAgainst: row.pointsAgainst,
+              });
+            }
+          }
         }
       }
     }
@@ -201,6 +228,10 @@ export const getMyAccount = createServerFn({ method: "GET" })
             isActiveSeason && r.status === "accepted"
               ? (perfByName.get(r.team_name.toLowerCase()) ?? null)
               : null,
+          history:
+            isActiveSeason && r.status === "accepted"
+              ? (historyByName.get(r.team_name.toLowerCase()) ?? [])
+              : [],
         },
       ];
     });

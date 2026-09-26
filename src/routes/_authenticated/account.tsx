@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
@@ -12,6 +13,7 @@ import {
   getMyAccount,
   getMyReceiptFile,
   withdrawPartnerRequest,
+  type TeamHistoryPoint,
 } from "@/lib/account.functions";
 
 
@@ -43,6 +45,50 @@ const TEAM_STATUS: Record<string, string> = {
   waitlisted: "Waiting list",
   rejected: "Not accepted",
 };
+
+function TeamHistoryChart({ history }: { history: TeamHistoryPoint[] }) {
+  if (history.length === 0) return null;
+  const data = history.map((h) => ({ ...h, label: `W${h.week}` }));
+  return (
+    <div className="mt-2">
+      <div className="h-36 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="currentColor" className="text-muted-foreground" />
+            <YAxis
+              reversed
+              domain={[1, 10]}
+              ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+              tick={{ fontSize: 11 }}
+              stroke="currentColor"
+              className="text-muted-foreground"
+              tickFormatter={(v: number) => `D${v}`}
+              allowDecimals={false}
+            />
+            <Tooltip
+              formatter={(_value, _name, item) => [
+                `Division ${(item.payload as TeamHistoryPoint).division} · Rank ${(item.payload as TeamHistoryPoint).rank} · Wins ${(item.payload as TeamHistoryPoint).wins}/${(item.payload as TeamHistoryPoint).played}`,
+                "Week " + (item.payload as TeamHistoryPoint).week,
+              ]}
+              labelFormatter={() => ""}
+            />
+            <Line
+              type="monotone"
+              dataKey="division"
+              stroke="#4F46E5"
+              strokeWidth={2}
+              dot={{ r: 3, fill: "#4F46E5" }}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        Division per week — lower is better. Hover a point for rank and wins.
+      </p>
+    </div>
+  );
+}
 
 function AccountPage() {
   const navigate = useNavigate();
@@ -132,6 +178,7 @@ function AccountPage() {
                         </div>
                       </div>
                     ) : null}
+                    <TeamHistoryChart history={t.history} />
                   </li>
                 ))}
               </ul>
