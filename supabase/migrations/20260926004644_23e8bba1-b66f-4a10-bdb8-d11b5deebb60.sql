@@ -1,0 +1,1 @@
+ALTER TABLE public.site_branding ADD COLUMN IF NOT EXISTS show_signin boolean NOT NULL DEFAULT true;
