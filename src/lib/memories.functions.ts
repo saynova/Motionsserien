@@ -26,35 +26,16 @@ export type MemoriesData = {
   photos: GalleryPhoto[];
 };
 
-const SIGNED_URL_SECONDS = 60 * 60 * 12;
-
-type StorageHost = {
-  storage: {
-    from: (bucket: string) => {
-      createSignedUrls: (
-        paths: string[],
-        expiresIn: number,
-      ) => Promise<{
-        data: { path: string | null; signedUrl: string | null }[] | null;
-        error: unknown;
-      }>;
-    };
-  };
-};
-
-async function signedUrlMap(client: unknown, paths: string[]): Promise<Record<string, string>> {
-  const unique = [...new Set(paths.filter((p) => p.length > 0))];
-  if (unique.length === 0) return {};
-  const { data, error } = await (client as StorageHost).storage
-    .from("gallery")
-    .createSignedUrls(unique, SIGNED_URL_SECONDS);
-  if (error || !data) return {};
-  const out: Record<string, string> = {};
-  for (const row of data) {
-    if (row.path && row.signedUrl) out[row.path] = row.signedUrl;
-  }
-  return out;
+/**
+ * Photos are served from this site's own domain rather than straight from cloud
+ * storage: restricted office networks block unfamiliar storage subdomains, so a
+ * direct link leaves visitors staring at empty image frames.
+ */
+function galleryUrl(path: string | null | undefined): string | null {
+  if (typeof path !== "string" || path.length === 0) return null;
+  return `/api/public/gallery/${path}`;
 }
+
 
 export const getMemories = createServerFn({ method: "GET" }).handler(
   async (): Promise<MemoriesData> => {
@@ -83,21 +64,17 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
     if (champions.error) throw new Error(champions.error.message);
     if (photos.error) throw new Error(photos.error.message);
 
-    const urls = await signedUrlMap(client, [
-      ...(champions.data ?? []).map((c) => c.image_path ?? ""),
-      ...(photos.data ?? []).map((p) => p.image_path),
-    ]);
-
     return {
       seasonFinished: settings.data?.season_finished === true,
       champions: (champions.data ?? []).map((c) => ({
         ...c,
-        image_url: c.image_path ? (urls[c.image_path] ?? null) : null,
+        image_url: galleryUrl(c.image_path),
       })) as ChampionEntry[],
       photos: (photos.data ?? []).map((p) => ({
         ...p,
-        image_url: urls[p.image_path] ?? null,
+        image_url: galleryUrl(p.image_path),
       })) as GalleryPhoto[],
+
     };
     } catch {
       // Backend hiccup (e.g. transient token/clock rejection): never blank the

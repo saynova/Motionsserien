@@ -26,6 +26,8 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicCronAutoFinalizeRouteImport } from './routes/api/public/cron/auto-finalize'
 import { Route as ApiPublicCronScoreRemindersRouteImport } from './routes/api/public/cron/score-reminders'
+import { Route as ApiPublicGallerySplatRouteImport } from './routes/api/public/gallery/$'
+import { Route as ApiPublicSbSplatRouteImport } from './routes/api/public/sb/$'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -116,6 +118,16 @@ const ApiPublicCronScoreRemindersRoute =
     path: '/api/public/cron/score-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicGallerySplatRoute = ApiPublicGallerySplatRouteImport.update({
+  id: '/api/public/gallery/$',
+  path: '/api/public/gallery/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSbSplatRoute = ApiPublicSbSplatRouteImport.update({
+  id: '/api/public/sb/$',
+  path: '/api/public/sb/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
@@ -150,6 +162,8 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
+  '/api/public/gallery/$': typeof ApiPublicGallerySplatRoute
+  '/api/public/sb/$': typeof ApiPublicSbSplatRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -171,6 +185,8 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
+  '/api/public/gallery/$': typeof ApiPublicGallerySplatRoute
+  '/api/public/sb/$': typeof ApiPublicSbSplatRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -194,6 +210,8 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
+  '/api/public/gallery/$': typeof ApiPublicGallerySplatRoute
+  '/api/public/sb/$': typeof ApiPublicSbSplatRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -217,6 +235,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
+    | '/api/public/gallery/$'
+    | '/api/public/sb/$'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -238,6 +258,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
+    | '/api/public/gallery/$'
+    | '/api/public/sb/$'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -260,6 +282,8 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
+    | '/api/public/gallery/$'
+    | '/api/public/sb/$'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -282,6 +306,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiPublicCronAutoFinalizeRoute: typeof ApiPublicCronAutoFinalizeRoute
   ApiPublicCronScoreRemindersRoute: typeof ApiPublicCronScoreRemindersRoute
+  ApiPublicGallerySplatRoute: typeof ApiPublicGallerySplatRoute
+  ApiPublicSbSplatRoute: typeof ApiPublicSbSplatRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -408,6 +434,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronScoreRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/gallery/$': {
+      id: '/api/public/gallery/$'
+      path: '/api/public/gallery/$'
+      fullPath: '/api/public/gallery/$'
+      preLoaderRoute: typeof ApiPublicGallerySplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/sb/$': {
+      id: '/api/public/sb/$'
+      path: '/api/public/sb/$'
+      fullPath: '/api/public/sb/$'
+      preLoaderRoute: typeof ApiPublicSbSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
       path: '/lovable/email/auth/preview'
@@ -460,6 +500,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiPublicCronAutoFinalizeRoute: ApiPublicCronAutoFinalizeRoute,
   ApiPublicCronScoreRemindersRoute: ApiPublicCronScoreRemindersRoute,
+  ApiPublicGallerySplatRoute: ApiPublicGallerySplatRoute,
+  ApiPublicSbSplatRoute: ApiPublicSbSplatRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
