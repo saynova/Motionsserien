@@ -129,11 +129,20 @@ export const getMyAccount = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
       db
         .from("seasons")
-        .select("registration_key, invoices_open")
+        .select("id, registration_key, invoices_open, current_week")
         .eq("is_active", true)
         .limit(1)
         .maybeSingle(),
+      registration.key
+        ? db
+            .from("registrations")
+            .select("team_name, player1_name, player2_name, status, previous_division")
+            .eq("target_season", registration.key)
+            .in("status", ["pending", "accepted", "waitlisted"])
+            .order("team_name")
+        : Promise.resolve({ data: [], error: null }),
     ]);
+    const signedUp = r5;
     for (const r of [regs, allLinks, partner, receipts, season]) if (r.error) throw new Error(r.error.message);
 
     const regById = new Map((regs.data ?? []).map((r) => [r.id, r]));
