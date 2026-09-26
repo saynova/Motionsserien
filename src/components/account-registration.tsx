@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { getMyAccount, joinTeam, listJoinableTeams, registerMyTeam, requestPartner } from "@/lib/account.functions";
+import { getMyAccount, registerMyTeam, requestPartner } from "@/lib/account.functions";
 import { DIVISION_COUNT } from "@/lib/tournament";
 
 const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font-medium";
@@ -54,14 +54,11 @@ export function AccountRegistration({ paymentDetails }: { paymentDetails: string
 function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
   const queryClient = useQueryClient();
   const fetchAccount = useServerFn(getMyAccount);
-  const fetchJoinable = useServerFn(listJoinableTeams);
   const doRegister = useServerFn(registerMyTeam);
-  const doJoin = useServerFn(joinTeam);
   const doPartner = useServerFn(requestPartner);
   const account = useQuery({ queryKey: ["my-account"], queryFn: () => fetchAccount() });
-  const joinable = useQuery({ queryKey: ["joinable-teams"], queryFn: () => fetchJoinable() });
 
-  const [mode, setMode] = useState<"team" | "join" | "partner">("team");
+  const [mode, setMode] = useState<"team" | "partner">("team");
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [phone, setPhone] = useState("");
