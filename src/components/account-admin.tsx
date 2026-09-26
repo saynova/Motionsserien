@@ -5,8 +5,9 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import {
-  adminReceiptUrl,
+  adminReceiptFile,
   listPartnerRequests,
   listReceipts,
   pairPartners,
@@ -15,6 +16,7 @@ import {
   setSeasonAccountFlags,
   voidReceipt,
 } from "@/lib/account-admin.functions";
+
 
 
 const card = "rounded-lg border border-border bg-card p-4";
