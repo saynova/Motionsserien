@@ -6,11 +6,47 @@ import { Camera, ChevronLeft, ChevronRight, Crown, Flower2, Trophy, X } from "lu
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import type { ChampionEntry, GalleryPhoto } from "@/lib/memories.functions";
 
-const FLOWER_COLORS = ["#f472b6", "#fb7185", "#f9a8d4", "#fbbf24", "#fcd34d", "#fda4af"];
+const ROSE_VARIANTS = [
+  { outer: "#dc2626", mid: "#ef4444", inner: "#991b1b", core: "#fca5a5", stroke: "#7f1d1d" },
+  { outer: "#ffffff", mid: "#f8fafc", inner: "#e2e8f0", core: "#fef9f9", stroke: "#cbd5e1" },
+];
+
+function Rose({ variant, size }: { variant: number; size: number }) {
+  const c = ROSE_VARIANTS[variant % ROSE_VARIANTS.length]!;
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" className="drop-shadow" aria-hidden>
+      {[0, 60, 120, 180, 240, 300].map((a) => (
+        <ellipse
+          key={`o${a}`}
+          cx="20" cy="10.5" rx="6.5" ry="9.5"
+          fill={c.outer} stroke={c.stroke} strokeWidth="0.7"
+          transform={`rotate(${a} 20 20)`}
+        />
+      ))}
+      {[30, 90, 150, 210, 270, 330].map((a) => (
+        <ellipse
+          key={`m${a}`}
+          cx="20" cy="13" rx="5" ry="7"
+          fill={c.mid} stroke={c.stroke} strokeWidth="0.6"
+          transform={`rotate(${a} 20 20)`}
+        />
+      ))}
+      {[10, 100, 190, 280].map((a) => (
+        <ellipse
+          key={`i${a}`}
+          cx="20" cy="15.5" rx="3.6" ry="4.8"
+          fill={c.inner}
+          transform={`rotate(${a} 20 20)`}
+        />
+      ))}
+      <circle cx="20" cy="19" r="2.4" fill={c.core} />
+    </svg>
+  );
+}
 
 function FlowerParade() {
   const [flowers, setFlowers] = useState<
-    { left: number; delay: number; duration: number; size: number; sway: number; color: string }[]
+    { left: number; delay: number; duration: number; size: number; sway: number; variant: number }[]
   >([]);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -22,7 +58,7 @@ function FlowerParade() {
         duration: 7 + Math.random() * 5,
         size: 14 + Math.random() * 14,
         sway: 15 + Math.random() * 40,
-        color: FLOWER_COLORS[i % FLOWER_COLORS.length]!,
+        variant: i % ROSE_VARIANTS.length,
       })),
     );
   }, []);
@@ -41,7 +77,7 @@ function FlowerParade() {
             } as React.CSSProperties
           }
         >
-          <Flower2 style={{ width: f.size, height: f.size, color: f.color }} className="drop-shadow" />
+          <Rose variant={f.variant} size={f.size} />
         </span>
       ))}
     </div>
