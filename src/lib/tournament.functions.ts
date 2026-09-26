@@ -217,9 +217,17 @@ export const submitScore = createServerFn({ method: "POST" })
 
 export const getAdminStatus = createServerFn({ method: "POST" }).handler(async () => {
   const session = await useSession<AdminSession>(sessionConfig());
-  return { unlocked: session.data.unlocked === true };
+  return {
+    unlocked: session.data.unlocked === true,
+    pending: session.data.unlocked !== true && session.data.pending === true,
+  };
 });
 
+/**
+ * Step 1 of admin sign-in. A browser that has already passed the second factor
+ * (and is still trusted) unlocks straight away; any other browser gets a
+ * one-time code emailed and must confirm it.
+ */
 export const adminSignIn = createServerFn({ method: "POST" })
   .inputValidator((data: { password: string }) => {
     if (typeof data?.password !== "string" || data.password.length === 0) {
@@ -231,9 +239,33 @@ export const adminSignIn = createServerFn({ method: "POST" })
     const expected = process.env["ADMIN_PASSWORD"];
     if (!expected) throw new Error("Admin password is not configured.");
     if (!passwordMatches(data.password, expected)) return { ok: false as const };
+
+    const twoFactor = await import("./admin-2fa.server");
     const session = await useSession<AdminSession>(sessionConfig());
-    await session.update({ unlocked: true });
-    return { ok: true as const };
+
+    if (await twoFactor.isTrustedDevice()) {
+      await session.update({ unlocked: true, pending: false });
+      return { ok: true as const, unlocked: true as const, trusted: true };
+    }
+
+    const settings = await twoFactor.getSettings();
+    let sentTo: string | null = null;
+    let codeId: string | undefined;
+    try {
+      const issued = await twoFactor.issueEmailCode();
+      codeId = issued.codeId;
+      sentTo = issued.sentTo;
+    } catch {
+      // Email delivery failed — the authenticator app can still be used.
+      sentTo = null;
+    }
+    await session.update({ unlocked: false, pending: true, codeId });
+    return {
+      ok: true as const,
+      unlocked: false as const,
+      sentTo,
+      totpEnabled: settings.totpEnabled,
+    };
   });
 
 export const adminSignOut = createServerFn({ method: "POST" }).handler(async () => {
