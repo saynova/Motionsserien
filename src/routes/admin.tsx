@@ -31,6 +31,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { BrandingAdmin } from "@/components/branding-admin";
+import { SecurityAdmin } from "@/components/admin-security";
+import { resendAdminCode, verifyAdminCode } from "@/lib/admin-2fa.functions";
 import { useQuery as useBrandQuery } from "@tanstack/react-query";
 import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
 import { NotificationsPanel, useAdminNotifications } from "@/components/admin-notifications";
@@ -94,6 +96,7 @@ const SECTIONS = [
   { id: "email-settings", label: "Email settings", group: "Email", icon: Settings2 },
   { id: "contacts", label: "Team contacts", group: "Email", icon: Contact },
   { id: "branding", label: "Site name", group: "Season", icon: Settings2 },
+  { id: "security", label: "Security & 2FA", group: "Season", icon: ShieldCheck },
   { id: "season", label: "Season settings", group: "Season", icon: CalendarCog },
   { id: "next-season", label: "Registration & seeding", group: "Season", icon: UserPlus },
   { id: "new-season", label: "Start new season", group: "Season", icon: Flag },
@@ -605,6 +608,7 @@ function AdminConsole() {
 
       <div className="mt-6 space-y-6 first:mt-0">
         {section === "branding" ? <BrandingAdmin /> : null}
+        {section === "security" ? <SecurityAdmin /> : null}
         {section === "notifications" ? (
           <NotificationsPanel state={notifications} onOpen={goTo} />
         ) : null}
