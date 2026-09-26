@@ -100,7 +100,7 @@ function ProgressPage() {
 
   const q = query.trim().toLowerCase();
   const filtered = q
-    ? ordered.filter((t) => t.name.toLowerCase().includes(q) || (t.player1 ?? "").toLowerCase().includes(q) || (t.player2 ?? "").toLowerCase().includes(q))
+    ? ordered.filter((t) => t.name.toLowerCase().includes(q))
     : ordered;
   const divTone = (d: number | null) =>
     d == null ? "bg-muted text-muted-foreground" : d <= 2 ? "bg-primary/12 text-primary ring-1 ring-primary/25" : d <= 5 ? "bg-secondary text-foreground ring-1 ring-border" : "bg-muted/70 text-muted-foreground ring-1 ring-border";
