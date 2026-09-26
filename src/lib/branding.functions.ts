@@ -1,12 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { queryOptions } from "@tanstack/react-query";
 
-export type SiteBranding = { headerTitle: string; headerSubtitle: string; tournamentName: string };
+export type SiteBranding = { headerTitle: string; headerSubtitle: string; tournamentName: string; showSignIn: boolean };
 
 export const DEFAULT_BRANDING: SiteBranding = {
   headerTitle: "Motionsserien",
   headerSubtitle: "HT-26",
   tournamentName: "Motionsserien HT-26",
+  showSignIn: true,
 };
 
 export const getBranding = createServerFn({ method: "GET" }).handler(async (): Promise<SiteBranding> => {
@@ -14,7 +15,7 @@ export const getBranding = createServerFn({ method: "GET" }).handler(async (): P
     const { adminClient } = await import("./tournament.server");
     const { data } = await adminClient()
       .from("site_branding")
-      .select("header_title, header_subtitle, tournament_name")
+      .select("header_title, header_subtitle, tournament_name, show_signin")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
@@ -23,11 +24,13 @@ export const getBranding = createServerFn({ method: "GET" }).handler(async (): P
       headerTitle: data.header_title || DEFAULT_BRANDING.headerTitle,
       headerSubtitle: data.header_subtitle,
       tournamentName: data.tournament_name || DEFAULT_BRANDING.tournamentName,
+      showSignIn: data.show_signin !== false,
     };
   } catch {
     return DEFAULT_BRANDING;
   }
 });
+
 
 export const brandingQueryOptions = () =>
   queryOptions({ queryKey: ["site-branding"], queryFn: () => getBranding(), staleTime: 60_000 });
