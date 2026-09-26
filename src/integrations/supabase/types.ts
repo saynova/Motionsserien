@@ -475,6 +475,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_paid: boolean
+          late_cancel_ack: boolean
           phone: string
           player1_email: string
           player1_name: string
@@ -483,6 +485,7 @@ export type Database = {
           player2_phone: string
           previous_division: number | null
           status: string
+          swish_ref: string
           target_season: string
           team_name: string
           updated_at: string
@@ -491,6 +494,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_paid?: boolean
+          late_cancel_ack?: boolean
           phone?: string
           player1_email: string
           player1_name: string
@@ -499,6 +504,7 @@ export type Database = {
           player2_phone?: string
           previous_division?: number | null
           status?: string
+          swish_ref?: string
           target_season?: string
           team_name: string
           updated_at?: string
@@ -507,6 +513,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_paid?: boolean
+          late_cancel_ack?: boolean
           phone?: string
           player1_email?: string
           player1_name?: string
@@ -515,6 +523,7 @@ export type Database = {
           player2_phone?: string
           previous_division?: number | null
           status?: string
+          swish_ref?: string
           target_season?: string
           team_name?: string
           updated_at?: string

@@ -68,6 +68,9 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
   const [p2Name, setP2Name] = useState("");
   const [p2Email, setP2Email] = useState("");
   const [p2Phone, setP2Phone] = useState("");
+  const [swishRef, setSwishRef] = useState("");
+  const [payLater, setPayLater] = useState(false);
+  const [lateAck, setLateAck] = useState(false);
   const [division, setDivision] = useState("new");
   const [joinId, setJoinId] = useState("");
   const [availability, setAvailability] = useState("");
@@ -125,7 +128,7 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         if (mode === "team")
-          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
+          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: lateAck, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
         else if (mode === "join")
           void run(() => doJoin({ data: { registrationId: joinId, playerName: name } }), "You've joined the team.");
         else
@@ -170,6 +173,36 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
           <div>
             <label className={label}>Division last session (1–10) or New Team</label>
             <DivisionSelect value={division} onChange={setDivision} />
+          </div>
+          <div className="space-y-2 rounded border border-border bg-secondary/40 p-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Payment information</h3>
+            <p className="text-xs text-muted-foreground">
+              Pay with Swish first (details below), then enter the Swish reference number from the app. If you haven't paid yet, choose "I will pay later" — the admin will mark your team as paid once the payment arrives.
+            </p>
+            <label className={label}>Swish reference number</label>
+            <input
+              className={field}
+              inputMode="numeric"
+              placeholder="e.g. 8382 73323 8287382"
+              value={swishRef}
+              disabled={payLater}
+              onChange={(e) => setSwishRef(e.target.value.replace(/[^\d ]/g, ""))}
+              required={!payLater}
+              pattern="[0-9 ]{4,}"
+              title="Numbers only"
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={payLater} onChange={(e) => { setPayLater(e.target.checked); if (e.target.checked) setSwishRef(""); }} className="h-4 w-4 accent-primary" />
+              I will pay later
+            </label>
+          </div>
+          <div className="space-y-2 rounded border border-destructive/40 bg-destructive/5 p-3">
+            <h3 className="text-sm font-bold">Late Cancellation</h3>
+            <p className="text-sm">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" checked={lateAck} onChange={(e) => setLateAck(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" required />
+              I have read and understand the late cancellation policy.
+            </label>
           </div>
           <p className="text-xs text-muted-foreground">
             You are Player 1 (your account email is used). Player 2 can later sign in with the email above to see the team. The team appears under Approved teams and on the seeding board only after admin approval.
