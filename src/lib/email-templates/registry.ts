@@ -5,6 +5,7 @@ import { template as messageReply } from './message-reply'
 import { template as generalEmail } from './general-email'
 import { template as paymentReminder } from './payment-reminder'
 import { template as playerNotice } from './player-notice'
+import { template as adminLoginCode } from './admin-login-code'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -29,4 +30,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'general-email': generalEmail,
   'payment-reminder': paymentReminder,
   'player-notice': playerNotice,
+  'admin-login-code': adminLoginCode,
 }
