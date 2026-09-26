@@ -217,15 +217,18 @@ export const getMyAccount = createServerFn({ method: "GET" })
           .eq("status", "issued");
         if (used.error) throw new Error(used.error.message);
         const total = (used.data ?? []).reduce((s, x) => s + x.amount, 0);
+        const { isTeamPaid } = await import("./account.server");
         receiptOffer = {
           registrationId: team.registrationId,
           teamName: team.teamName,
           seasonKey: activeKey,
           remaining: 800 - total,
           alreadyClaimed: (used.data ?? []).some((x) => x.user_id === context.userId),
+          teamPaid: await isTeamPaid(team.teamName),
         };
       }
     }
+
 
     return {
       email,
