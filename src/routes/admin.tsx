@@ -26,6 +26,8 @@ import {
   ShieldCheck,
   UserPlus,
   Wallet,
+  X,
+
   type LucideIcon,
 } from "lucide-react";
 import { BrandingAdmin } from "@/components/branding-admin";
