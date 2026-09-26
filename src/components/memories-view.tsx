@@ -14,7 +14,13 @@ const ROSE_VARIANTS = [
 function Rose({ variant, size }: { variant: number; size: number }) {
   const c = ROSE_VARIANTS[variant % ROSE_VARIANTS.length]!;
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" className="drop-shadow" aria-hidden>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      aria-hidden
+      style={{ filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.35))" }}
+    >
       {[0, 60, 120, 180, 240, 300].map((a) => (
         <ellipse
           key={`o${a}`}
