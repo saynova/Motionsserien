@@ -19,6 +19,7 @@ import {
   saveSeedBoard,
   setRegistrationOpen,
   setRegistrationStatus,
+  setRegistrationPaid,
   updateSeasonSettings,
   type RegistrationStatus,
 } from "@/lib/registration.functions";
@@ -133,6 +134,7 @@ export function NextSeasonAdmin() {
 
   const toggleOpen = useServerFn(setRegistrationOpen);
   const setStatus = useServerFn(setRegistrationStatus);
+  const setPaid = useServerFn(setRegistrationPaid);
   const removeReg = useServerFn(deleteRegistration);
   const suggest = useServerFn(buildSeedSuggestion);
   const saveBoard = useServerFn(saveSeedBoard);
@@ -273,6 +275,7 @@ export function NextSeasonAdmin() {
               <th className="px-3 py-2 text-left font-semibold">Team</th>
               <th className="px-3 py-2 text-left font-semibold">Players</th>
               <th className="px-3 py-2 text-left font-semibold">Prev.</th>
+              <th className="px-3 py-2 text-left font-semibold">Payment</th>
               <th className="px-3 py-2 text-left font-semibold">Status</th>
               <th className="px-3 py-2 text-right font-semibold">Actions</th>
             </tr>
@@ -280,7 +283,7 @@ export function NextSeasonAdmin() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td className="px-3 py-5 text-sm text-muted-foreground" colSpan={5}>
+                <td className="px-3 py-5 text-sm text-muted-foreground" colSpan={6}>
                   No registrations yet.
                 </td>
               </tr>
@@ -297,6 +300,25 @@ export function NextSeasonAdmin() {
                   </td>
                   <td className="tabnum px-3 py-2">
                     {reg.previous_division ? `Div ${reg.previous_division}` : "New"}
+                  </td>
+                  <td className="px-3 py-2 text-xs">
+                    <span className={`block font-semibold ${reg.is_paid ? "text-emerald-600" : "text-destructive"}`}>
+                      {reg.is_paid ? "Paid" : reg.swish_ref ? "Check Swish" : "Pay later"}
+                    </span>
+                    {reg.swish_ref ? <span className="block tabnum text-muted-foreground">Ref {reg.swish_ref}</span> : null}
+                    <button
+                      className={`${btnGhost} mt-1`}
+                      disabled={busy}
+                      onClick={() =>
+                        run(
+                          () => setPaid({ data: { id: reg.id, isPaid: !reg.is_paid } }),
+                          `${reg.team_name} marked ${reg.is_paid ? "unpaid" : "paid"}.`,
+                          [["registrations", "admin"]],
+                        )
+                      }
+                    >
+                      {reg.is_paid ? "Mark unpaid" : "Mark paid"}
+                    </button>
                   </td>
                   <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">
                     {STATUS_LABEL[reg.status] ?? reg.status}
