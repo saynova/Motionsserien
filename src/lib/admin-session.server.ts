@@ -7,7 +7,7 @@ export type AdminSession = {
   /** Password passed, waiting for the second factor. */
   pending?: boolean;
   /** Id of the emailed one-time code issued for this attempt. */
-  codeId?: string;
+  codeId?: string | undefined;
 };
 
 export function sessionConfig() {

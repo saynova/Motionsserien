@@ -18,7 +18,7 @@ import {
   type TournamentSnapshot,
 } from "./tournament";
 
-type AdminSession = { unlocked?: boolean; pending?: boolean; codeId?: string };
+type AdminSession = { unlocked?: boolean; pending?: boolean; codeId?: string | undefined };
 
 function sessionConfig() {
   return {
