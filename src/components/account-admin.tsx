@@ -133,6 +133,8 @@ export function ReceiptsAdmin() {
   const setFlags = useServerFn(setSeasonAccountFlags);
   const voidFn = useServerFn(voidReceipt);
   const urlFn = useServerFn(adminReceiptUrl);
+  const sampleReceiptPdf = useServerFn(sampleReceiptPdfFn);
+
   const { data, isLoading } = useQuery({ queryKey: ["admin-receipts"], queryFn: () => list() });
   const [filter, setFilter] = useState<"all" | "received" | "partly" | "none">("all");
   const [q, setQ] = useState("");
