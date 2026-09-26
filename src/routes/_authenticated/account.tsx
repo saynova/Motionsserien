@@ -49,10 +49,11 @@ function AccountPage() {
   const queryClient = useQueryClient();
   const fetchAccount = useServerFn(getMyAccount);
   const claim = useServerFn(claimReceipt);
-  const receiptUrl = useServerFn(getMyReceiptUrl);
+  const receiptFile = useServerFn(getMyReceiptFile);
   const withdraw = useServerFn(withdrawPartnerRequest);
   const { data, isLoading, error } = useQuery({ queryKey: ["my-account"], queryFn: () => fetchAccount() });
   const [busy, setBusy] = useState(false);
+  const [doc, setDoc] = useState<PdfDoc | null>(null);
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -65,8 +66,8 @@ function AccountPage() {
     if (!confirm(`Create your ${amount} kr receipt? This can only be done once.`)) return;
     setBusy(true);
     try {
-      const { url } = await claim({ data: { amount } });
-      window.open(url, "_blank");
+      const file = await claim({ data: { amount } });
+      setDoc({ ...file, title: `Your receipt · ${amount} kr` });
       toast.success("Receipt created. A copy link has been emailed to you.");
       await queryClient.invalidateQueries({ queryKey: ["my-account"] });
     } catch (e) {
@@ -78,12 +79,13 @@ function AccountPage() {
 
   async function download(id: string) {
     try {
-      const { url } = await receiptUrl({ data: { id } });
-      window.open(url, "_blank");
+      const file = await receiptFile({ data: { id } });
+      setDoc({ ...file, title: "Your receipt" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Download failed.");
+      toast.error(e instanceof Error ? e.message : "Could not open the receipt.");
     }
   }
+
 
   return (
     <>
