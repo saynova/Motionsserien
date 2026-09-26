@@ -118,6 +118,16 @@ function AccountPage() {
                       {t.player1Name}
                       {t.player2Name ? ` & ${t.player2Name}` : " · waiting for your partner to join"}
                     </div>
+                    {t.performance ? (
+                      <div className="mt-2 rounded border border-border bg-secondary/40 p-2">
+                        <div className="font-semibold">
+                          Division {t.performance.division} · Rank {t.performance.rank}
+                        </div>
+                        <div className="tabnum text-muted-foreground">
+                          Matches {t.performance.matchWins}/{t.performance.played} won · Sets {t.performance.setsWon}–{t.performance.setsLost} · Points {t.performance.pointsFor}–{t.performance.pointsAgainst}
+                        </div>
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -143,6 +153,35 @@ function AccountPage() {
               ) : null}
             </section>
           ) : null}
+
+          <section className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
+            <h2 className="mb-3 text-lg font-bold">Signed-up teams · {data.registration.key}</h2>
+            {data.signedUpTeams.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No teams have signed up yet.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <th className="py-2 pr-2 text-left font-semibold">Team</th>
+                    <th className="py-2 pr-2 text-left font-semibold">Players</th>
+                    <th className="py-2 text-right font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.signedUpTeams.map((t) => (
+                    <tr key={t.teamName} className="border-b border-border/60 last:border-0">
+                      <td className="py-2 pr-2 font-semibold">{t.teamName}</td>
+                      <td className="py-2 pr-2 text-muted-foreground">
+                        {t.player1Name}
+                        {t.player2Name ? ` & ${t.player2Name}` : ""}
+                      </td>
+                      <td className="py-2 text-right text-muted-foreground">{TEAM_STATUS[t.status] ?? t.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
 
           <section className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
             <h2 className="mb-3 text-lg font-bold">Receipts</h2>

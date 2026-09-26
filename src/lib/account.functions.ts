@@ -4,6 +4,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { DIVISION_COUNT } from "./tournament";
 
+export type MyTeamPerformance = {
+  division: number;
+  rank: number;
+  played: number;
+  matchWins: number;
+  setsWon: number;
+  setsLost: number;
+  pointsFor: number;
+  pointsAgainst: number;
+};
+
 export type MyTeam = {
   registrationId: string;
   seasonKey: string;
@@ -13,6 +24,15 @@ export type MyTeam = {
   player1Name: string;
   player2Name: string;
   hasPartnerAccount: boolean;
+  performance: MyTeamPerformance | null;
+};
+
+export type SignedUpTeam = {
+  teamName: string;
+  player1Name: string;
+  player2Name: string;
+  status: string;
+  previousDivision: number | null;
 };
 
 export type MyReceipt = {
@@ -36,6 +56,7 @@ export type MyAccount = {
   email: string;
   registration: { key: string; isOpen: boolean };
   teams: MyTeam[];
+  signedUpTeams: SignedUpTeam[];
   partnerRequest: MyPartnerRequest | null;
   receipts: MyReceipt[];
   receiptOffer: null | {
@@ -88,7 +109,7 @@ export const getMyAccount = createServerFn({ method: "GET" })
     if (links.error) throw new Error(links.error.message);
     const regIds = (links.data ?? []).map((l) => l.registration_id);
 
-    const [regs, allLinks, partner, receipts, season] = await Promise.all([
+    const [regs, allLinks, partner, receipts, season, signedUp] = await Promise.all([
       regIds.length
         ? db.from("registrations").select("id, team_name, status, player1_name, player2_name").in("id", regIds)
         : Promise.resolve({ data: [], error: null }),
@@ -108,17 +129,59 @@ export const getMyAccount = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
       db
         .from("seasons")
-        .select("registration_key, invoices_open")
+        .select("id, registration_key, invoices_open, current_week")
         .eq("is_active", true)
         .limit(1)
         .maybeSingle(),
+      registration.key
+        ? db
+            .from("registrations")
+            .select("team_name, player1_name, player2_name, status, previous_division")
+            .eq("target_season", registration.key)
+            .in("status", ["pending", "accepted", "waitlisted"])
+            .order("team_name")
+        : Promise.resolve({ data: [], error: null }),
     ]);
-    for (const r of [regs, allLinks, partner, receipts, season]) if (r.error) throw new Error(r.error.message);
+    for (const r of [regs, allLinks, partner, receipts, season, signedUp]) if (r.error) throw new Error(r.error.message);
 
     const regById = new Map((regs.data ?? []).map((r) => [r.id, r]));
+
+    // Performance for teams in the active season, from current-week standings.
+    const perfByName = new Map<string, MyTeamPerformance>();
+    if (season.data) {
+      const seasonId = season.data.id;
+      const [slotRows, matchRows, teamRows] = await Promise.all([
+        db.from("week_slots").select("id, week_no, team_id, division, position, tie_break_adj").eq("season_id", seasonId).eq("week_no", season.data.current_week),
+        db.from("matches").select("id, week_no, division, match_no, team_a_id, team_b_id, court, start_time, status, s1a, s1b, s2a, s2b, s3a, s3b, submitted_by").eq("season_id", seasonId),
+        db.from("teams").select("id, name, start_division"),
+      ]);
+      for (const r of [slotRows, matchRows, teamRows]) if (r.error) throw new Error(r.error.message);
+      const { computeStandings } = await import("./tournament");
+      const standings = computeStandings(
+        slotRows.data ?? [],
+        (matchRows.data ?? []) as import("./tournament").MatchRow[],
+        teamRows.data ?? [],
+      );
+      for (const rows of standings.values()) {
+        for (const row of rows) {
+          perfByName.set(row.teamName.toLowerCase(), {
+            division: row.division,
+            rank: row.rank,
+            played: row.played,
+            matchWins: row.matchWins,
+            setsWon: row.setsWon,
+            setsLost: row.setsLost,
+            pointsFor: row.pointsFor,
+            pointsAgainst: row.pointsAgainst,
+          });
+        }
+      }
+    }
+
     const teams: MyTeam[] = (links.data ?? []).flatMap((l) => {
       const r = regById.get(l.registration_id);
       if (!r) return [];
+      const isActiveSeason = season.data?.registration_key === l.season_key;
       return [
         {
           registrationId: r.id,
@@ -130,6 +193,10 @@ export const getMyAccount = createServerFn({ method: "GET" })
           player2Name: r.player2_name,
           hasPartnerAccount:
             (allLinks.data ?? []).filter((x) => x.registration_id === r.id).length >= 2,
+          performance:
+            isActiveSeason && r.status === "accepted"
+              ? (perfByName.get(r.team_name.toLowerCase()) ?? null)
+              : null,
         },
       ];
     });
@@ -160,6 +227,13 @@ export const getMyAccount = createServerFn({ method: "GET" })
       email,
       registration,
       teams,
+      signedUpTeams: (signedUp.data ?? []).map((t) => ({
+        teamName: t.team_name,
+        player1Name: t.player1_name,
+        player2Name: t.player2_name,
+        status: t.status,
+        previousDivision: t.previous_division,
+      })),
       partnerRequest: partner.data
         ? { id: partner.data.id, seasonKey: partner.data.season_key, status: partner.data.status, name: partner.data.name }
         : null,
