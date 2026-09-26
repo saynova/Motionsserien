@@ -64,21 +64,17 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
     if (champions.error) throw new Error(champions.error.message);
     if (photos.error) throw new Error(photos.error.message);
 
-    const urls = await signedUrlMap(client, [
-      ...(champions.data ?? []).map((c) => c.image_path ?? ""),
-      ...(photos.data ?? []).map((p) => p.image_path),
-    ]);
-
     return {
       seasonFinished: settings.data?.season_finished === true,
       champions: (champions.data ?? []).map((c) => ({
         ...c,
-        image_url: c.image_path ? (urls[c.image_path] ?? null) : null,
+        image_url: galleryUrl(c.image_path),
       })) as ChampionEntry[],
       photos: (photos.data ?? []).map((p) => ({
         ...p,
-        image_url: urls[p.image_path] ?? null,
+        image_url: galleryUrl(p.image_path),
       })) as GalleryPhoto[],
+
     };
     } catch {
       // Backend hiccup (e.g. transient token/clock rejection): never blank the
