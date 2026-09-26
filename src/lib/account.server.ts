@@ -34,6 +34,39 @@ export async function currentRegistrationKey(): Promise<{ key: string; isOpen: b
   return { key: data?.target_season ?? "", isOpen: data?.is_open === true };
 }
 
+/**
+ * Links a signed-in account to any accepted team whose registered player email
+ * matches the account's own confirmed email. Safe by design: the email is
+ * verified by auth, and a player slot is only linked when it is still free.
+ */
+export async function autoLinkByEmail(userId: string, email: string): Promise<void> {
+  if (!email) return;
+  const { adminClient } = await import("./tournament.server");
+  const db = adminClient();
+  const regs = await db
+    .from("registrations")
+    .select("id, target_season, player1_email, player2_email")
+    .eq("status", "accepted")
+    .or(`player1_email.ilike.${email},player2_email.ilike.${email}`);
+  if (regs.error || !regs.data?.length) return;
+  for (const reg of regs.data) {
+    const playerNo = (reg.player1_email ?? "").toLowerCase() === email ? 1 : 2;
+    const existing = await db
+      .from("account_links")
+      .select("id, user_id")
+      .eq("registration_id", reg.id)
+      .eq("player_no", playerNo)
+      .maybeSingle();
+    if (existing.data) continue;
+    await db.from("account_links").insert({
+      season_key: reg.target_season,
+      registration_id: reg.id,
+      user_id: userId,
+      player_no: playerNo,
+    });
+  }
+}
+
 export async function notifyPlayer(
   to: string,
   subject: string,
