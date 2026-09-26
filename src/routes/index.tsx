@@ -117,6 +117,7 @@ function MissingScores({
   matches: { id: string; status: string; division: number; team_a_id: string; team_b_id: string }[];
   teams: { id: string; name: string }[];
 }) {
+  const branding = useQuery(brandingQueryOptions());
   const [now, setNow] = useState<string | null>(null);
   useEffect(() => {
     setNow(stockholmNow());
@@ -124,6 +125,7 @@ function MissingScores({
     return () => clearInterval(t);
   }, []);
   if (!now) return null;
+  if ((branding.data ?? DEFAULT_BRANDING).showMissingBanner === false) return null;
 
   const [y = 0, m = 1, d = 1] = season.start_monday.split("-").map(Number);
   const tue = new Date(Date.UTC(y, m - 1, d + (week - 1) * 7 + 1));
