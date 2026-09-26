@@ -1,218 +1,320 @@
 import type React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Camera, Crown, Trophy, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Camera, ChevronLeft, ChevronRight, Crown, Flower2, Trophy, X } from "lucide-react";
 
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import type { ChampionEntry, GalleryPhoto } from "@/lib/memories.functions";
 
-function ChampionCard({ entry, featured }: { entry: ChampionEntry; featured: boolean }) {
+const FLOWER_COLORS = ["#f472b6", "#fb7185", "#f9a8d4", "#fbbf24", "#fcd34d", "#fda4af"];
+
+function FlowerParade() {
+  const [flowers, setFlowers] = useState<
+    { left: number; delay: number; duration: number; size: number; sway: number; color: string }[]
+  >([]);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const count = window.innerWidth < 640 ? 12 : 22;
+    setFlowers(
+      Array.from({ length: count }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 8,
+        duration: 7 + Math.random() * 5,
+        size: 14 + Math.random() * 14,
+        sway: 15 + Math.random() * 40,
+        color: FLOWER_COLORS[i % FLOWER_COLORS.length]!,
+      })),
+    );
+  }, []);
   return (
-    <article
-      className={`group glass-surface relative overflow-hidden rounded-2xl border border-border transition-all hover:-translate-y-0.5 hover:shadow-lg ${
-        featured ? "sm:col-span-2 lg:col-span-2" : ""
-      }`}
-    >
-      <div
-        className={`relative w-full overflow-hidden bg-secondary ${featured ? "h-64 sm:h-80" : "h-44"}`}
-      >
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+      {flowers.map((f, i) => (
+        <span
+          key={i}
+          className="flower-sway absolute -top-8 block h-full"
+          style={
+            {
+              left: `${f.left}%`,
+              animationDelay: `${f.delay}s`,
+              animationDuration: `${f.duration}s`,
+              "--sway": `${f.sway}px`,
+            } as React.CSSProperties
+          }
+        >
+          <Flower2 style={{ width: f.size, height: f.size, color: f.color }} className="drop-shadow" />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ChampionHero({ entry }: { entry: ChampionEntry }) {
+  return (
+    <div className="relative mx-auto max-w-4xl pt-4">
+      <FlowerParade />
+      <div className="champion-drop relative z-10">
+        <article className="champion-float relative overflow-hidden rounded-3xl border border-primary/30 bg-card p-2 ring-1 ring-primary/10">
+          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-secondary">
+            {entry.image_url ? (
+              <img
+                src={entry.image_url}
+                alt={`${entry.team_name} — ${entry.season_title}`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <Trophy className="h-20 w-20 text-primary" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/10 to-transparent" />
+            <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-background/40 bg-background/25 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-background backdrop-blur-md">
+              <Crown className="h-3.5 w-3.5" />
+              Season Champion
+            </span>
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-background/80">
+                {entry.season_title} · {entry.year}
+              </p>
+              <h3 className="mt-1 text-3xl font-black tracking-tight text-background sm:text-5xl">
+                {entry.team_name}
+              </h3>
+              {entry.players ? (
+                <p className="mt-2 text-sm font-medium text-background/85 sm:text-base">
+                  {entry.players}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  );
+}
+
+function PastChampion({ entry }: { entry: ChampionEntry }) {
+  return (
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
         {entry.image_url ? (
           <img
             src={entry.image_url}
             alt={`${entry.team_name} — ${entry.season_title}`}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Trophy className="h-12 w-12 text-amber-400" />
+          <div className="flex h-full items-center justify-center">
+            <Trophy className="h-10 w-10 text-primary" />
           </div>
         )}
-        <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-amber-400/95 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-950 shadow">
-          <Trophy className="h-3.5 w-3.5" />
-          Champion
-        </span>
       </div>
       <div className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {entry.season_title} · {entry.year}
         </p>
-        <h3
-          className={`mt-1 font-bold tracking-tight ${featured ? "text-2xl sm:text-3xl" : "text-lg"}`}
-        >
-          {entry.team_name}
-        </h3>
-        {entry.players ? (
-          <p className="mt-1 text-sm text-muted-foreground">{entry.players}</p>
-        ) : null}
+        <h4 className="mt-1 text-lg font-bold tracking-tight">{entry.team_name}</h4>
+        {entry.players ? <p className="text-sm text-muted-foreground">{entry.players}</p> : null}
       </div>
     </article>
   );
 }
 
-function Lightbox({ photo, onClose }: { photo: GalleryPhoto; onClose: () => void }) {
+function weekTag(photo: GalleryPhoto): string {
+  const m = /(?:week|vecka|v\.?)\s*(\d{1,2})/i.exec(photo.caption ?? "");
+  if (m) return `Week ${m[1]}`;
+  return new Date(photo.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function Lightbox({
+  photos,
+  index,
+  onClose,
+  onIndex,
+}: {
+  photos: GalleryPhoto[];
+  index: number;
+  onClose: () => void;
+  onIndex: (i: number) => void;
+}) {
+  const photo = photos[index]!;
+  const prev = useCallback(
+    () => onIndex((index - 1 + photos.length) % photos.length),
+    [index, photos.length, onIndex],
+  );
+  const next = useCallback(() => onIndex((index + 1) % photos.length), [index, photos.length, onIndex]);
+
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose, prev, next]);
+
+  const navBtn =
+    "absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-background/30 bg-background/15 p-3 text-background backdrop-blur-md transition hover:bg-background/30";
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label={photo.caption || "Photo"}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-foreground/80 p-4 backdrop-blur-xl"
       onClick={onClose}
     >
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute right-4 top-4 rounded-full bg-background/90 p-2 text-foreground shadow"
+        className="absolute right-4 top-4 z-10 rounded-full bg-background/90 p-2 text-foreground shadow"
       >
         <X className="h-5 w-5" />
       </button>
-      <figure className="max-h-full w-full max-w-4xl" onClick={(event) => event.stopPropagation()}>
+      {photos.length > 1 ? (
+        <>
+          <button
+            type="button"
+            aria-label="Previous photo"
+            className={`${navBtn} left-3 sm:left-6`}
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next photo"
+            className={`${navBtn} right-3 sm:right-6`}
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      ) : null}
+      <figure
+        key={photo.id}
+        className="max-h-full w-full max-w-5xl animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
         {photo.image_url ? (
           <img
             src={photo.image_url}
             alt={photo.caption || "Match photo"}
-            className="max-h-[80vh] w-full rounded-xl object-contain"
+            className="max-h-[80vh] w-full rounded-2xl object-contain"
           />
         ) : null}
-        {photo.caption ? (
-          <figcaption className="mt-3 text-center text-sm text-background">
-            {photo.caption}
-          </figcaption>
-        ) : null}
+        <figcaption className="mt-3 flex items-center justify-center gap-3 text-sm text-background">
+          <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-primary-foreground">
+            {weekTag(photo)}
+          </span>
+          {photo.caption ? <span>{photo.caption}</span> : null}
+          <span className="text-background/60">
+            {index + 1} / {photos.length}
+          </span>
+        </figcaption>
       </figure>
     </div>
   );
 }
 
-const PETAL_COLORS = ["#f9a8d4", "#fda4af", "#fbcfe8", "#fcd34d", "#fde68a", "#fecdd3"];
-
-function PetalCelebration({ championId }: { championId: string }) {
-  const [petals, setPetals] = useState<
-    { left: number; delay: number; duration: number; size: number; drift: number; color: string }[]
-  >([]);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const key = `mssn-petals-${championId}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    const count = window.innerWidth < 640 ? 22 : 38;
-    setPetals(
-      Array.from({ length: count }, (_, i) => ({
-        left: Math.random() * 100,
-        delay: Math.random() * 2.5,
-        duration: 5 + Math.random() * 3,
-        size: 10 + Math.random() * 10,
-        drift: (Math.random() - 0.5) * 160,
-        color: PETAL_COLORS[i % PETAL_COLORS.length]!,
-      })),
-    );
-    const timer = window.setTimeout(() => setPetals([]), 11000);
-    return () => window.clearTimeout(timer);
-  }, [championId]);
-
-  if (petals.length === 0) return null;
+function SectionTitle({ icon, eyebrow, title, sub }: { icon: React.ReactNode; eyebrow: string; title: string; sub: string }) {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-      {petals.map((p, i) => (
-        <span
-          key={i}
-          className="petal-fall absolute -top-8 block"
-          style={
-            {
-              left: `${p.left}%`,
-              width: p.size,
-              height: p.size * 0.7,
-              background: p.color,
-              borderRadius: "80% 0 80% 0",
-              animationDelay: `${p.delay}s`,
-              animationDuration: `${p.duration}s`,
-              "--petal-drift": `${p.drift}px`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-    </div>
+    <header className="text-center">
+      <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+        {icon}
+        {eyebrow}
+      </span>
+      <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{title}</h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">{sub}</p>
+    </header>
   );
 }
 
 export function MemoriesView() {
   const { data } = useSuspenseQuery(memoriesQueryOptions);
-  const [open, setOpen] = useState<GalleryPhoto | null>(null);
-
-  const champions = data.champions;
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [current, ...past] = data.champions;
   const photos = data.photos;
 
   return (
-    <div className="space-y-12">
-      {data.seasonFinished && champions[0] ? <PetalCelebration championId={champions[0].id} /> : null}
+    <div className="space-y-16">
       <section>
-        <header className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-amber-700">
-            <Crown className="h-4 w-4" />
-            Champion Hall
-          </span>
-          <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Hall of Fame</h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Every Motionsserien champion, season by season.
-          </p>
-        </header>
-
-        {champions.length === 0 ? (
-          <p className="mt-8 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        <SectionTitle
+          icon={<Crown className="h-4 w-4" />}
+          eyebrow="Hall of Fame"
+          title="Champions"
+          sub="Every Motionsserien champion, season by season."
+        />
+        {!current ? (
+          <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
             The first champion will appear here once the season is finished.
           </p>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {champions.map((entry, index) => (
-              <ChampionCard key={entry.id} entry={entry} featured={index === 0} />
-            ))}
+          <div className="mt-8">
+            <ChampionHero entry={current} />
+            {past.length > 0 ? (
+              <div className="mt-12">
+                <h3 className="mb-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Past champions
+                </h3>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {past.map((entry) => (
+                    <PastChampion key={entry.id} entry={entry} />
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
       </section>
 
-      <div className="flex items-center gap-4">
-        <span className="h-px flex-1 bg-border" />
-        <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          <Camera className="h-4 w-4" />
-          Match day photos
-        </span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
       <section>
+        <SectionTitle
+          icon={<Camera className="h-4 w-4" />}
+          eyebrow="Gallery"
+          title="Weekly Photos"
+          sub="Match night moments from the Rackethall."
+        />
         {photos.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
             No photos yet. Match day pictures will be published here.
           </p>
         ) : (
-          <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 [&>*]:mb-4">
-            {photos.map((photo) => (
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {photos.map((photo, i) => (
               <button
                 key={photo.id}
                 type="button"
-                onClick={() => setOpen(photo)}
-                className="group block w-full overflow-hidden rounded-xl border border-border bg-card text-left transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                onClick={() => setOpenIndex(i)}
+                className="group relative block overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-shadow hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                {photo.image_url ? (
-                  <img
-                    src={photo.image_url}
-                    alt={photo.caption || "Match photo"}
-                    className="w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    loading="lazy"
-                  />
-                ) : null}
+                <div className="aspect-[4/3] overflow-hidden bg-secondary">
+                  {photo.image_url ? (
+                    <img
+                      src={photo.image_url}
+                      alt={photo.caption || "Match photo"}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : null}
+                </div>
+                <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary-foreground shadow">
+                  {weekTag(photo)}
+                </span>
                 {photo.caption ? (
-                  <span className="block px-3 py-2 text-sm text-muted-foreground">
+                  <span className="block truncate px-3 py-2.5 text-sm font-medium text-muted-foreground">
                     {photo.caption}
                   </span>
                 ) : null}
@@ -222,7 +324,9 @@ export function MemoriesView() {
         )}
       </section>
 
-      {open ? <Lightbox photo={open} onClose={() => setOpen(null)} /> : null}
+      {openIndex !== null && photos[openIndex] ? (
+        <Lightbox photos={photos} index={openIndex} onClose={() => setOpenIndex(null)} onIndex={setOpenIndex} />
+      ) : null}
     </div>
   );
 }
