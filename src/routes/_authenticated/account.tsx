@@ -243,6 +243,8 @@ function AccountPage() {
           </section>
         </div>
       ) : null}
+      <PdfViewerDialog doc={doc} onClose={() => setDoc(null)} />
     </>
+
   );
 }
