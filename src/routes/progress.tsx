@@ -35,7 +35,7 @@ export const Route = createFileRoute("/progress")({
   component: ProgressPage,
 });
 
-export function ProgressPage() {
+function ProgressPage() {
   const { data } = useSuspenseQuery(tournamentQueryOptions);
   const { season, teams, slots, matches } = data;
   const [selectedTeamId, setSelectedTeamId] = useState(() =>
