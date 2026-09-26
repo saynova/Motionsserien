@@ -40,7 +40,7 @@ export function AccountRegistration({ paymentDetails }: { paymentDetails: string
       <div className="space-y-3 rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-bold">Sign in to register</h2>
         <p className="text-sm text-muted-foreground">
-          You need a player account to register a team, join your partner or find a partner. The same account works for scores and receipts in every future tournament.
+          You need a player account to register a team or to ask us to find you a partner. The same account works for scores and receipts in every future tournament.
         </p>
         <Link to="/auth" className="inline-block rounded bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
           Sign in or create account
@@ -69,7 +69,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
   const [payLater, setPayLater] = useState(false);
   const [lateAck, setLateAck] = useState(false);
   const [division, setDivision] = useState("new");
-  const [joinId, setJoinId] = useState("");
   const [availability, setAvailability] = useState("");
   const [note, setNote] = useState("");
   const [accepted, setAccepted] = useState(false);

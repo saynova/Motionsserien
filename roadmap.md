@@ -16,3 +16,5 @@
 
 - [x] Make all admin-written email bodies bilingual: English first, Swedish second, subject unchanged, required bilingual contact closing, and fixed General signature.
 - [x] Automatic weekly score reminders (Tuesdays), hamburger drawer admin menu, team payments section with reminders, Champions & Gallery page with admin uploads and a "tournament finished" homepage switch.
+
+- [x] Remove the "Join my partner's team" registration option, confirm emails on our own domain, and drop the Schedule menu item.
