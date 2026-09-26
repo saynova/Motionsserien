@@ -646,6 +646,35 @@ function AdminConsole() {
       </div>
         </main>
       </div>
+
+      <aside
+        aria-label="Admin sections"
+        aria-hidden={!menuOpen}
+        className={`sticky top-0 h-dvh shrink-0 overflow-y-auto border-l border-border bg-card transition-[width,opacity] duration-300 ease-in-out ${
+          menuOpen ? "w-[17rem] opacity-100" : "w-0 opacity-0"
+        }`}
+      >
+        <div className="w-[17rem]">
+          <div className="border-b border-border py-4">{brand}</div>
+          <div className="px-2 py-4">{navList}</div>
+          <div className="space-y-1 border-t border-border p-2 pb-8">
+            <Link
+              to="/"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium hover:bg-secondary"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to site
+            </Link>
+            <button
+              type="button"
+              onClick={doSignOut}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+          </div>
+        </div>
+      </aside>
+
     </div>
   );
 }
