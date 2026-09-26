@@ -5,8 +5,9 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import {
-  adminReceiptUrl,
+  adminReceiptFile,
   listPartnerRequests,
   listReceipts,
   pairPartners,
@@ -15,6 +16,7 @@ import {
   setSeasonAccountFlags,
   voidReceipt,
 } from "@/lib/account-admin.functions";
+
 
 
 const card = "rounded-lg border border-border bg-card p-4";
@@ -132,13 +134,16 @@ export function ReceiptsAdmin() {
   const list = useServerFn(listReceipts);
   const setFlags = useServerFn(setSeasonAccountFlags);
   const voidFn = useServerFn(voidReceipt);
-  const urlFn = useServerFn(adminReceiptUrl);
+  const fileFn = useServerFn(adminReceiptFile);
+
   const sampleReceiptPdf = useServerFn(sampleReceiptPdfFn);
+  const [doc, setDoc] = useState<PdfDoc | null>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ["admin-receipts"], queryFn: () => list() });
   const [filter, setFilter] = useState<"all" | "received" | "partly" | "none">("all");
   const [q, setQ] = useState("");
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-receipts"] });
+
 
   const teams = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -205,16 +210,12 @@ export function ReceiptsAdmin() {
                 onClick={async () => {
                   try {
                     const { base64 } = await sampleReceiptPdf({ data: { amount } });
-                    const bin = atob(base64);
-                    const buf = new Uint8Array(bin.length);
-                    for (let i = 0; i < bin.length; i += 1) buf[i] = bin.charCodeAt(i);
-                    const url = URL.createObjectURL(new Blob([buf], { type: "application/pdf" }));
-                    window.open(url, "_blank");
-                    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+                    setDoc({ base64, filename: `Kvitto-sample-${amount}kr.pdf`, title: `Sample receipt · ${amount} kr` });
                   } catch (e) {
                     toast.error(e instanceof Error ? e.message : "Could not open the sample.");
                   }
                 }}
+
               >
                 Preview {amount} kr receipt
               </Button>
@@ -239,6 +240,7 @@ export function ReceiptsAdmin() {
               <thead className="bg-secondary text-left text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="p-2">Team</th>
+                  <th className="p-2">Payment</th>
                   <th className="p-2">Used / left</th>
                   <th className="p-2">Receipts</th>
                 </tr>
@@ -250,9 +252,18 @@ export function ReceiptsAdmin() {
                       <div className="font-semibold">{t.teamName}</div>
                       <div className="text-xs text-muted-foreground">{t.players.join(" & ")}</div>
                     </td>
+                    <td className="p-2 whitespace-nowrap">
+                      {t.paid ? (
+                        <span className="font-medium text-emerald-600">Paid</span>
+                      ) : (
+                        <span className="font-medium text-destructive">Unpaid</span>
+                      )}
+                    </td>
                     <td className="p-2 whitespace-nowrap">{t.used} kr / {800 - t.used} kr</td>
                     <td className="p-2">
-                      {t.receipts.length === 0 ? <span className="text-muted-foreground">None</span> : null}
+                      {t.receipts.length === 0 ? (
+                        <span className="text-muted-foreground">{t.paid ? "None" : "None (team unpaid)"}</span>
+                      ) : null}
                       {t.receipts.map((r) => (
                         <div key={r.id} className="mb-1 flex flex-wrap items-center gap-2">
                           <span className={r.status !== "issued" ? "line-through text-muted-foreground" : ""}>
@@ -260,7 +271,21 @@ export function ReceiptsAdmin() {
                           </span>
                           {r.status === "issued" ? (
                             <>
-                              <Button size="sm" variant="outline" onClick={async () => window.open((await urlFn({ data: { id: r.id } })).url, "_blank")}>Download</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  try {
+                                    const f = await fileFn({ data: { id: r.id } });
+                                    setDoc({ ...f, title: `Receipt #${r.invoiceNo} · ${r.playerName}` });
+                                  } catch (e) {
+                                    toast.error(e instanceof Error ? e.message : "Could not open the receipt.");
+                                  }
+                                }}
+                              >
+                                View / download
+                              </Button>
+
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -285,6 +310,8 @@ export function ReceiptsAdmin() {
           </div>
         </>
       ) : null}
+      <PdfViewerDialog doc={doc} onClose={() => setDoc(null)} />
     </div>
+
   );
 }

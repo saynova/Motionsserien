@@ -5,13 +5,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
+import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   claimReceipt,
   getMyAccount,
-  getMyReceiptUrl,
+  getMyReceiptFile,
   withdrawPartnerRequest,
 } from "@/lib/account.functions";
+
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -47,10 +49,11 @@ function AccountPage() {
   const queryClient = useQueryClient();
   const fetchAccount = useServerFn(getMyAccount);
   const claim = useServerFn(claimReceipt);
-  const receiptUrl = useServerFn(getMyReceiptUrl);
+  const receiptFile = useServerFn(getMyReceiptFile);
   const withdraw = useServerFn(withdrawPartnerRequest);
   const { data, isLoading, error } = useQuery({ queryKey: ["my-account"], queryFn: () => fetchAccount() });
   const [busy, setBusy] = useState(false);
+  const [doc, setDoc] = useState<PdfDoc | null>(null);
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -63,8 +66,8 @@ function AccountPage() {
     if (!confirm(`Create your ${amount} kr receipt? This can only be done once.`)) return;
     setBusy(true);
     try {
-      const { url } = await claim({ data: { amount } });
-      window.open(url, "_blank");
+      const file = await claim({ data: { amount } });
+      setDoc({ ...file, title: `Your receipt · ${amount} kr` });
       toast.success("Receipt created. A copy link has been emailed to you.");
       await queryClient.invalidateQueries({ queryKey: ["my-account"] });
     } catch (e) {
@@ -76,12 +79,13 @@ function AccountPage() {
 
   async function download(id: string) {
     try {
-      const { url } = await receiptUrl({ data: { id } });
-      window.open(url, "_blank");
+      const file = await receiptFile({ data: { id } });
+      setDoc({ ...file, title: "Your receipt" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Download failed.");
+      toast.error(e instanceof Error ? e.message : "Could not open the receipt.");
     }
   }
+
 
   return (
     <>
@@ -186,7 +190,16 @@ function AccountPage() {
           <section className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
             <h2 className="mb-3 text-lg font-bold">Receipts</h2>
             {data.receiptOffer && !data.receiptOffer.alreadyClaimed ? (
-              data.receiptOffer.remaining > 0 ? (
+              !data.receiptOffer.teamPaid ? (
+                <div className="mb-4 rounded border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                  <p className="font-semibold">Team fee not registered as paid</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Receipts for <strong>{data.receiptOffer.teamName}</strong> open as soon as your team fee is
+                    registered as paid. Pay with Swish to <strong>1234785069</strong> (Ludvika Badmintonklubb) and
+                    the button appears here once it is registered.
+                  </p>
+                </div>
+              ) : data.receiptOffer.remaining > 0 ? (
                 <div className="mb-4 rounded border border-primary/20 bg-primary/5 p-3 text-sm">
                   <p className="mb-2">
                     Get your receipt for <strong>{data.receiptOffer.teamName}</strong>. {data.receiptOffer.remaining} kr of 800 kr is still available for your team.
@@ -206,6 +219,7 @@ function AccountPage() {
                 <p className="mb-4 text-sm text-muted-foreground">Your team's full 800 kr has already been used for receipts.</p>
               )
             ) : null}
+
             {data.receipts.length === 0 ? (
               <p className="text-sm text-muted-foreground">No receipts yet. They become available when the tournament is finished.</p>
             ) : (
@@ -218,8 +232,9 @@ function AccountPage() {
                     </span>
                     {r.status === "issued" ? (
                       <button onClick={() => download(r.id)} className="rounded border border-input px-3 py-1 font-semibold hover:bg-secondary">
-                        Download PDF
+                        View / download
                       </button>
+
                     ) : null}
                   </li>
                 ))}
@@ -228,6 +243,8 @@ function AccountPage() {
           </section>
         </div>
       ) : null}
+      <PdfViewerDialog doc={doc} onClose={() => setDoc(null)} />
     </>
+
   );
 }

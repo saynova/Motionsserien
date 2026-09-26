@@ -65,7 +65,9 @@ export type MyAccount = {
     seasonKey: string;
     remaining: number;
     alreadyClaimed: boolean;
+    teamPaid: boolean;
   };
+
 };
 
 function text(value: unknown, min: number, max: number, label: string) {
@@ -215,15 +217,18 @@ export const getMyAccount = createServerFn({ method: "GET" })
           .eq("status", "issued");
         if (used.error) throw new Error(used.error.message);
         const total = (used.data ?? []).reduce((s, x) => s + x.amount, 0);
+        const { isTeamPaid } = await import("./account.server");
         receiptOffer = {
           registrationId: team.registrationId,
           teamName: team.teamName,
           seasonKey: activeKey,
           remaining: 800 - total,
           alreadyClaimed: (used.data ?? []).some((x) => x.user_id === context.userId),
+          teamPaid: await isTeamPaid(team.teamName),
         };
       }
     }
+
 
     return {
       email,
@@ -457,12 +462,10 @@ export const withdrawPartnerRequest = createServerFn({ method: "POST" })
 
 // ------------------------------------------------------------------ receipts
 
-async function signedReceiptUrl(path: string) {
-  const { adminClient } = await import("./tournament.server");
-  const { data, error } = await adminClient().storage.from("invoices").createSignedUrl(path, 600, { download: true });
-  if (error || !data) throw new Error("Could not prepare the download.");
-  return data.signedUrl;
+function receiptFilename(amount: number, seasonKey: string) {
+  return `Kvitto-${seasonKey.replace(/[^\w-]+/g, "-")}-${amount}kr.pdf`;
 }
+
 
 export const claimReceipt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -473,7 +476,9 @@ export const claimReceipt = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { adminClient } = await import("./tournament.server");
-    const { buildReceiptPdf, todayStockholm, notifyPlayer, autoLinkByEmail } = await import("./account.server");
+    const { buildReceiptPdf, todayStockholm, notifyPlayer, autoLinkByEmail, isTeamPaid } =
+      await import("./account.server");
+
     const db = adminClient();
     const email = await userEmail(context.userId);
     await autoLinkByEmail(context.userId, email);
@@ -498,11 +503,15 @@ export const claimReceipt = createServerFn({ method: "POST" })
     if (!link.data) throw new Error("Your account is not on a team in this tournament.");
     const reg = await db
       .from("registrations")
-      .select("id, status, player1_name, player2_name")
+      .select("id, status, team_name, player1_name, player2_name")
       .eq("id", link.data.registration_id)
       .single();
     if (reg.error || reg.data.status !== "accepted") throw new Error("Your team is not confirmed.");
+    if (!(await isTeamPaid(reg.data.team_name))) {
+      throw new Error("Your team fee is not registered as paid yet, so a receipt cannot be created.");
+    }
     const playerName = link.data.player_no === 1 ? reg.data.player1_name : reg.data.player2_name;
+
 
     const claim = await db.rpc("claim_invoice", {
       _registration_id: reg.data.id,
@@ -530,22 +539,30 @@ export const claimReceipt = createServerFn({ method: "POST" })
       `Ditt kvitto på ${data.amount} kr är klart. Du kan ladda ner det när som helst under Mitt konto på webbplatsen.`,
       `receipt-${invoiceId}`,
     );
-    return { url: await signedReceiptUrl(path) };
+    return {
+      base64: Buffer.from(pdf).toString("base64"),
+      filename: receiptFilename(data.amount, key),
+    };
   });
 
-export const getMyReceiptUrl = createServerFn({ method: "POST" })
+export const getMyReceiptFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => ({ id: String(d?.id ?? "") }))
   .handler(async ({ data, context }) => {
     const { adminClient } = await import("./tournament.server");
+    const { receiptBase64 } = await import("./account.server");
     const inv = await adminClient()
       .from("invoices")
-      .select("file_path, user_id, status")
+      .select("file_path, user_id, status, amount, season_key")
       .eq("id", data.id)
       .maybeSingle();
     if (!inv.data || inv.data.user_id !== context.userId || !inv.data.file_path) {
       throw new Error("Receipt not found.");
     }
     if (inv.data.status !== "issued") throw new Error("This receipt was cancelled.");
-    return { url: await signedReceiptUrl(inv.data.file_path) };
+    return {
+      base64: await receiptBase64(inv.data.file_path),
+      filename: receiptFilename(inv.data.amount, inv.data.season_key),
+    };
   });
+
