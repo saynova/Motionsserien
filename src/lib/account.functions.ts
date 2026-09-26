@@ -471,7 +471,9 @@ export const claimReceipt = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { adminClient } = await import("./tournament.server");
-    const { buildReceiptPdf, todayStockholm, notifyPlayer, autoLinkByEmail } = await import("./account.server");
+    const { buildReceiptPdf, todayStockholm, notifyPlayer, autoLinkByEmail, isTeamPaid } =
+      await import("./account.server");
+
     const db = adminClient();
     const email = await userEmail(context.userId);
     await autoLinkByEmail(context.userId, email);
