@@ -63,6 +63,7 @@ export const saveBranding = createServerFn({ method: "POST" })
       header_subtitle: data.headerSubtitle,
       tournament_name: data.tournamentName,
       show_signin: data.showSignIn,
+      show_missing_banner: data.showMissingBanner,
     };
 
     const res = existing.data
