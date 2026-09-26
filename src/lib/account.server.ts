@@ -119,3 +119,28 @@ export async function buildReceiptPdf(amount: 400 | 800, name: string, date: str
 export function todayStockholm(): string {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Stockholm" }).format(new Date());
 }
+
+/** True when the admin has marked the team as paid for the active season. */
+export async function isTeamPaid(teamName: string): Promise<boolean> {
+  const { adminClient } = await import("./tournament.server");
+  const db = adminClient();
+  const season = await db.from("seasons").select("id").eq("is_active", true).limit(1).maybeSingle();
+  if (!season.data) return false;
+  const team = await db.from("teams").select("id").ilike("name", teamName).limit(1).maybeSingle();
+  if (!team.data) return false;
+  const pay = await db
+    .from("team_payments")
+    .select("is_paid")
+    .eq("season_id", season.data.id)
+    .eq("team_id", team.data.id)
+    .maybeSingle();
+  return pay.data?.is_paid === true;
+}
+
+/** Reads a stored receipt and returns it as base64 for the in-page viewer. */
+export async function receiptBase64(path: string): Promise<string> {
+  const { adminClient } = await import("./tournament.server");
+  const { data, error } = await adminClient().storage.from("invoices").download(path);
+  if (error || !data) throw new Error("Could not open the receipt.");
+  return Buffer.from(await data.arrayBuffer()).toString("base64");
+}
