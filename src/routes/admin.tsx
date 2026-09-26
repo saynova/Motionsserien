@@ -261,7 +261,7 @@ function AdminGate({ awaitingCode = false }: { awaitingCode?: boolean }) {
             <p className="mt-1 text-sm text-muted-foreground">
               {sentTo
                 ? `We emailed a 6-digit code to ${sentTo}. It is valid for 10 minutes.`
-                : "Enter the 6-digit code from your authenticator app."}
+                : "Enter the 6-digit code we emailed you, or the code from your authenticator app."}
             </p>
             {sentTo && appAvailable ? (
               <p className="mt-1 text-xs text-muted-foreground">
