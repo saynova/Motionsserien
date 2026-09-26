@@ -31,13 +31,14 @@ export function BrandingAdmin() {
     }
   };
 
-  const field = (key: keyof typeof form, label: string, hint: string) => (
+  const field = (key: "headerTitle" | "headerSubtitle" | "tournamentName", label: string, hint: string) => (
     <label className="block space-y-1">
       <span className="text-sm font-semibold">{label}</span>
       <Input value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
       <span className="block text-xs text-muted-foreground">{hint}</span>
     </label>
   );
+
 
   return (
     <section className="space-y-5 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
