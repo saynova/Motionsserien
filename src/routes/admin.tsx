@@ -294,7 +294,7 @@ function AdminConsole() {
     const match = SECTIONS.find((item) => item.id === id);
     if (!match) return;
     navigate({ search: { section: match.id } });
-    setMenuOpen(false);
+    };
   };
   const doSignOut = () =>
     run(async () => {
