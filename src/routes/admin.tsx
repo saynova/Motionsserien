@@ -417,7 +417,7 @@ function AdminConsole() {
               <button
                 type="button"
                 aria-label="Open admin menu"
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary lg:hidden sm:px-3"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-sm font-semibold hover:bg-secondary sm:px-3"
               >
                 <Menu className="h-5 w-5" />
                 <span className="hidden sm:inline">Menu</span>
