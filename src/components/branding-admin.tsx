@@ -54,12 +54,28 @@ export function BrandingAdmin() {
         {field("headerSubtitle", "Header subtitle", "Second part next to it, e.g. HT-26 (can be empty)")}
       </div>
       {field("tournamentName", "Tournament name", "Used in page titles, admin and emails, e.g. Motionsserien HT-26")}
+      <div className="rounded-xl border border-border p-4">
+        <label className="flex items-start gap-3">
+          <Switch
+            checked={form.showSignIn}
+            onCheckedChange={(v) => setForm({ ...form, showSignIn: v })}
+          />
+          <span>
+            <span className="block text-sm font-semibold">Show the Sign in button in the header</span>
+            <span className="block text-xs text-muted-foreground">
+              Turn this off while players don&apos;t need accounts. Turn it on when receipts open or
+              when registration for the next tournament starts.
+            </span>
+          </span>
+        </label>
+      </div>
       <div className="rounded-xl border border-dashed border-border p-4">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Header preview</p>
         <p className="mt-1 font-display text-2xl font-bold">
           <span className="text-primary">{form.headerTitle}</span> {form.headerSubtitle}
         </p>
       </div>
+
       <Button onClick={onSave} disabled={busy}>{busy ? "Saving…" : "Save site name"}</Button>
     </section>
   );
