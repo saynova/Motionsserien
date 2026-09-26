@@ -51,8 +51,8 @@ export function useAdminNotifications() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const items = query.data ?? [];
-  const unread = items.filter((item) => !seen.has(item.id));
+  const all = query.data ?? [];
+  const unread = all.filter((item) => !seen.has(item.id));
 
   // Show the unread count in the browser tab and toast when new ones arrive.
   const [known, setKnown] = useState<Set<string> | null>(null);
@@ -71,11 +71,11 @@ export function useAdminNotifications() {
   }, [unread.length]);
 
   return {
-    items,
+    items: unread,
     unreadCount: unread.length,
     isUnread: (id: string) => !seen.has(id),
     markRead: (id: string) => persist(new Set([...seen, id])),
-    markAllRead: () => persist(new Set([...seen, ...items.map((i) => i.id)])),
+    markAllRead: () => persist(new Set([...seen, ...all.map((i) => i.id)])),
     isLoading: query.isLoading,
   };
 }
