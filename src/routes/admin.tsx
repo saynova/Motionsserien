@@ -145,8 +145,11 @@ const btnGhost =
 
 function AdminPage() {
   const status = useQuery(adminStatusQueryOptions);
-  if (status.data?.unlocked) return <AdminConsole />;
-  return <AdminGate awaitingCode={status.data?.pending === true} />;
+  if (!status.data) {
+    return <div className="flex min-h-dvh items-center justify-center text-sm text-muted-foreground">Loading…</div>;
+  }
+  if (status.data.unlocked) return <AdminConsole />;
+  return <AdminGate awaitingCode={status.data.pending === true} />;
 }
 
 function AdminGate({ awaitingCode = false }: { awaitingCode?: boolean }) {
