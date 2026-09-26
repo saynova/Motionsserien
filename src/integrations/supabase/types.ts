@@ -587,6 +587,7 @@ export type Database = {
           is_active: boolean
           name: string
           payment_details: string | null
+          registration_key: string | null
           require_login_for_scores: boolean
           start_monday: string
           total_weeks: number
@@ -599,6 +600,7 @@ export type Database = {
           is_active?: boolean
           name: string
           payment_details?: string | null
+          registration_key?: string | null
           require_login_for_scores?: boolean
           start_monday: string
           total_weeks?: number
@@ -611,6 +613,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           payment_details?: string | null
+          registration_key?: string | null
           require_login_for_scores?: boolean
           start_monday?: string
           total_weeks?: number
