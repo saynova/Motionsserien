@@ -480,6 +480,7 @@ export type Database = {
           player1_name: string
           player2_email: string
           player2_name: string
+          player2_phone: string
           previous_division: number | null
           status: string
           target_season: string
@@ -495,6 +496,7 @@ export type Database = {
           player1_name: string
           player2_email?: string
           player2_name?: string
+          player2_phone?: string
           previous_division?: number | null
           status?: string
           target_season?: string
@@ -510,6 +512,7 @@ export type Database = {
           player1_name?: string
           player2_email?: string
           player2_name?: string
+          player2_phone?: string
           previous_division?: number | null
           status?: string
           target_season?: string
