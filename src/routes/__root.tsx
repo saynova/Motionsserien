@@ -14,6 +14,7 @@ import { useEffect, useState, type ReactNode } from "react";
 // block the backend's own address). Must load before the client is used.
 import "@/integrations/supabase/same-origin";
 import { supabase } from "@/integrations/supabase/client";
+import { consumeAuthSessionFromUrl } from "@/lib/auth-url-session";
 
 
 import { Toaster } from "@/components/ui/sonner";
@@ -85,6 +86,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async () => {
+    await consumeAuthSessionFromUrl();
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },

@@ -28,7 +28,7 @@ const signatureLines = (value: string) =>
 const Email = ({
   teamName = "Your team",
   seasonName = "Motionsserien HT-26",
-  paymentDetails = "Please swish the team fee to 1234785069, Ludvika Badmintonklubb. Reference: your team name.",
+  paymentDetails = "Please swish the team fee to 123-111 21 43, Ludvika Badmintonklubb. Reference: your team name.",
   closingEn = "If you have any further questions, please feel free to contact me through the website’s contact form.",
   closingSv = "Om du har några ytterligare frågor är du välkommen att kontakta mig via kontaktformuläret på webbplatsen.",
   signature = "Best Regards\nThe General\nMd Rabiul Islam",
