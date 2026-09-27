@@ -166,7 +166,7 @@ async function remindTeams(teamIds: string[]) {
   const paymentDetails =
     (season.payment_details ?? "").trim().length > 0
       ? (season.payment_details as string)
-      : "Please swish the team fee to 1234785069, Ludvika Badmintonklubb. Reference: your team name.";
+      : "Please swish the team fee to 123-111 21 43, Ludvika Badmintonklubb. Reference: your team name.";
 
   const day = new Date().toISOString().slice(0, 10);
   let sent = 0;

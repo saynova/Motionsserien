@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/tournament-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { consumeAuthSessionFromUrl } from "@/lib/auth-url-session";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -33,9 +34,14 @@ function AuthPage() {
   const [sent, setSent] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/account", replace: true });
-    });
+    consumeAuthSessionFromUrl()
+      .then(() => supabase.auth.getSession())
+      .then(({ data }) => {
+        if (data.session) navigate({ to: "/account", replace: true });
+      })
+      .catch((error) => {
+        toast.error(error instanceof Error ? error.message : "This sign-in link could not be completed.");
+      });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) navigate({ to: "/account", replace: true });
     });
