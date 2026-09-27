@@ -46,7 +46,7 @@ function RegisterPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="space-y-4">
         {info.isOpen ? (
-          <AccountRegistration paymentDetails={info.paymentDetails ?? ""} />
+          <AccountRegistration />
         ) : (
           <div className="space-y-3 rounded-lg border border-border bg-card p-6">
             <h2 className="text-xl font-bold uppercase tracking-wide">Registration is closed</h2>
@@ -54,14 +54,6 @@ function RegisterPage() {
               Registration for the next season is not open right now. Check back before the season
               starts.
             </p>
-            {info.paymentDetails ? (
-              <div className="rounded border border-border bg-secondary/40 p-3">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Payment details
-                </h3>
-                <p className="mt-1 whitespace-pre-line text-sm">{info.paymentDetails}</p>
-              </div>
-            ) : null}
           </div>
         )}
 

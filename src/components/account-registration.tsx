@@ -32,7 +32,7 @@ function DivisionSelect({ value, onChange }: { value: string; onChange: (v: stri
   );
 }
 
-export function AccountRegistration({ paymentDetails }: { paymentDetails: string }) {
+export function AccountRegistration() {
   const signed = useSignedIn();
   if (signed === "loading") return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
   if (signed === "out") {
@@ -48,10 +48,10 @@ export function AccountRegistration({ paymentDetails }: { paymentDetails: string
       </div>
     );
   }
-  return <SignedInRegistration paymentDetails={paymentDetails} />;
+  return <SignedInRegistration />;
 }
 
-function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
+function SignedInRegistration() {
   const queryClient = useQueryClient();
   const fetchAccount = useServerFn(getMyAccount);
   const doRegister = useServerFn(registerMyTeam);
@@ -231,12 +231,6 @@ function SignedInRegistration({ paymentDetails }: { paymentDetails: string }) {
       <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
-      {paymentDetails ? (
-        <div className="rounded border border-border bg-secondary/40 p-3">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Payment details</h3>
-          <p className="mt-1 whitespace-pre-line text-sm">{paymentDetails}</p>
-        </div>
-      ) : null}
     </form>
   );
 }
