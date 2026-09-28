@@ -1,3 +1,6 @@
+// Capture and remove authentication credentials before any backend client or
+// route code initializes in the browser.
+import "@/lib/auth-url-callback";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
 import {
