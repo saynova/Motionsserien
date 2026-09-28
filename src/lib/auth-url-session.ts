@@ -1,29 +1,33 @@
 import { supabase } from "@/integrations/supabase/client";
+import { takeAuthUrlCallback } from "@/lib/auth-url-callback";
 
 let pendingSession: Promise<boolean> | null = null;
 
 /**
- * Completes implicit auth redirects before protected-route checks run.
- * The credentials are removed from the address bar synchronously so they are
- * never left visible if session establishment is delayed or fails.
+ * Completes implicit-token and PKCE redirects before protected-route checks.
+ * The callback capture module removes credentials from the address bar before
+ * the backend client and React initialize.
  */
 export function consumeAuthSessionFromUrl(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (pendingSession) return pendingSession;
 
-  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  const accessToken = params.get("access_token");
-  const refreshToken = params.get("refresh_token");
-  if (!accessToken || !refreshToken) return Promise.resolve(false);
+  const callback = takeAuthUrlCallback();
+  if (!callback) return Promise.resolve(false);
 
-  window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+  pendingSession = (async () => {
+    if (callback.kind === "error") throw new Error(callback.message);
 
-  pendingSession = supabase.auth
-    .setSession({ access_token: accessToken, refresh_token: refreshToken })
-    .then(({ data, error }) => {
-      if (error) throw error;
-      return Boolean(data.session);
-    })
+    const result = callback.kind === "tokens"
+      ? await supabase.auth.setSession({
+          access_token: callback.accessToken,
+          refresh_token: callback.refreshToken,
+        })
+      : await supabase.auth.exchangeCodeForSession(callback.code);
+
+    if (result.error) throw result.error;
+    return Boolean(result.data.session);
+  })()
     .finally(() => {
       pendingSession = null;
     });
