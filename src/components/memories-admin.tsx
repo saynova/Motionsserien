@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Camera, Home, Trash2, Trophy, Upload } from "lucide-react";
+import { Camera, Home, Play, Trash2, Trophy, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,27 @@ import {
 
 const control = "w-full rounded border border-input bg-card px-3 py-2 text-sm";
 
-/** Resize to max 2400px and re-encode as high-quality JPEG so photos load fast everywhere. */
+const VIDEO_EXT = ["mp4", "webm", "mov"] as const;
+
+function isVideo(file: File): boolean {
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  return file.type.startsWith("video/") || (VIDEO_EXT as readonly string[]).includes(ext);
+}
+
+function videoExt(file: File): string {
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  if ((VIDEO_EXT as readonly string[]).includes(ext)) return ext;
+  if (file.type.includes("webm")) return "webm";
+  if (file.type.includes("quicktime")) return "mov";
+  return "mp4";
+}
+
+/** Keeps full detail: only very large photos are scaled, and always at top JPEG quality. */
 async function prepareImage(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file).catch(() => {
     throw new Error(`Could not read ${file.name}. Use a JPEG, PNG or WebP photo.`);
   });
-  const max = 2400;
+  const max = 4000;
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
@@ -37,23 +52,30 @@ async function prepareImage(file: File): Promise<Blob> {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not process the photo."))), "image/jpeg", 0.88),
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not process the photo."))), "image/jpeg", 0.95),
   );
 }
 
-async function uploadFiles(
-  files: File[],
-  kind: "champion" | "photo",
-  getSlots: (args: { data: { kind: "champion" | "photo"; count: number } }) => Promise<{ slots: { path: string; token: string }[] }>,
-) {
-  const { slots } = await getSlots({ data: { kind, count: files.length } });
+type SlotFn = (args: {
+  data: { kind: "champion" | "photo" | "video"; count: number; ext?: string };
+}) => Promise<{ slots: { path: string; token: string }[] }>;
+
+async function uploadFiles(files: File[], kind: "champion" | "photo", getSlots: SlotFn) {
   const paths: string[] = [];
-  for (let i = 0; i < files.length; i++) {
-    const blob = await prepareImage(files[i]!);
-    const slot = slots[i]!;
+  for (const file of files) {
+    const video = kind === "photo" && isVideo(file);
+    const { slots } = await getSlots({
+      data: video
+        ? { kind: "video", count: 1, ext: videoExt(file) }
+        : { kind, count: 1 },
+    });
+    const slot = slots[0]!;
+    // Videos are uploaded untouched so quality is preserved.
+    const blob = video ? file : await prepareImage(file);
+    const contentType = video ? file.type || "video/mp4" : "image/jpeg";
     const { error } = await supabase.storage
       .from("gallery")
-      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType: "image/jpeg" });
+      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType });
     if (error) throw new Error(`Upload failed: ${error.message}`);
     paths.push(slot.path);
   }
