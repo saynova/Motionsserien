@@ -122,7 +122,7 @@ function SignedInRegistration() {
       onSubmit={(e) => {
         e.preventDefault();
         if (mode === "team")
-          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: lateAck, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
+          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: true, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
         else
           void run(() => doPartner({ data: { name, previousDivision: division, availability, note } }), "Request sent. The admin will review it.");
       }}
