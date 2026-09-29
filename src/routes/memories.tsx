@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { MemoriesView } from "@/components/memories-view";
-import { PageHeader } from "@/components/tournament-ui";
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 
 export const Route = createFileRoute("/memories")({
@@ -11,14 +10,15 @@ export const Route = createFileRoute("/memories")({
       {
         name: "description",
         content:
-          "The Motionsserien badminton Hall of Fame with every season champion, plus match day photos from the Monday ladder in Ludvika.",
+          "The Motionsserien badminton Hall of Fame with every season champion, plus match day photos and videos from the Monday ladder in Ludvika.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:title", content: "Champions & Gallery — Motionsserien HT-26" },
       {
         property: "og:description",
-        content: "Season champions and match day photos from the Motionsserien badminton ladder.",
+        content:
+          "Season champions plus match day photos and videos from the Motionsserien badminton ladder.",
       },
     ],
   }),
@@ -28,15 +28,8 @@ export const Route = createFileRoute("/memories")({
 
 function MemoriesPage() {
   return (
-    <>
-      <PageHeader
-        eyebrow="Photos"
-        title="Champions & Gallery"
-        description="Our Hall of Fame and the best moments from Monday nights in the Rackethall."
-      />
-      <div className="mt-8">
-        <MemoriesView />
-      </div>
-    </>
+    <div className="mt-4">
+      <MemoriesView />
+    </div>
   );
 }
