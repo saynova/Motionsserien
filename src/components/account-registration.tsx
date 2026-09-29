@@ -67,7 +67,6 @@ function SignedInRegistration() {
   const [p2Phone, setP2Phone] = useState("");
   const [swishRef, setSwishRef] = useState("");
   const [payLater, setPayLater] = useState(false);
-  const [lateAck, setLateAck] = useState(false);
   const [division, setDivision] = useState("new");
   const [availability, setAvailability] = useState("");
   const [note, setNote] = useState("");
