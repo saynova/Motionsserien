@@ -230,7 +230,6 @@ export function MemoriesView() {
         <SectionTitle
           icon={
             <span className="inline-flex items-center gap-1.5">
-              <Crown className="h-4 w-4" />
               <Trophy
                 className="h-4 w-4 text-[#d4a017] drop-shadow-[0_1px_2px_rgba(180,120,0,0.45)]"
                 strokeWidth={2.25}
