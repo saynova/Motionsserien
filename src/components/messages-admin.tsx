@@ -203,6 +203,27 @@ export function MessagesAdmin() {
                       </div>
                     ) : null}
 
+                    {message.attachment_url ? (
+                      <div className="mt-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Attached photo
+                        </p>
+                        <a
+                          href={message.attachment_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block"
+                        >
+                          <img
+                            src={message.attachment_url}
+                            alt="Photo sent with this message"
+                            className="max-h-64 rounded border border-border object-contain"
+                          />
+                        </a>
+                      </div>
+                    ) : null}
+
+
                     <ReplyBox message={message} />
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
