@@ -55,6 +55,7 @@ import { PaymentsAdmin } from "@/components/payments-admin";
 import { PartnerRequestsAdmin, ReceiptsAdmin } from "@/components/account-admin";
 import { MemoriesAdmin } from "@/components/memories-admin";
 import { AutoUpdateAdmin } from "@/components/auto-update-admin";
+import { BackupAdmin } from "@/components/backup-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
@@ -643,7 +644,12 @@ function AdminConsole() {
         {section === "partners" ? <PartnerRequestsAdmin /> : null}
         {section === "receipts" ? <ReceiptsAdmin /> : null}
         {section === "memories" ? <MemoriesAdmin /> : null}
-        {section === "auto-update" ? <AutoUpdateAdmin /> : null}
+        {section === "auto-update" ? (
+          <>
+            <AutoUpdateAdmin />
+            <BackupAdmin />
+          </>
+        ) : null}
 
         {section === "matches" ? (
           <>
