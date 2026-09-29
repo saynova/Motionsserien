@@ -9,7 +9,28 @@ function isValidEmail(value: string): boolean {
  * every match in the current week that still has no submitted result.
  * Each match is reminded at most once per calendar day.
  */
-export async function sendAutomaticScoreReminders() {
+function stockholmParts(): { date: string; hour: string } {
+  const s = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(", ", " ");
+  const [date = "", time = ""] = s.split(" ");
+  return { date, hour: time.slice(0, 2) };
+}
+
+function addDays(isoDate: string, days: number): string {
+  const [y = 0, m = 1, d = 1] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+export async function sendAutomaticScoreReminders(force = false) {
   const { adminClient } = await import("./tournament.server");
   const { sendTemplateEmail } = await import("./email-templates/send-email");
   const { getEmailSettings } = await import("./email-settings.server");
@@ -17,13 +38,23 @@ export async function sendAutomaticScoreReminders() {
 
   const season = await client
     .from("seasons")
-    .select("id, current_week")
+    .select("id, current_week, start_monday, reminder_enabled, reminder_offset_days, reminder_time")
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (season.error) throw new Error(season.error.message);
   if (!season.data) return { matches: 0, sent: 0, skipped: 0 };
+
+  if (!force) {
+    if (!season.data.reminder_enabled) return { matches: 0, sent: 0, skipped: 0, reason: "off" };
+    const matchDay = addDays(season.data.start_monday, (season.data.current_week - 1) * 7);
+    const dueDate = addDays(matchDay, season.data.reminder_offset_days);
+    const now = stockholmParts();
+    if (now.date !== dueDate || now.hour !== season.data.reminder_time.slice(0, 2)) {
+      return { matches: 0, sent: 0, skipped: 0, reason: "not due" };
+    }
+  }
 
   const matches = await client
     .from("matches")
