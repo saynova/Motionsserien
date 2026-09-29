@@ -177,16 +177,40 @@ export const submitRegistration = createServerFn({ method: "POST" })
       player2Name: string;
       player2Email: string;
       phone: string;
+      player2Phone?: string;
+      swishRef?: string;
+      payLater?: boolean;
+      lateCancelAck?: boolean;
       previousDivision: number | null | string;
-    }) => ({
-      teamName: cleanText(data?.teamName, 2, 60, "Team name"),
-      player1Name: cleanText(data?.player1Name, 2, 60, "Player 1 name"),
-      player1Email: cleanEmail(data?.player1Email, "Player 1 email"),
-      player2Name: cleanText(data?.player2Name, 2, 60, "Player 2 name"),
-      player2Email: cleanEmail(data?.player2Email, "Player 2 email"),
-      phone: String(data?.phone ?? "").trim().slice(0, 40),
-      previousDivision: cleanDivision(data?.previousDivision),
-    }),
+    }) => {
+      const swishRef = String(data?.swishRef ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+      const payLater = data?.payLater === true;
+      if (!payLater && !/^\d[\d ]{3,}$/.test(swishRef)) {
+        throw new Error(
+          'Enter your Swish reference number (numbers only) or choose "I will pay later".',
+        );
+      }
+      const phone = String(data?.phone ?? "").trim().slice(0, 40);
+      const player2Phone = String(data?.player2Phone ?? "").trim().slice(0, 40);
+      if (phone.length < 5) throw new Error("Enter Player 1 phone number.");
+      if (player2Phone.length < 5) throw new Error("Enter Player 2 phone number.");
+      const player1Email = cleanEmail(data?.player1Email, "Player 1 email");
+      const player2Email = cleanEmail(data?.player2Email, "Player 2 email");
+      if (player1Email === player2Email) {
+        throw new Error("Player 2 needs a different email from Player 1.");
+      }
+      return {
+        teamName: cleanText(data?.teamName, 2, 60, "Team name"),
+        player1Name: cleanText(data?.player1Name, 2, 60, "Player 1 name"),
+        player1Email,
+        player2Name: cleanText(data?.player2Name, 2, 60, "Player 2 name"),
+        player2Email,
+        phone,
+        player2Phone,
+        swishRef: payLater ? "" : swishRef,
+        previousDivision: cleanDivision(data?.previousDivision),
+      };
+    },
   )
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
@@ -194,14 +218,25 @@ export const submitRegistration = createServerFn({ method: "POST" })
 
     const settings = await supabase
       .from("registration_settings")
-      .select("is_open, target_season")
+      .select("is_open, target_season, require_sign_in")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
     if (settings.error) throw new Error(settings.error.message);
     if (settings.data?.is_open !== true) throw new Error("Registration is closed right now.");
+    if (settings.data?.require_sign_in !== false) {
+      throw new Error("Please sign in to register your team.");
+    }
 
     const targetSeason = settings.data?.target_season ?? "";
+    const dup = await supabase
+      .from("registrations")
+      .select("id")
+      .eq("target_season", targetSeason)
+      .ilike("team_name", data.teamName)
+      .maybeSingle();
+    if (dup.data) throw new Error("That team name is already registered for this season.");
+
     const { error } = await supabase.from("registrations").insert({
       target_season: targetSeason,
       team_name: data.teamName,
@@ -210,6 +245,9 @@ export const submitRegistration = createServerFn({ method: "POST" })
       player2_name: data.player2Name,
       player2_email: data.player2Email,
       phone: data.phone,
+      player2_phone: data.player2Phone,
+      swish_ref: data.swishRef,
+      late_cancel_ack: true,
       previous_division: data.previousDivision,
       status: "pending",
     });
@@ -222,6 +260,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
     const { closeRegistrationIfFull } = await import("./season-setup.server");
     await closeRegistrationIfFull(supabase, targetSeason);
     return { ok: true as const };
+
   });
 
 
