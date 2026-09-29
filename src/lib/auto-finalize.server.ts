@@ -18,7 +18,8 @@ import {
 const MATCH_COLUMNS =
   "id, week_no, division, match_no, team_a_id, team_b_id, court, start_time, status, s1a, s1b, s2a, s2b, s3a, s3b, submitted_by";
 const SLOT_COLUMNS = "id, week_no, team_id, division, position, tie_break_adj";
-const SEASON_COLUMNS = "id, name, start_monday, total_weeks, current_week, is_active";
+const SEASON_COLUMNS =
+  "id, name, start_monday, total_weeks, current_week, is_active, auto_finalize_enabled, auto_finalize_offset_days, auto_finalize_time";
 
 /** "YYYY-MM-DD HH:mm" in Swedish time. */
 function stockholmNow(): string {
