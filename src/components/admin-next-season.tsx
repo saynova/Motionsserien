@@ -19,6 +19,8 @@ import {
   lockSeedingAndStartSeason,
   saveSeedBoard,
   setRegistrationOpen,
+  setRegistrationSignInRequired,
+
   setRegistrationStatus,
   setRegistrationPaid,
   updateSeasonSettings,
