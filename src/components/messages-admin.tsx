@@ -147,12 +147,9 @@ export function MessagesAdmin() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {message.attachment_url ? (
-                        <ImageIcon
-                          className="size-4 text-primary"
-                          aria-label="Has a photo"
-                          title="Has a photo"
-                        />
+                        <ImageIcon className="size-4 text-primary" aria-label="Has a photo" />
                       ) : null}
+
                       <span className="hidden text-xs text-muted-foreground sm:inline">{date}</span>
 
                       {isOpen ? (
