@@ -176,10 +176,6 @@ function GuestRegistration() {
           I will pay later
         </label>
       </div>
-      <div className="space-y-2 rounded border border-destructive/40 bg-destructive/5 p-3">
-        <h3 className="text-sm font-bold">Late Cancellation</h3>
-        <p className="text-sm">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
-      </div>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
         <span>
@@ -189,9 +185,14 @@ function GuestRegistration() {
       <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
       </button>
+      <div className="space-y-1 rounded border-2 border-destructive bg-destructive/10 p-3">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-destructive">Late Cancellation</h3>
+        <p className="text-sm font-medium text-destructive">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
+      </div>
     </form>
   );
 }
+
 
 
 function SignedInRegistration() {
@@ -333,11 +334,8 @@ function SignedInRegistration() {
               I will pay later
             </label>
           </div>
-          <div className="space-y-2 rounded border border-destructive/40 bg-destructive/5 p-3">
-            <h3 className="text-sm font-bold">Late Cancellation</h3>
-            <p className="text-sm">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
-          </div>
           <p className="text-xs text-muted-foreground">
+
             You are Player 1 (your account email is used). Player 2 can later sign in with the email above to see the team. The team appears under Approved teams and on the seeding board only after admin approval.
           </p>
         </>
@@ -371,6 +369,13 @@ function SignedInRegistration() {
       <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
+      {mode === "team" ? (
+        <div className="space-y-1 rounded border-2 border-destructive bg-destructive/10 p-3">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-destructive">Late Cancellation</h3>
+          <p className="text-sm font-medium text-destructive">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
+        </div>
+      ) : null}
+
     </form>
   );
 }
