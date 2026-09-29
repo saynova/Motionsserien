@@ -275,7 +275,6 @@ function RootComponent() {
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
         <SiteHeader />
         <main className="mx-auto w-full max-w-[96rem] flex-1 px-3 py-5 sm:px-5 sm:py-8 lg:px-8">
-          <WeeklyBanner />
           <SponsorBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
