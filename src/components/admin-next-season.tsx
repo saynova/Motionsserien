@@ -139,8 +139,10 @@ export function NextSeasonAdmin() {
   const setPaid = useServerFn(setRegistrationPaid);
   const removeReg = useServerFn(deleteRegistration);
   const suggest = useServerFn(buildSeedSuggestion);
+  const lockRegistration = useServerFn(lockRegistrationAndAssign);
   const saveBoard = useServerFn(saveSeedBoard);
   const lock = useServerFn(lockSeedingAndStartSeason);
+
   const { busy, run } = useRunner();
 
   const [targetSeason, setTargetSeason] = useState("");
