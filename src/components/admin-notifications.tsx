@@ -4,9 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Bell, CheckCheck, ClipboardCheck, ImageIcon, MessageSquare, Package, Trophy, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
-import { getAdminNotifications, type AdminNotification } from "@/lib/notifications.functions";
+import { dismissAdminNotifications, getAdminNotifications, type AdminNotification } from "@/lib/notifications.functions";
 
-const SEEN_KEY = "mssn-admin-notifications-seen";
 
 export function useAdminNotifications() {
   const load = useServerFn(getAdminNotifications);
@@ -17,39 +16,18 @@ export function useAdminNotifications() {
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
+  const dismiss = useServerFn(dismissAdminNotifications);
   const [seen, setSeen] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(SEEN_KEY);
-      if (raw) setSeen(new Set(JSON.parse(raw) as string[]));
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const persist = useCallback((next: Set<string>) => {
-    setSeen(next);
-    try {
-      window.localStorage.setItem(SEEN_KEY, JSON.stringify([...next].slice(-500)));
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  // Keep read state in sync across tabs of the same browser.
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== SEEN_KEY || !e.newValue) return;
-      try {
-        setSeen(new Set(JSON.parse(e.newValue) as string[]));
-      } catch {
-        /* ignore */
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  const persist = useCallback(
+    (next: Set<string>, ids: string[]) => {
+      setSeen(next);
+      dismiss({ data: { ids } })
+        .then(() => query.refetch())
+        .catch(() => toast.error("Could not clear notification."));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const all = query.data ?? [];
   const unread = all.filter((item) => !seen.has(item.id));
@@ -74,8 +52,8 @@ export function useAdminNotifications() {
     items: unread,
     unreadCount: unread.length,
     isUnread: (id: string) => !seen.has(id),
-    markRead: (id: string) => persist(new Set([...seen, id])),
-    markAllRead: () => persist(new Set([...seen, ...all.map((i) => i.id)])),
+    markRead: (id: string) => persist(new Set([...seen, id]), [id]),
+    markAllRead: () => persist(new Set([...seen, ...all.map((i) => i.id)]), unread.map((i) => i.id)),
     isLoading: query.isLoading,
   };
 }
