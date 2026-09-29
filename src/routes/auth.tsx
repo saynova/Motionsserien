@@ -36,6 +36,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [verifyType, setVerifyType] = useState<"signup" | "recovery">("signup");
   const [code, setCode] = useState("");
 
   useEffect(() => {
@@ -95,7 +96,9 @@ function AuthPage() {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        setSent("We've sent you an email with a link to choose a new password.");
+        setVerifyType("recovery");
+        setVerifying(true);
+        toast.success("We've emailed you a verification code.");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong.");
@@ -110,10 +113,15 @@ function AuthPage() {
     try {
       const token = code.replace(/\D/g, "");
       if (token.length < 6) throw new Error("Please enter the full code from your email.");
-      const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: verifyType });
       if (error) throw error;
-      toast.success("Your account is verified.");
-      navigate({ to: "/account", replace: true });
+      if (verifyType === "recovery") {
+        toast.success("Code verified. Choose your new password.");
+        navigate({ to: "/reset-password", replace: true });
+      } else {
+        toast.success("Your account is verified.");
+        navigate({ to: "/account", replace: true });
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "That code could not be verified.");
     } finally {
@@ -124,7 +132,12 @@ function AuthPage() {
   async function resendCode() {
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
+      const { error } =
+        verifyType === "recovery"
+          ? await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: `${window.location.origin}/reset-password`,
+            })
+          : await supabase.auth.resend({ type: "signup", email });
       if (error) throw error;
       toast.success("A new code is on its way.");
     } catch (error) {
