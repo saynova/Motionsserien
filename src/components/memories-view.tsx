@@ -313,6 +313,12 @@ export function MemoriesView() {
                 <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary-foreground shadow">
                   {weekTag(photo)}
                 </span>
+                {photo.is_pinned ? (
+                  <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#d4a017] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow">
+                    <Star className="h-3 w-3 fill-current" aria-hidden />
+                    Featured
+                  </span>
+                ) : null}
                 {photo.caption ? (
                   <span className="block truncate px-3 py-2.5 text-sm font-medium text-muted-foreground">
                     {photo.caption}
