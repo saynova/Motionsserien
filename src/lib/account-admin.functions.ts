@@ -265,8 +265,20 @@ export const sampleReceiptPdf = createServerFn({ method: "POST" })
     return { amount: amount as 400 | 800, name: String(d?.name ?? "").trim().slice(0, 80) };
   })
   .handler(async ({ data }) => {
-    await gate();
+    const db = await gate();
+    const season = await db
+      .from("seasons")
+      .select("registration_key")
+      .eq("is_active", true)
+      .limit(1)
+      .maybeSingle();
     const { buildReceiptPdf, todayStockholm } = await import("./account.server");
-    const pdf = await buildReceiptPdf(data.amount, data.name || "Sample Player", todayStockholm());
+    const pdf = await buildReceiptPdf(
+      data.amount,
+      data.name || "Sample Player",
+      todayStockholm(),
+      season.data?.registration_key ?? "",
+    );
     return { base64: Buffer.from(pdf).toString("base64") };
   });
+

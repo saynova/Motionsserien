@@ -102,7 +102,19 @@ function safeText(value: string): string {
   return value.replace(/[^\x20-\x7E\u00A0-\u00FF]/g, "?");
 }
 
-export async function buildReceiptPdf(amount: 400 | 800, name: string, date: string): Promise<Uint8Array> {
+/** The tournament label printed on receipts, e.g. "Motionsserien HT-26". */
+export function receiptPeriodLabel(seasonKey: string): string {
+  const key = (seasonKey ?? "").trim();
+  if (!key) return "Motionsserien";
+  return /motionsserien/i.test(key) ? key : `Motionsserien ${key}`;
+}
+
+export async function buildReceiptPdf(
+  amount: 400 | 800,
+  name: string,
+  date: string,
+  seasonKey = "",
+): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
   const { RECEIPT_400_B64, RECEIPT_800_B64 } = await import("./receipt-templates.server");
   const bytes = Buffer.from(amount === 400 ? RECEIPT_400_B64 : RECEIPT_800_B64, "base64");
@@ -111,10 +123,26 @@ export async function buildReceiptPdf(amount: 400 | 800, name: string, date: str
   const page = pdf.getPage(0);
   const H = page.getHeight();
   const color = rgb(0.1, 0.1, 0.1);
+  const white = rgb(1, 1, 1);
   page.drawText(safeText(date), { x: 227.4, y: H - 175, size: 11, font, color });
   page.drawText(safeText(name), { x: 180, y: H - 339, size: 11, font, color });
+
+  // The template has the tournament name burnt in twice. Cover both and print
+  // the live tournament so no one has to edit the template each season.
+  const period = safeText(receiptPeriodLabel(seasonKey));
+  page.drawRectangle({ x: 226, y: 630.5, width: 300, height: 17, color: white });
+  page.drawText(period, { x: 227.35, y: 634.29, size: 12, font, color });
+  page.drawRectangle({ x: 181, y: 515.5, width: 345, height: 17, color: white });
+  page.drawText(safeText(`${receiptPeriodLabel(seasonKey).replace(/^Motionsserien\s*/i, "Motionsserien Badminton ")}`), {
+    x: 182.7,
+    y: 519.34,
+    size: 12,
+    font,
+    color,
+  });
   return pdf.save();
 }
+
 
 export function todayStockholm(): string {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Stockholm" }).format(new Date());
