@@ -410,9 +410,7 @@ export const getSeedBoard = createServerFn({ method: "GET" }).handler(
   },
 );
 
-export const buildSeedSuggestion = createServerFn({ method: "POST" }).handler(async () => {
-  const { requireAdmin } = await import("./admin-session.server");
-  await requireAdmin();
+async function generateSeedBoard() {
   const { supabase, targetSeason, accepted } = await loadSeedContext();
 
   // Divisions earned by returning teams in the active season's latest week.
@@ -469,7 +467,76 @@ export const buildSeedSuggestion = createServerFn({ method: "POST" }).handler(as
   const entries = suggestSeedBoard(candidates);
   await saveSeedEntries(supabase, targetSeason, entries);
   return { entries, targetSeason };
+}
+
+export const buildSeedSuggestion = createServerFn({ method: "POST" }).handler(async () => {
+  const { requireAdmin } = await import("./admin-session.server");
+  await requireAdmin();
+  return generateSeedBoard();
 });
+
+/**
+ * Locks registration: closes sign-ups, accepts the teams that signed up (up to 30,
+ * in the order they registered) and fills the seeding board from their division
+ * input — new teams start at the bottom division and work upwards.
+ */
+export const lockRegistrationAndAssign = createServerFn({ method: "POST" }).handler(async () => {
+  const { requireAdmin } = await import("./admin-session.server");
+  await requireAdmin();
+  const { adminClient } = await import("./tournament.server");
+  const { MAX_TEAMS } = await import("./season-setup.server");
+  const supabase = adminClient();
+
+  const settings = await supabase
+    .from("registration_settings")
+    .select("id, target_season")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (settings.error) throw new Error(settings.error.message);
+  const targetSeason = settings.data?.target_season ?? "";
+  if (settings.data) {
+    const close = await supabase
+      .from("registration_settings")
+      .update({ is_open: false })
+      .eq("id", settings.data.id);
+    if (close.error) throw new Error(close.error.message);
+  }
+
+  const regs = await supabase
+    .from("registrations")
+    .select("id, status")
+    .eq("target_season", targetSeason)
+    .in("status", ["pending", "accepted", "waitlisted"])
+    .order("created_at", { ascending: true });
+  if (regs.error) throw new Error(regs.error.message);
+  const rows = regs.data ?? [];
+
+  const toAccept = rows.slice(0, MAX_TEAMS).filter((r) => r.status !== "accepted");
+  const toWaitlist = rows.slice(MAX_TEAMS).filter((r) => r.status !== "waitlisted");
+  if (toAccept.length > 0) {
+    const upd = await supabase
+      .from("registrations")
+      .update({ status: "accepted" })
+      .in("id", toAccept.map((r) => r.id));
+    if (upd.error) throw new Error(upd.error.message);
+  }
+  if (toWaitlist.length > 0) {
+    const upd = await supabase
+      .from("registrations")
+      .update({ status: "waitlisted" })
+      .in("id", toWaitlist.map((r) => r.id));
+    if (upd.error) throw new Error(upd.error.message);
+  }
+
+  const board = await generateSeedBoard();
+  return {
+    ...board,
+    acceptedCount: Math.min(rows.length, MAX_TEAMS),
+    waitlistedCount: Math.max(0, rows.length - MAX_TEAMS),
+  };
+});
+
 
 async function saveSeedEntries(
   supabase: Awaited<ReturnType<typeof loadSeedContext>>["supabase"],
