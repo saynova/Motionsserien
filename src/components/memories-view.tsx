@@ -227,7 +227,20 @@ export function MemoriesView() {
   return (
     <div className="space-y-16">
       <section>
-        <SectionTitle icon={<Crown className="h-4 w-4" />} eyebrow="Hall of Fame" title="Champions" />
+        <SectionTitle
+          icon={
+            <span className="inline-flex items-center gap-1.5">
+              <Crown className="h-4 w-4" />
+              <Trophy
+                className="h-4 w-4 text-[#d4a017] drop-shadow-[0_1px_2px_rgba(180,120,0,0.45)]"
+                strokeWidth={2.25}
+                aria-hidden
+              />
+            </span>
+          }
+          eyebrow="Hall of Fame"
+          title="Champions"
+        />
         {!current ? (
           <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
             The first champion will appear here once the season is finished.
