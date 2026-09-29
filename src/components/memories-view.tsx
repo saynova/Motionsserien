@@ -197,18 +197,21 @@ function Lightbox({
 
 function SectionTitle({
   icon,
+  iconAbove,
   eyebrow,
   title,
   sub,
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
+  iconAbove?: React.ReactNode;
   eyebrow: string;
   title: string;
   sub?: string;
 }) {
   return (
     <header className="text-center">
-      <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+      {iconAbove ? <div className="mb-3 flex justify-center">{iconAbove}</div> : null}
+      <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-sm font-bold uppercase tracking-[0.2em] text-primary">
         {icon}
         {eyebrow}
       </span>
