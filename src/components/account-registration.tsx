@@ -67,7 +67,6 @@ function SignedInRegistration() {
   const [p2Phone, setP2Phone] = useState("");
   const [swishRef, setSwishRef] = useState("");
   const [payLater, setPayLater] = useState(false);
-  const [lateAck, setLateAck] = useState(false);
   const [division, setDivision] = useState("new");
   const [availability, setAvailability] = useState("");
   const [note, setNote] = useState("");
@@ -123,7 +122,7 @@ function SignedInRegistration() {
       onSubmit={(e) => {
         e.preventDefault();
         if (mode === "team")
-          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: lateAck, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
+          void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: true, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
         else
           void run(() => doPartner({ data: { name, previousDivision: division, availability, note } }), "Request sent. The admin will review it.");
       }}
@@ -194,10 +193,6 @@ function SignedInRegistration() {
           <div className="space-y-2 rounded border border-destructive/40 bg-destructive/5 p-3">
             <h3 className="text-sm font-bold">Late Cancellation</h3>
             <p className="text-sm">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
-            <label className="flex items-start gap-2 text-sm">
-              <input type="checkbox" checked={lateAck} onChange={(e) => setLateAck(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" required />
-              I have read and understand the late cancellation policy.
-            </label>
           </div>
           <p className="text-xs text-muted-foreground">
             You are Player 1 (your account email is used). Player 2 can later sign in with the email above to see the team. The team appears under Approved teams and on the seeding board only after admin approval.
