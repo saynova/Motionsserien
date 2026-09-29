@@ -372,6 +372,36 @@ export const setRegistrationOpen = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const setRegistrationSignInRequired = createServerFn({ method: "POST" })
+  .inputValidator((data: { requireSignIn: boolean }) => ({
+    requireSignIn: data?.requireSignIn === true,
+  }))
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const existing = await supabase
+      .from("registration_settings")
+      .select("id")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (existing.error) throw new Error(existing.error.message);
+    const result = existing.data
+      ? await supabase
+          .from("registration_settings")
+          .update({ require_sign_in: data.requireSignIn })
+          .eq("id", existing.data.id)
+      : await supabase
+          .from("registration_settings")
+          .insert({ require_sign_in: data.requireSignIn });
+    if (result.error) throw new Error(result.error.message);
+    return { ok: true as const };
+  });
+
+
+
 export const updateSeasonSettings = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string; paymentDetails: string }) => ({
     name: cleanText(data?.name, 3, 60, "Tournament name"),
