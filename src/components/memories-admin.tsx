@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Camera, Home, Play, Trash2, Trophy, Upload } from "lucide-react";
+import { Camera, Home, Pin, PinOff, Play, Trash2, Trophy, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   deleteChampion,
   deleteGalleryPhoto,
   saveChampion,
+  setGalleryPinned,
   setSeasonFinished,
   updateGalleryPhoto,
 } from "@/lib/memories.functions";
@@ -90,6 +91,7 @@ export function MemoriesAdmin() {
   const addPhotos = useServerFn(addGalleryPhotos);
   const updatePhoto = useServerFn(updateGalleryPhoto);
   const removePhoto = useServerFn(deleteGalleryPhoto);
+  const pinPhoto = useServerFn(setGalleryPinned);
   const setFinished = useServerFn(setSeasonFinished);
   const getSlots = useServerFn(createImageUploads);
 
@@ -279,7 +281,8 @@ export function MemoriesAdmin() {
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Upload high quality photos (JPEG, PNG or WebP) and videos (MP4, WebM or MOV, up to 200 MB
-          each), 10 at a time. Newest uploads show first on the page.
+          each), 10 at a time. Newest uploads show first on the page, and anything you pin to the top
+          always comes before them.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="space-y-1">
@@ -324,7 +327,12 @@ export function MemoriesAdmin() {
 
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(memories.data?.photos ?? []).map((photo) => (
-            <li key={photo.id} className="rounded-xl border border-border bg-card/60 p-2">
+            <li
+              key={photo.id}
+              className={`rounded-xl border bg-card/60 p-2 ${
+                photo.is_pinned ? "border-amber-400 ring-1 ring-amber-400/40" : "border-border"
+              }`}
+            >
               {photo.image_url ? (
                 photo.media_type === "video" ? (
                   <div className="relative">
@@ -368,16 +376,35 @@ export function MemoriesAdmin() {
                   }
                 }}
               />
-              <Button
-                className="mt-2 w-full"
-                size="sm"
-                variant="ghost"
-                disabled={busy}
-                onClick={() => run(() => removePhoto({ data: { id: photo.id } }), "Photo removed.")}
-              >
-                <Trash2 className="mr-1.5 h-4 w-4" />
-                Remove
-              </Button>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button
+                  size="sm"
+                  variant={photo.is_pinned ? "default" : "outline"}
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () => pinPhoto({ data: { id: photo.id, pinned: !photo.is_pinned } }),
+                      photo.is_pinned ? "Unpinned." : "Pinned to top.",
+                    )
+                  }
+                >
+                  {photo.is_pinned ? (
+                    <PinOff className="mr-1.5 h-4 w-4" />
+                  ) : (
+                    <Pin className="mr-1.5 h-4 w-4" />
+                  )}
+                  {photo.is_pinned ? "Unpin" : "Pin to top"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy}
+                  onClick={() => run(() => removePhoto({ data: { id: photo.id } }), "Photo removed.")}
+                >
+                  <Trash2 className="mr-1.5 h-4 w-4" />
+                  Remove
+                </Button>
+              </div>
             </li>
           ))}
         </ul>

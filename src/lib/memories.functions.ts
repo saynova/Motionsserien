@@ -18,6 +18,7 @@ export type GalleryPhoto = {
   image_url: string | null;
   media_type: "photo" | "video";
   sort_order: number;
+  is_pinned: boolean;
   created_at: string;
 };
 
@@ -58,8 +59,9 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
         .order("sort_order", { ascending: true }),
       client
         .from("gallery_photos")
-        .select("id, caption, image_path, media_type, sort_order, created_at")
-        // Newest uploads first.
+        .select("id, caption, image_path, media_type, sort_order, is_pinned, created_at")
+        // Pinned items first, then newest uploads.
+        .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false }),
     ]);
     if (champions.error) throw new Error(champions.error.message);
@@ -287,6 +289,26 @@ export const updateGalleryPhoto = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+/** Pins a photo or video so it always shows at the top of the gallery. */
+export const setGalleryPinned = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: string; pinned: boolean }) => {
+    if (typeof data?.id !== "string" || data.id.length < 10) throw new Error("Photo is required.");
+    return { id: data.id, pinned: data?.pinned === true };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient()
+      .from("gallery_photos")
+      .update({ is_pinned: data.pinned })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+
 
 export const deleteGalleryPhoto = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string }) => {
