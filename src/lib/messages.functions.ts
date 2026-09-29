@@ -156,7 +156,7 @@ export const listMessages = createServerFn({ method: "POST" }).handler(
       // Served from this site's own address so restricted office networks
       // still show the picture.
       attachment_url: isMessageAttachmentPath((row as { attachment_path?: unknown }).attachment_path)
-        ? `/api/admin/message-photo/${(row as { attachment_path: string }).attachment_path}`
+        ? `/api/public/message-photo/${(row as { attachment_path: string }).attachment_path}`
         : null,
     })) as Message[];
     // Fill in translations for older messages that were never checked (a few per load).
