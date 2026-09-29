@@ -17,3 +17,5 @@
 
 - All browser traffic to the backend stays same-origin: gallery images are proxied by src/routes/api/public/gallery/$.ts and every client Supabase call is rewritten to src/routes/api/public/sb/$.ts by src/integrations/supabase/same-origin.ts (imported in __root) — corporate networks block the backend subdomain while allowing motionsserien.se.
 - Authentication callbacks are captured and sanitized by src/lib/auth-url-callback.ts before the backend client initializes, then completed by src/lib/auth-url-session.ts before browser-only protected-route checks — supports token and PKCE links without exposing credentials or causing redirect loops.
+
+- Weekly PDF backup lives in src/lib/weekly-backup.server.ts (pdf-lib -> private `backups` bucket -> signed link in the `weekly-backup` email), scheduled by the hourly token-protected route src/routes/api/public/cron/weekly-backup.ts which checks seasons.backup_* and the weekly_backups log — one backup per season week, admin-configurable, survives the site being unavailable.
