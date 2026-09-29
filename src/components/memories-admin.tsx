@@ -326,12 +326,27 @@ export function MemoriesAdmin() {
           {(memories.data?.photos ?? []).map((photo) => (
             <li key={photo.id} className="rounded-xl border border-border bg-card/60 p-2">
               {photo.image_url ? (
-                <img
-                  src={photo.image_url}
-                  alt=""
-                  className="h-32 w-full rounded object-cover"
-                  loading="lazy"
-                />
+                photo.media_type === "video" ? (
+                  <div className="relative">
+                    <video
+                      src={photo.image_url}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="h-32 w-full rounded bg-black object-cover"
+                    />
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <Play className="h-8 w-8 fill-current text-white/90" />
+                    </span>
+                  </div>
+                ) : (
+                  <img
+                    src={photo.image_url}
+                    alt=""
+                    className="h-32 w-full rounded object-cover"
+                    loading="lazy"
+                  />
+                )
               ) : null}
               <input
                 className={`${control} mt-2`}
