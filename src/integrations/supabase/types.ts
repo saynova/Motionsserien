@@ -256,6 +256,7 @@ export type Database = {
           created_at: string
           id: string
           image_path: string
+          media_type: string
           sort_order: number
           updated_at: string
         }
@@ -264,6 +265,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_path: string
+          media_type?: string
           sort_order?: number
           updated_at?: string
         }
@@ -272,6 +274,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_path?: string
+          media_type?: string
           sort_order?: number
           updated_at?: string
         }
