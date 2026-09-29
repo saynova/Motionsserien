@@ -237,6 +237,52 @@ function AskPage() {
           />
           <span className="text-right text-xs text-muted-foreground">{body.length}/2000</span>
         </label>
+
+        <div className="space-y-2">
+          <span className={label}>Photo (optional)</span>
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => choosePhoto(e.target.files?.[0])}
+          />
+          {preview ? (
+            <div className="flex items-start gap-3">
+              <img
+                src={preview}
+                alt="Photo you are attaching"
+                className="size-24 rounded border border-border object-cover"
+              />
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p className="max-w-[16rem] truncate font-semibold text-foreground">
+                  {photo?.name}
+                </p>
+                <button
+                  type="button"
+                  onClick={clearPhoto}
+                  className="inline-flex items-center gap-1 rounded border border-border bg-secondary px-2 py-1 font-semibold uppercase tracking-wide transition-colors hover:bg-secondary/70"
+                >
+                  <X className="size-3" aria-hidden="true" />
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              className="inline-flex items-center gap-2 rounded border border-dashed border-input bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/50"
+            >
+              <ImagePlus className="size-4 text-primary" aria-hidden="true" />
+              Add a photo
+            </button>
+          )}
+          <p className="text-xs text-muted-foreground">
+            One picture, JPEG, PNG or WebP, up to 10 MB. Only the General can see it.
+          </p>
+        </div>
+
         <button type="submit" className={btn} disabled={busy}>
           {busy ? "Sending…" : "Send message"}
         </button>
