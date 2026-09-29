@@ -197,21 +197,18 @@ function Lightbox({
 
 function SectionTitle({
   icon,
-  iconAbove,
   eyebrow,
   title,
   sub,
 }: {
-  icon?: React.ReactNode;
-  iconAbove?: React.ReactNode;
+  icon: React.ReactNode;
   eyebrow: string;
   title: string;
   sub?: string;
 }) {
   return (
     <header className="text-center">
-      {iconAbove ? <div className="mb-3 flex justify-center">{iconAbove}</div> : null}
-      <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-sm font-bold uppercase tracking-[0.2em] text-primary">
+      <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">
         {icon}
         {eyebrow}
       </span>
@@ -231,12 +228,14 @@ export function MemoriesView() {
     <div className="space-y-16">
       <section>
         <SectionTitle
-          iconAbove={
-            <Trophy
-              className="h-10 w-10 text-[#FFD700] drop-shadow-[0_2px_6px_rgba(180,120,0,0.45)]"
-              strokeWidth={2.25}
-              aria-hidden
-            />
+          icon={
+            <span className="inline-flex items-center gap-1.5">
+              <Trophy
+                className="h-4 w-4 text-[#d4a017] drop-shadow-[0_1px_2px_rgba(180,120,0,0.45)]"
+                strokeWidth={2.25}
+                aria-hidden
+              />
+            </span>
           }
           eyebrow="Hall of Fame"
           title="Champions"
