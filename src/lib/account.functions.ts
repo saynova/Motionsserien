@@ -642,7 +642,7 @@ export const claimReceipt = createServerFn({ method: "POST" })
     if (claim.error) throw new Error(claim.error.message);
     const invoiceId = claim.data as string;
 
-    const pdf = await buildReceiptPdf(data.amount, playerName, todayStockholm());
+    const pdf = await buildReceiptPdf(data.amount, playerName, todayStockholm(), key);
     const path = `${key.replace(/[^\w-]+/g, "_")}/${invoiceId}.pdf`;
     const up = await db.storage.from("invoices").upload(path, pdf, { contentType: "application/pdf", upsert: true });
     if (up.error) {
