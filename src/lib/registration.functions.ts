@@ -215,8 +215,11 @@ export const submitRegistration = createServerFn({ method: "POST" })
       }
       throw new Error(error.message);
     }
+    const { closeRegistrationIfFull } = await import("./season-setup.server");
+    await closeRegistrationIfFull(supabase, targetSeason);
     return { ok: true as const };
   });
+
 
 // --------------------------------------------------------------------- admin
 
