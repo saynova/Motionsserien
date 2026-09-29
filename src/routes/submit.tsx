@@ -318,8 +318,8 @@ function SubmitPage() {
         </button>
 
         <p className="rounded border border-accent/40 bg-accent/10 p-3 text-sm">
-          You will have 2 days to submit the score. Any missing result will be treated as a no-show
-          and will be given 0–0.
+          You have until Wednesday at 10:00 AM to submit your scores. Any missing results will
+          be treated as a no-show and recorded as 0–0.
         </p>
       </form>
     </>
