@@ -69,14 +69,23 @@ function AuthPage() {
         if (error) throw error;
       } else if (mode === "signup") {
         if (!agreed) throw new Error("Please accept the Terms and Conditions to continue.");
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { data: { full_name: name.trim(), terms_accepted: true } },
         });
         if (error) throw error;
+        // Supabase returns an empty identities array when the address already
+        // has an account: no email is sent, so never show the code screen.
+        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          setMode("signin");
+          setPassword("");
+          throw new Error(
+            "An account with this email already exists. Please sign in, or use “Forgot password?” to set a new one.",
+          );
+        }
         setVerifying(true);
-        toast.success("We've emailed you a 6-digit verification code.");
+        toast.success("We've emailed you a verification code.");
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -96,7 +105,7 @@ function AuthPage() {
     setBusy(true);
     try {
       const token = code.replace(/\D/g, "");
-      if (token.length !== 6) throw new Error("Please enter the 6-digit code from your email.");
+      if (token.length < 6) throw new Error("Please enter the full code from your email.");
       const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
       if (error) throw error;
       toast.success("Your account is verified.");
@@ -148,7 +157,7 @@ function AuthPage() {
             <div className="rounded border border-primary/20 bg-primary/5 p-4 text-sm">
               <p className="font-semibold">Enter your verification code</p>
               <p className="mt-1">
-                We sent a 6-digit code to <strong>{email}</strong>. Type it below to finish creating your
+                We sent a verification code to <strong>{email}</strong>. Type it below to finish creating your
                 account — there is no link to click. <strong>{SPAM_NOTE}</strong>
               </p>
             </div>
@@ -159,8 +168,8 @@ function AuthPage() {
                 name="code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={6}
-                className={`${field} text-center text-2xl font-bold tracking-[0.4em]`}
+                maxLength={10}
+                className={`${field} text-center text-xl font-bold tracking-[0.25em] sm:text-2xl sm:tracking-[0.3em]`}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 required
@@ -232,7 +241,7 @@ function AuthPage() {
                     </span>
                   </label>
                   <p className="text-xs text-muted-foreground">
-                    We'll email you a 6-digit code to confirm your address. {SPAM_NOTE}
+                    We'll email you a verification code to confirm your address. {SPAM_NOTE}
                   </p>
                 </>
               ) : null}
