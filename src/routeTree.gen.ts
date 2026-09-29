@@ -26,6 +26,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicCronAutoFinalizeRouteImport } from './routes/api/public/cron/auto-finalize'
 import { Route as ApiPublicCronScoreRemindersRouteImport } from './routes/api/public/cron/score-reminders'
+import { Route as ApiPublicCronWeeklyBackupRouteImport } from './routes/api/public/cron/weekly-backup'
 import { Route as ApiPublicGallerySplatRouteImport } from './routes/api/public/gallery/$'
 import { Route as ApiPublicSbSplatRouteImport } from './routes/api/public/sb/$'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -118,6 +119,12 @@ const ApiPublicCronScoreRemindersRoute =
     path: '/api/public/cron/score-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronWeeklyBackupRoute =
+  ApiPublicCronWeeklyBackupRouteImport.update({
+    id: '/api/public/cron/weekly-backup',
+    path: '/api/public/cron/weekly-backup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicGallerySplatRoute = ApiPublicGallerySplatRouteImport.update({
   id: '/api/public/gallery/$',
   path: '/api/public/gallery/$',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
+  '/api/public/cron/weekly-backup': typeof ApiPublicCronWeeklyBackupRoute
   '/api/public/gallery/$': typeof ApiPublicGallerySplatRoute
   '/api/public/sb/$': typeof ApiPublicSbSplatRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -185,6 +193,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
+  '/api/public/cron/weekly-backup': typeof ApiPublicCronWeeklyBackupRoute
   '/api/public/gallery/$': typeof ApiPublicGallerySplatRoute
   '/api/public/sb/$': typeof ApiPublicSbSplatRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -210,6 +219,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
   '/api/public/cron/score-reminders': typeof ApiPublicCronScoreRemindersRoute
+  '/api/public/cron/weekly-backup': typeof ApiPublicCronWeeklyBackupRoute
   '/api/public/gallery/$': typeof ApiPublicGallerySplatRoute
   '/api/public/sb/$': typeof ApiPublicSbSplatRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
+    | '/api/public/cron/weekly-backup'
     | '/api/public/gallery/$'
     | '/api/public/sb/$'
     | '/lovable/email/auth/preview'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
+    | '/api/public/cron/weekly-backup'
     | '/api/public/gallery/$'
     | '/api/public/sb/$'
     | '/lovable/email/auth/preview'
@@ -282,6 +294,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/api/public/cron/auto-finalize'
     | '/api/public/cron/score-reminders'
+    | '/api/public/cron/weekly-backup'
     | '/api/public/gallery/$'
     | '/api/public/sb/$'
     | '/lovable/email/auth/preview'
@@ -306,6 +319,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiPublicCronAutoFinalizeRoute: typeof ApiPublicCronAutoFinalizeRoute
   ApiPublicCronScoreRemindersRoute: typeof ApiPublicCronScoreRemindersRoute
+  ApiPublicCronWeeklyBackupRoute: typeof ApiPublicCronWeeklyBackupRoute
   ApiPublicGallerySplatRoute: typeof ApiPublicGallerySplatRoute
   ApiPublicSbSplatRoute: typeof ApiPublicSbSplatRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -434,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronScoreRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/weekly-backup': {
+      id: '/api/public/cron/weekly-backup'
+      path: '/api/public/cron/weekly-backup'
+      fullPath: '/api/public/cron/weekly-backup'
+      preLoaderRoute: typeof ApiPublicCronWeeklyBackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/gallery/$': {
       id: '/api/public/gallery/$'
       path: '/api/public/gallery/$'
@@ -500,6 +521,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiPublicCronAutoFinalizeRoute: ApiPublicCronAutoFinalizeRoute,
   ApiPublicCronScoreRemindersRoute: ApiPublicCronScoreRemindersRoute,
+  ApiPublicCronWeeklyBackupRoute: ApiPublicCronWeeklyBackupRoute,
   ApiPublicGallerySplatRoute: ApiPublicGallerySplatRoute,
   ApiPublicSbSplatRoute: ApiPublicSbSplatRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
