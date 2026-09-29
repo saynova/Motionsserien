@@ -40,10 +40,12 @@ export type RegisteredTeam = {
 
 export type RegistrationInfo = {
   isOpen: boolean;
+  requireSignIn: boolean;
   targetSeason: string;
   paymentDetails: string;
   seasonName: string;
 };
+
 
 const REG_COLUMNS =
   "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, swish_ref, is_paid, previous_division, status, created_at";
