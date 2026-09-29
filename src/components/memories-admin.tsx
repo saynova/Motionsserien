@@ -281,7 +281,8 @@ export function MemoriesAdmin() {
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Upload high quality photos (JPEG, PNG or WebP) and videos (MP4, WebM or MOV, up to 200 MB
-          each), 10 at a time. Newest uploads show first on the page.
+          each), 10 at a time. Newest uploads show first on the page, and anything you pin to the top
+          always comes before them.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="space-y-1">
