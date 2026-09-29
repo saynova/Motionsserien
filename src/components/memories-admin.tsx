@@ -327,7 +327,12 @@ export function MemoriesAdmin() {
 
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(memories.data?.photos ?? []).map((photo) => (
-            <li key={photo.id} className="rounded-xl border border-border bg-card/60 p-2">
+            <li
+              key={photo.id}
+              className={`rounded-xl border bg-card/60 p-2 ${
+                photo.is_pinned ? "border-amber-400 ring-1 ring-amber-400/40" : "border-border"
+              }`}
+            >
               {photo.image_url ? (
                 photo.media_type === "video" ? (
                   <div className="relative">
