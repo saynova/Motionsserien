@@ -92,3 +92,74 @@ export const saveAutoUpdateSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+export type ReminderSettings = {
+  enabled: boolean;
+  offsetDays: number;
+  time: string;
+  nextRun: string | null;
+};
+
+export const getReminderSettings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ReminderSettings> => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const season = await adminClient()
+      .from("seasons")
+      .select("start_monday, current_week, reminder_enabled, reminder_offset_days, reminder_time")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (season.error) throw new Error(season.error.message);
+    if (!season.data) throw new Error("No active season found.");
+    const row = season.data;
+    const matchDay = mondayOfWeek(row.start_monday, row.current_week);
+    const hour = row.reminder_time.slice(0, 2);
+    return {
+      enabled: row.reminder_enabled,
+      offsetDays: row.reminder_offset_days,
+      time: row.reminder_time,
+      nextRun: row.reminder_enabled
+        ? `${addDays(matchDay, row.reminder_offset_days)} ${hour}:10`
+        : null,
+    };
+  },
+);
+
+export const saveReminderSettings = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean; offsetDays: number; time: string }) => {
+    const offsetDays = Number(data?.offsetDays);
+    if (!Number.isInteger(offsetDays) || offsetDays < 0 || offsetDays > 13) {
+      throw new Error("Choose a day between match day and 13 days after.");
+    }
+    const time = String(data?.time ?? "").trim();
+    if (!TIME_PATTERN.test(time)) throw new Error("Enter a time such as 12:00.");
+    return { enabled: Boolean(data?.enabled), offsetDays, time: `${time.slice(0, 2)}:00` };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const season = await supabase
+      .from("seasons")
+      .select("id")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (season.error) throw new Error(season.error.message);
+    if (!season.data) throw new Error("No active season found.");
+    const { error } = await supabase
+      .from("seasons")
+      .update({
+        reminder_enabled: data.enabled,
+        reminder_offset_days: data.offsetDays,
+        reminder_time: data.time,
+      })
+      .eq("id", season.data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
