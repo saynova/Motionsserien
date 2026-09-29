@@ -15,6 +15,9 @@ import { createFileRoute } from "@tanstack/react-router";
 const ALLOWED_PREFIXES = ["auth/v1/", "rest/v1/", "storage/v1/", "functions/v1/"];
 
 // Hop-by-hop and host-specific headers must not be forwarded.
+// accept-encoding is dropped too: otherwise the backend answers with a
+// compressed body that we would hand on without its content-encoding header,
+// and the browser would read the reply as unreadable characters.
 const STRIPPED = new Set([
   "host",
   "connection",
@@ -26,6 +29,7 @@ const STRIPPED = new Set([
   "te",
   "trailer",
   "content-length",
+  "accept-encoding",
   "cf-connecting-ip",
   "cf-ray",
   "cf-visitor",
