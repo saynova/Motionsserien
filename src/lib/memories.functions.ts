@@ -18,6 +18,7 @@ export type GalleryPhoto = {
   image_url: string | null;
   media_type: "photo" | "video";
   sort_order: number;
+  is_pinned: boolean;
   created_at: string;
 };
 
