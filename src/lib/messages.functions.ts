@@ -16,10 +16,22 @@ export type Message = {
   reply_body: string | null;
   body_en: string | null;
   replied_at: string | null;
+  attachment_path: string | null;
+  attachment_url: string | null;
 };
 
 const MESSAGE_COLUMNS =
-  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at, body_en";
+  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at, body_en, attachment_path";
+
+/** Photo extensions a sender may attach to a message. */
+const ATTACHMENT_EXTS = ["jpg", "png", "webp"] as const;
+
+/** Only file names this site created itself are accepted or served. */
+const ATTACHMENT_PATH = /^msg-\d+-[a-f0-9]{8}\.(?:jpg|png|webp)$/;
+
+export function isMessageAttachmentPath(value: unknown): value is string {
+  return typeof value === "string" && ATTACHMENT_PATH.test(value);
+}
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -30,15 +42,45 @@ function sanitizeTopic(value: unknown): MessageTopic {
   return TOPICS.includes(topic as MessageTopic) ? (topic as MessageTopic) : "question";
 }
 
+/**
+ * Gives the sender's browser a one-time upload slot for a single photo. The
+ * photo goes straight to private storage, so a large picture never has to
+ * travel through a normal form submission.
+ */
+export const createMessageAttachmentUpload = createServerFn({ method: "POST" })
+  .inputValidator((data: { ext?: string }) => {
+    const raw = String(data?.ext ?? "").toLowerCase().replace(/^\./, "");
+    const ext = (ATTACHMENT_EXTS as readonly string[]).includes(raw) ? raw : "jpg";
+    return { ext };
+  })
+  .handler(async ({ data }) => {
+    const { adminClient } = await import("./tournament.server");
+    const path = `msg-${Date.now()}-${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}.${data.ext}`;
+    const { data: signed, error } = await adminClient()
+      .storage.from("message-attachments")
+      .createSignedUploadUrl(path);
+    if (error || !signed) throw new Error("Could not prepare the photo upload.");
+    return { path, token: signed.token };
+  });
+
+
 // ---------------------------------------------------------------- public submit
 
 export const sendMessage = createServerFn({ method: "POST" })
   .inputValidator(
-    (data: { topic?: string; email?: string; name?: string; teamName?: string; body?: string }) => {
+    (data: {
+      topic?: string;
+      email?: string;
+      name?: string;
+      teamName?: string;
+      body?: string;
+      attachmentPath?: string | null;
+    }) => {
       const email = (data?.email ?? "").trim();
       const body = (data?.body ?? "").trim();
       const name = (data?.name ?? "").trim();
       const teamName = (data?.teamName ?? "").trim();
+      const rawAttachment = data?.attachmentPath ?? null;
 
       if (!isValidEmail(email) || email.length > 255) {
         throw new Error("Enter a valid email address.");
@@ -52,6 +94,9 @@ export const sendMessage = createServerFn({ method: "POST" })
       if (teamName.length > 80) {
         throw new Error("Team name must be 80 characters or less.");
       }
+      if (rawAttachment !== null && rawAttachment !== "" && !isMessageAttachmentPath(rawAttachment)) {
+        throw new Error("That photo could not be attached. Please choose it again.");
+      }
 
       return {
         topic: sanitizeTopic(data?.topic),
@@ -59,14 +104,28 @@ export const sendMessage = createServerFn({ method: "POST" })
         name,
         teamName,
         body,
+        attachmentPath: isMessageAttachmentPath(rawAttachment) ? rawAttachment : null,
       };
     },
   )
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
     const { translateIncomingToEnglish } = await import("./translate-email.server");
+    const client = adminClient();
+
+    // Confirm the photo really arrived before the message claims to carry one.
+    let attachmentPath = data.attachmentPath;
+    if (attachmentPath) {
+      const check = await client.storage
+        .from("message-attachments")
+        .createSignedUrl(attachmentPath, 60);
+      if (check.error || !check.data?.signedUrl) {
+        throw new Error("The photo did not finish uploading. Please try again.");
+      }
+    }
+
     const bodyEn = await translateIncomingToEnglish(data.body);
-    const { error } = await adminClient().from("messages").insert({
+    const { error } = await client.from("messages").insert({
       body_en: bodyEn,
       topic: data.topic,
       email: data.email,
@@ -74,6 +133,7 @@ export const sendMessage = createServerFn({ method: "POST" })
       team_name: data.teamName,
       body: data.body,
       status: "new",
+      attachment_path: attachmentPath,
     });
     if (error) throw new Error(error.message);
     return { ok: true as const };
@@ -91,7 +151,14 @@ export const listMessages = createServerFn({ method: "POST" }).handler(
       .select(MESSAGE_COLUMNS)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    const rows = (data ?? []) as Message[];
+    const rows = (data ?? []).map((row) => ({
+      ...row,
+      // Served from this site's own address so restricted office networks
+      // still show the picture.
+      attachment_url: isMessageAttachmentPath((row as { attachment_path?: unknown }).attachment_path)
+        ? `/api/public/message-photo/${(row as { attachment_path: string }).attachment_path}`
+        : null,
+    })) as Message[];
     // Fill in translations for older messages that were never checked (a few per load).
     const pending = rows.filter((row) => row.body_en === null).slice(0, 5);
     if (pending.length > 0) {
@@ -108,6 +175,7 @@ export const listMessages = createServerFn({ method: "POST" }).handler(
     return rows;
   },
 );
+
 
 type StatusInput = { messageId: string; status: "new" | "answered" };
 
@@ -206,7 +274,21 @@ export const deleteMessage = createServerFn({ method: "POST" })
     const { requireAdmin } = await import("./admin-session.server");
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
-    const { error } = await adminClient().from("messages").delete().eq("id", data.messageId);
+    const client = adminClient();
+
+    // Remove the attached photo too, so deleting clears the whole message.
+    const existing = await client
+      .from("messages")
+      .select("attachment_path")
+      .eq("id", data.messageId)
+      .maybeSingle();
+    const path = existing.data?.attachment_path;
+    if (isMessageAttachmentPath(path)) {
+      await client.storage.from("message-attachments").remove([path]);
+    }
+
+    const { error } = await client.from("messages").delete().eq("id", data.messageId);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Mail, Send, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ImageIcon, Mail, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { messagesQueryOptions } from "@/lib/tournament-query";
@@ -146,7 +146,12 @@ export function MessagesAdmin() {
                       ) : null}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      {message.attachment_url ? (
+                        <ImageIcon className="size-4 text-primary" aria-label="Has a photo" />
+                      ) : null}
+
                       <span className="hidden text-xs text-muted-foreground sm:inline">{date}</span>
+
                       {isOpen ? (
                         <ChevronUp className="size-4 text-muted-foreground" aria-hidden="true" />
                       ) : (
@@ -202,6 +207,27 @@ export function MessagesAdmin() {
                         </p>
                       </div>
                     ) : null}
+
+                    {message.attachment_url ? (
+                      <div className="mt-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Attached photo
+                        </p>
+                        <a
+                          href={message.attachment_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block"
+                        >
+                          <img
+                            src={message.attachment_url}
+                            alt="Photo sent with this message"
+                            className="max-h-64 rounded border border-border object-contain"
+                          />
+                        </a>
+                      </div>
+                    ) : null}
+
 
                     <ReplyBox message={message} />
 
