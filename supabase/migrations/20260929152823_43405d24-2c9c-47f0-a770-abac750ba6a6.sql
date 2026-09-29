@@ -1,0 +1,1 @@
+UPDATE public.registration_settings SET require_sign_in = false, is_open = true;
