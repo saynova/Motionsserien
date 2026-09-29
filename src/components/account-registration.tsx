@@ -334,11 +334,8 @@ function SignedInRegistration() {
               I will pay later
             </label>
           </div>
-          <div className="space-y-2 rounded border border-destructive/40 bg-destructive/5 p-3">
-            <h3 className="text-sm font-bold">Late Cancellation</h3>
-            <p className="text-sm">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
-          </div>
           <p className="text-xs text-muted-foreground">
+
             You are Player 1 (your account email is used). Player 2 can later sign in with the email above to see the team. The team appears under Approved teams and on the seeding board only after admin approval.
           </p>
         </>
