@@ -174,8 +174,9 @@ function AuthPage() {
             <div className="rounded border border-primary/20 bg-primary/5 p-4 text-sm">
               <p className="font-semibold">Enter your verification code</p>
               <p className="mt-1">
-                We sent a verification code to <strong>{email}</strong>. Type it below to finish creating your
-                account — there is no link to click. <strong>{SPAM_NOTE}</strong>
+                We sent a verification code to <strong>{email}</strong>. Type it below to{" "}
+                {verifyType === "recovery" ? "choose a new password" : "finish creating your account"} — there is
+                no link to click. <strong>{SPAM_NOTE}</strong>
               </p>
             </div>
             <div>
