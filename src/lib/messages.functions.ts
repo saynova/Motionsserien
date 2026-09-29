@@ -16,10 +16,22 @@ export type Message = {
   reply_body: string | null;
   body_en: string | null;
   replied_at: string | null;
+  attachment_path: string | null;
+  attachment_url: string | null;
 };
 
 const MESSAGE_COLUMNS =
-  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at, body_en";
+  "id, topic, email, name, team_name, body, status, created_at, reply_body, replied_at, body_en, attachment_path";
+
+/** Photo extensions a sender may attach to a message. */
+const ATTACHMENT_EXTS = ["jpg", "png", "webp"] as const;
+
+/** Only file names this site created itself are accepted or served. */
+const ATTACHMENT_PATH = /^msg-\d+-[a-f0-9]{8}\.(?:jpg|png|webp)$/;
+
+export function isMessageAttachmentPath(value: unknown): value is string {
+  return typeof value === "string" && ATTACHMENT_PATH.test(value);
+}
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -29,6 +41,28 @@ function sanitizeTopic(value: unknown): MessageTopic {
   const topic = typeof value === "string" ? value.toLowerCase().trim() : "question";
   return TOPICS.includes(topic as MessageTopic) ? (topic as MessageTopic) : "question";
 }
+
+/**
+ * Gives the sender's browser a one-time upload slot for a single photo. The
+ * photo goes straight to private storage, so a large picture never has to
+ * travel through a normal form submission.
+ */
+export const createMessageAttachmentUpload = createServerFn({ method: "POST" })
+  .inputValidator((data: { ext?: string }) => {
+    const raw = String(data?.ext ?? "").toLowerCase().replace(/^\./, "");
+    const ext = (ATTACHMENT_EXTS as readonly string[]).includes(raw) ? raw : "jpg";
+    return { ext };
+  })
+  .handler(async ({ data }) => {
+    const { adminClient } = await import("./tournament.server");
+    const path = `msg-${Date.now()}-${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}.${data.ext}`;
+    const { data: signed, error } = await adminClient()
+      .storage.from("message-attachments")
+      .createSignedUploadUrl(path);
+    if (error || !signed) throw new Error("Could not prepare the photo upload.");
+    return { path, token: signed.token };
+  });
+
 
 // ---------------------------------------------------------------- public submit
 
