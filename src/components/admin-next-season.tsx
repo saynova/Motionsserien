@@ -266,10 +266,40 @@ export function NextSeasonAdmin() {
         >
           Close registration
         </button>
+        <button
+          className={btn}
+          disabled={busy || signedUp.length === 0}
+          onClick={() =>
+            run(
+              async () => {
+                const result = await lockRegistration({ data: undefined });
+                setEntries(result.entries);
+              },
+              "Registration locked and divisions assigned — adjust below if you like.",
+              [
+                ["registration-info"],
+                ["registrations", "admin"],
+                ["seed-board", "admin"],
+                ["registered-teams"],
+              ],
+            )
+          }
+        >
+          Lock registration & assign divisions
+        </button>
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {info.data?.isOpen ? "Currently open" : "Currently closed"} · {accepted.length}/30 accepted
+          {info.data?.isOpen ? "Currently open" : "Currently closed"} · {signedUp.length}/
+          {totalSlots} signed up · {accepted.length} accepted
         </span>
       </div>
+
+      {signedUp.length >= totalSlots ? (
+        <p className="rounded border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">
+          The tournament is full with {totalSlots} teams, so registration closed automatically. You
+          can reopen it above at any time.
+        </p>
+      ) : null}
+
 
       {/* registrations table */}
       <div className="overflow-x-auto rounded border border-border">
