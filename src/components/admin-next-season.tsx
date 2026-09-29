@@ -15,6 +15,7 @@ import {
 import {
   buildSeedSuggestion,
   deleteRegistration,
+  lockRegistrationAndAssign,
   lockSeedingAndStartSeason,
   saveSeedBoard,
   setRegistrationOpen,
@@ -23,6 +24,7 @@ import {
   updateSeasonSettings,
   type RegistrationStatus,
 } from "@/lib/registration.functions";
+
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
