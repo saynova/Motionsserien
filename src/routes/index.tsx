@@ -24,13 +24,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Live division standings for the Motionsserien HT-26 badminton ladder, with promotion and relegation for all 10 divisions.",
+          "Live division standings for the Motionsserien HT-26 badminton tournament, featuring promotion and relegation across all 10 divisions, organized by Hitachi IF and Ludvika Badminton Club. For inquiries, contact the General: Md Rabiul Islam",
       },
       { property: "og:title", content: "Standings — Motionsserien HT-26" },
       {
         property: "og:description",
         content:
-          "Live division standings with promotion and relegation across all 10 divisions of the Monday badminton ladder.",
+          "Live division standings for the Motionsserien HT-26 badminton tournament, featuring promotion and relegation across all 10 divisions, organized by Hitachi IF and Ludvika Badminton Club.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
