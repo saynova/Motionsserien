@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { MessageSquare } from "lucide-react";
+import { ImagePlus, MessageSquare, X } from "lucide-react";
 
 import { PageHeader } from "@/components/tournament-ui";
-import { sendMessage, type MessageTopic } from "@/lib/messages.functions";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  createMessageAttachmentUpload,
+  sendMessage,
+  type MessageTopic,
+} from "@/lib/messages.functions";
+
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
