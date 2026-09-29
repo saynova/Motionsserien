@@ -275,10 +275,11 @@ export function MemoriesAdmin() {
       <section className="glass-surface rounded-2xl border border-border p-5 sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
           <Camera className="h-5 w-5 text-primary" />
-          Match day photos
+          Match day photos &amp; videos
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Upload high quality photos (JPEG, PNG or WebP, up to 7 MB each, 6 at a time).
+          Upload high quality photos (JPEG, PNG or WebP) and videos (MP4, WebM or MOV, up to 200 MB
+          each), 10 at a time. Newest uploads show first on the page.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="space-y-1">
@@ -294,13 +295,13 @@ export function MemoriesAdmin() {
           </label>
           <label className="space-y-1">
             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Photos
+              Photos or videos
             </span>
             <input
               className={control}
               type="file"
               multiple
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime"
               onChange={(event) => setPhotoFiles([...(event.target.files ?? [])])}
             />
           </label>
@@ -314,11 +315,11 @@ export function MemoriesAdmin() {
               await addPhotos({ data: { caption, paths } });
               setCaption("");
               setPhotoFiles([]);
-            }, "Photos uploaded.")
+            }, "Uploaded.")
           }
         >
           <Upload className="mr-1.5 h-4 w-4" />
-          Upload photos
+          Upload
         </Button>
 
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
