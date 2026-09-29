@@ -256,6 +256,7 @@ export type Database = {
           created_at: string
           id: string
           image_path: string
+          is_pinned: boolean
           media_type: string
           sort_order: number
           updated_at: string
@@ -265,6 +266,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_path: string
+          is_pinned?: boolean
           media_type?: string
           sort_order?: number
           updated_at?: string
@@ -274,6 +276,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_path?: string
+          is_pinned?: boolean
           media_type?: string
           sort_order?: number
           updated_at?: string

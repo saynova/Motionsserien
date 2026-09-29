@@ -1,0 +1,1 @@
+ALTER TABLE public.gallery_photos ADD COLUMN IF NOT EXISTS is_pinned boolean NOT NULL DEFAULT false;
