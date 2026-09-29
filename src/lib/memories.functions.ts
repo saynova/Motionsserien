@@ -59,8 +59,9 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
         .order("sort_order", { ascending: true }),
       client
         .from("gallery_photos")
-        .select("id, caption, image_path, media_type, sort_order, created_at")
-        // Newest uploads first.
+        .select("id, caption, image_path, media_type, sort_order, is_pinned, created_at")
+        // Pinned items first, then newest uploads.
+        .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false }),
     ]);
     if (champions.error) throw new Error(champions.error.message);
