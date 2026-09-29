@@ -15,7 +15,10 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 // Keeps browser calls to the backend on this domain (restricted office networks
 // block the backend's own address). Must load before the client is used.
-import "@/integrations/supabase/same-origin";
+import { initSameOriginRelay } from "@/integrations/supabase/same-origin";
+
+initSameOriginRelay();
+
 import { supabase } from "@/integrations/supabase/client";
 import { consumeAuthSessionFromUrl } from "@/lib/auth-url-session";
 
