@@ -169,7 +169,8 @@ export function NextSeasonAdmin() {
 
   const rows = registrations.data ?? [];
   const accepted = rows.filter((r) => r.status === "accepted");
-  const acceptedNames = accepted.map((r) => r.team_name);
+  const signedUp = rows.filter((r) => r.status !== "rejected");
+
   const issues = validateSeedBoard(entries, acceptedNames.slice(0, DIVISION_COUNT * TEAMS_PER_DIVISION));
 
   const totalSlots = DIVISION_COUNT * TEAMS_PER_DIVISION;
