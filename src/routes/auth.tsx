@@ -74,16 +74,20 @@ function AuthPage() {
           password,
           options: { data: { full_name: name.trim(), terms_accepted: true } },
         });
-        if (error) throw error;
-        // Supabase returns an empty identities array when the address already
-        // has an account: no email is sent, so never show the code screen.
-        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+        // An address that already has an account gets no new code email, so
+        // never show the code screen for it — send the visitor to Sign In.
+        const alreadyRegistered =
+          error?.code === "user_already_exists" ||
+          /already registered|already exists/i.test(error?.message ?? "") ||
+          (!error && data.user !== null && (data.user.identities?.length ?? 0) === 0);
+        if (alreadyRegistered) {
           setMode("signin");
           setPassword("");
           throw new Error(
-            "An account with this email already exists. Please sign in, or use “Forgot password?” to set a new one.",
+            "An account with this email already exists. Please sign in below, or use “Forgot password?” to set a new one.",
           );
         }
+        if (error) throw error;
         setVerifying(true);
         toast.success("We've emailed you a verification code.");
       } else {
