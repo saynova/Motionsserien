@@ -24,6 +24,7 @@ import {
   Send,
   Settings2,
   ShieldCheck,
+  Timer,
   UserPlus,
   Wallet,
   X,
@@ -53,6 +54,7 @@ import { Switch } from "@/components/ui/switch";
 import { PaymentsAdmin } from "@/components/payments-admin";
 import { PartnerRequestsAdmin, ReceiptsAdmin } from "@/components/account-admin";
 import { MemoriesAdmin } from "@/components/memories-admin";
+import { AutoUpdateAdmin } from "@/components/auto-update-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
@@ -86,6 +88,7 @@ const SECTIONS = [
   { id: "notifications", label: "Notifications", group: "Overview", icon: Bell },
   { id: "matches", label: "Match scores", group: "Weekly work", icon: ClipboardCheck },
   { id: "procedure", label: "Weekly procedure", group: "Weekly work", icon: ListChecks },
+  { id: "auto-update", label: "Automatic updates", group: "Weekly work", icon: Timer },
   { id: "payments", label: "Payments", group: "Weekly work", icon: Wallet },
   { id: "messages", label: "Questions", group: "Weekly work", icon: MessageSquare },
   { id: "banner", label: "Weekly banner", group: "Content", icon: Megaphone },
