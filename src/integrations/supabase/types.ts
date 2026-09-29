@@ -462,6 +462,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_path: string | null
           body: string
           body_en: string | null
           created_at: string
@@ -476,6 +477,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachment_path?: string | null
           body: string
           body_en?: string | null
           created_at?: string
@@ -490,6 +492,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachment_path?: string | null
           body?: string
           body_en?: string | null
           created_at?: string
