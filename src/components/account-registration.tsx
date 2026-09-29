@@ -37,8 +37,10 @@ function DivisionSelect({ value, onChange }: { value: string; onChange: (v: stri
 
 export function AccountRegistration() {
   const signed = useSignedIn();
-  if (signed === "loading") return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
+  const info = useQuery(registrationInfoQueryOptions);
+  if (signed === "loading" || info.isLoading) return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
   if (signed === "out") {
+    if (info.data?.requireSignIn === false) return <GuestRegistration />;
     return (
       <div className="space-y-3 rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-bold">Sign in to register</h2>
@@ -53,6 +55,144 @@ export function AccountRegistration() {
   }
   return <SignedInRegistration />;
 }
+
+function GuestRegistration() {
+  const doSubmit = useServerFn(submitRegistration);
+  const [teamName, setTeamName] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [p2Name, setP2Name] = useState("");
+  const [p2Email, setP2Email] = useState("");
+  const [p2Phone, setP2Phone] = useState("");
+  const [swishRef, setSwishRef] = useState("");
+  const [payLater, setPayLater] = useState(false);
+  const [division, setDivision] = useState("new");
+  const [accepted, setAccepted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  if (done) {
+    return (
+      <div className="space-y-2 rounded-lg border border-border bg-card p-5 text-sm">
+        <h2 className="text-lg font-bold">Thanks — your team is registered</h2>
+        <p>The admin reviews every entry. Once approved, your team appears under Approved teams.</p>
+        <p className="text-muted-foreground">
+          Create an account later with the same email and your team, scores and receipts will be linked automatically.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className="space-y-4 rounded-lg border border-border bg-card p-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        try {
+          await doSubmit({
+            data: {
+              teamName,
+              player1Name: name,
+              player1Email: email,
+              player2Name: p2Name,
+              player2Email: p2Email,
+              phone,
+              player2Phone: p2Phone,
+              swishRef,
+              payLater,
+              lateCancelAck: true,
+              previousDivision: division,
+            },
+          });
+          toast.success("Team registered. The admin will review it.");
+          setDone(true);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Something went wrong.");
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <div>
+        <h2 className="text-lg font-bold">Register a team</h2>
+        <p className="text-xs text-muted-foreground">
+          No account needed. If you already have one, you can{" "}
+          <Link to="/auth" className="font-semibold text-primary underline">sign in</Link> instead.
+        </p>
+      </div>
+      <div>
+        <label className={label}>Team name</label>
+        <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Player 1 name</label>
+        <input className={field} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Player 1 email</label>
+        <input className={field} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Player 1 phone number</label>
+        <input className={field} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Player 2 name</label>
+        <input className={field} autoComplete="off" value={p2Name} onChange={(e) => setP2Name(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Player 2 email</label>
+        <input className={field} type="email" autoComplete="off" value={p2Email} onChange={(e) => setP2Email(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Player 2 phone number</label>
+        <input className={field} type="tel" autoComplete="off" value={p2Phone} onChange={(e) => setP2Phone(e.target.value)} required />
+      </div>
+      <div>
+        <label className={label}>Division last session (1–10) or New Team</label>
+        <DivisionSelect value={division} onChange={setDivision} />
+      </div>
+      <div className="space-y-2 rounded border border-border bg-secondary/40 p-3">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Payment information</h3>
+        <p className="text-xs text-muted-foreground">
+          Pay with Swish first (details below), then enter the Swish reference number from the app. If you haven't paid yet, choose "I will pay later" — the admin will mark your team as paid once the payment arrives.
+        </p>
+        <label className={label}>Swish reference number</label>
+        <input
+          className={field}
+          inputMode="numeric"
+          placeholder="e.g. 8382 73323 8287382"
+          value={swishRef}
+          disabled={payLater}
+          onChange={(e) => setSwishRef(e.target.value.replace(/[^\d ]/g, ""))}
+          required={!payLater}
+          pattern="[0-9 ]{4,}"
+          title="Numbers only"
+        />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={payLater} onChange={(e) => { setPayLater(e.target.checked); if (e.target.checked) setSwishRef(""); }} className="h-4 w-4 accent-primary" />
+          I will pay later
+        </label>
+      </div>
+      <div className="space-y-2 rounded border border-destructive/40 bg-destructive/5 p-3">
+        <h3 className="text-sm font-bold">Late Cancellation</h3>
+        <p className="text-sm">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
+      </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
+        <span>
+          I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
+        </span>
+      </label>
+      <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
+        {busy ? "Sending…" : "Register team"}
+      </button>
+    </form>
+  );
+}
+
 
 function SignedInRegistration() {
   const queryClient = useQueryClient();
