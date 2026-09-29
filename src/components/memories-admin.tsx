@@ -376,16 +376,35 @@ export function MemoriesAdmin() {
                   }
                 }}
               />
-              <Button
-                className="mt-2 w-full"
-                size="sm"
-                variant="ghost"
-                disabled={busy}
-                onClick={() => run(() => removePhoto({ data: { id: photo.id } }), "Photo removed.")}
-              >
-                <Trash2 className="mr-1.5 h-4 w-4" />
-                Remove
-              </Button>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button
+                  size="sm"
+                  variant={photo.is_pinned ? "default" : "outline"}
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () => pinPhoto({ data: { id: photo.id, pinned: !photo.is_pinned } }),
+                      photo.is_pinned ? "Unpinned." : "Pinned to top.",
+                    )
+                  }
+                >
+                  {photo.is_pinned ? (
+                    <PinOff className="mr-1.5 h-4 w-4" />
+                  ) : (
+                    <Pin className="mr-1.5 h-4 w-4" />
+                  )}
+                  {photo.is_pinned ? "Unpin" : "Pin to top"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy}
+                  onClick={() => run(() => removePhoto({ data: { id: photo.id } }), "Photo removed.")}
+                >
+                  <Trash2 className="mr-1.5 h-4 w-4" />
+                  Remove
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
