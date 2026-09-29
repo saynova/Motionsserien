@@ -42,6 +42,11 @@ function mondayOfWeek(startMonday: string, weekNo: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+function addDays(isoDate: string, days: number): string {
+  const [y = 0, m = 1, d = 1] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
 type Result = {
   ran: boolean;
   reason?: string;
@@ -63,13 +68,24 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
     .limit(1)
     .maybeSingle();
   if (seasonResult.error) throw new Error(seasonResult.error.message);
-  const season = seasonResult.data as SeasonRow | null;
+  const season = seasonResult.data as (SeasonRow & {
+    auto_finalize_enabled?: boolean;
+    auto_finalize_offset_days?: number;
+    auto_finalize_time?: string;
+  }) | null;
   if (!season) return { ran: false, reason: "No active season." };
+
+  if (!force && season.auto_finalize_enabled === false) {
+    return { ran: false, reason: "Automatic updates are switched off." };
+  }
 
   const weekNo = season.current_week;
   const now = stockholmNow();
-  // Deadline: 11:00 on the Monday of the following week (8 h before 19:00).
-  const deadline = `${mondayOfWeek(season.start_monday, weekNo + 1)} 11:00`;
+  // Deadline: the admin-configured number of days after this week's match
+  // Monday, at the admin-configured Swedish time (default next Monday 11:00).
+  const offsetDays = season.auto_finalize_offset_days ?? 7;
+  const time = season.auto_finalize_time ?? "11:00";
+  const deadline = `${addDays(mondayOfWeek(season.start_monday, weekNo), offsetDays)} ${time}`;
   if (!force && now < deadline) {
     return { ran: false, reason: `Not due yet (deadline ${deadline}).` };
   }
