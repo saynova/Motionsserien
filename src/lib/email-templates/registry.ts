@@ -6,6 +6,7 @@ import { template as generalEmail } from './general-email'
 import { template as paymentReminder } from './payment-reminder'
 import { template as playerNotice } from './player-notice'
 import { template as adminLoginCode } from './admin-login-code'
+import { template as weeklyBackup } from './weekly-backup'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -31,4 +32,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-reminder': paymentReminder,
   'player-notice': playerNotice,
   'admin-login-code': adminLoginCode,
+  'weekly-backup': weeklyBackup,
 }
