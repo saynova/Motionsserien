@@ -46,7 +46,19 @@ function RegisterPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="space-y-4">
         {info.isOpen ? (
-          <AccountRegistration />
+          <>
+            <AccountRegistration />
+
+            <section className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <h2 className="font-display text-lg font-bold text-primary">Before You Register</h2>
+              <p className="mt-2 text-sm leading-relaxed text-foreground">
+                The registration fee is <strong>800 kr per team</strong>, payable via Swish to{" "}
+                <strong>123-111 21 43</strong>. Swish message should be your team name. Please send
+                your payment before the tournament. Team reservations are strictly first-come,
+                first-served, so don't wait—secure your spot today!
+              </p>
+            </section>
+          </>
         ) : (
           <div className="space-y-3 rounded-lg border border-border bg-card p-6">
             <h2 className="text-xl font-bold uppercase tracking-wide">Registration is closed</h2>
@@ -56,16 +68,6 @@ function RegisterPage() {
             </p>
           </div>
         )}
-
-        <section className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-          <h2 className="font-display text-lg font-bold text-primary">Before You Register</h2>
-          <p className="mt-2 text-sm leading-relaxed text-foreground">
-            The registration fee is <strong>800 kr per team</strong>, payable via Swish to{" "}
-            <strong>123-111 21 43</strong>. Swish message should be your team name. Please send your
-            payment before the tournament. Team reservations are strictly first-come,
-            first-served, so don&apos;t wait—secure your spot today!
-          </p>
-        </section>
         </div>
 
         <section className="overflow-hidden rounded-lg border border-border bg-card">
