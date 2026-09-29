@@ -91,6 +91,7 @@ export function MemoriesAdmin() {
   const addPhotos = useServerFn(addGalleryPhotos);
   const updatePhoto = useServerFn(updateGalleryPhoto);
   const removePhoto = useServerFn(deleteGalleryPhoto);
+  const pinPhoto = useServerFn(setGalleryPinned);
   const setFinished = useServerFn(setSeasonFinished);
   const getSlots = useServerFn(createImageUploads);
 
