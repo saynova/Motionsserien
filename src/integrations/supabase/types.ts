@@ -691,6 +691,10 @@ export type Database = {
           auto_finalize_enabled: boolean
           auto_finalize_offset_days: number
           auto_finalize_time: string
+          backup_email: string
+          backup_enabled: boolean
+          backup_offset_days: number
+          backup_time: string
           created_at: string
           current_week: number
           id: string
@@ -707,6 +711,10 @@ export type Database = {
           auto_finalize_enabled?: boolean
           auto_finalize_offset_days?: number
           auto_finalize_time?: string
+          backup_email?: string
+          backup_enabled?: boolean
+          backup_offset_days?: number
+          backup_time?: string
           created_at?: string
           current_week?: number
           id?: string
@@ -723,6 +731,10 @@ export type Database = {
           auto_finalize_enabled?: boolean
           auto_finalize_offset_days?: number
           auto_finalize_time?: string
+          backup_email?: string
+          backup_enabled?: boolean
+          backup_offset_days?: number
+          backup_time?: string
           created_at?: string
           current_week?: number
           id?: string
@@ -1029,6 +1041,41 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_backups: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          season_id: string
+          sent_to: string
+          week_no: number
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          season_id: string
+          sent_to: string
+          week_no: number
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          season_id?: string
+          sent_to?: string
+          week_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_backups_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
