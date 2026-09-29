@@ -643,6 +643,7 @@ function AdminConsole() {
         {section === "partners" ? <PartnerRequestsAdmin /> : null}
         {section === "receipts" ? <ReceiptsAdmin /> : null}
         {section === "memories" ? <MemoriesAdmin /> : null}
+        {section === "auto-update" ? <AutoUpdateAdmin /> : null}
 
         {section === "matches" ? (
           <>
