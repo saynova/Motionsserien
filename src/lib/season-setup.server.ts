@@ -1,8 +1,45 @@
 // Server-only helpers for creating a season from a seeding board.
-import { buildWeekMatches, type Assignment } from "./tournament";
+import { buildWeekMatches, DIVISION_COUNT, TEAMS_PER_DIVISION, type Assignment } from "./tournament";
 import type { adminClient } from "./tournament.server";
 
 type Admin = ReturnType<typeof adminClient>;
+
+export const MAX_TEAMS = DIVISION_COUNT * TEAMS_PER_DIVISION;
+
+/**
+ * Closes registration automatically once the tournament is full (30 teams).
+ * The admin can always reopen it from the admin console.
+ */
+export async function closeRegistrationIfFull(
+  supabase: Admin,
+  targetSeason: string,
+): Promise<{ count: number; closed: boolean }> {
+  const counted = await supabase
+    .from("registrations")
+    .select("id", { count: "exact", head: true })
+    .eq("target_season", targetSeason)
+    .in("status", ["pending", "accepted", "waitlisted"]);
+  if (counted.error) throw new Error(counted.error.message);
+  const count = counted.count ?? 0;
+  if (count < MAX_TEAMS) return { count, closed: false };
+
+  const settings = await supabase
+    .from("registration_settings")
+    .select("id, is_open")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (settings.error) throw new Error(settings.error.message);
+  if (settings.data?.is_open) {
+    const upd = await supabase
+      .from("registration_settings")
+      .update({ is_open: false })
+      .eq("id", settings.data.id);
+    if (upd.error) throw new Error(upd.error.message);
+  }
+  return { count, closed: true };
+}
+
 
 export async function writeWeekPlan(
   supabase: Admin,

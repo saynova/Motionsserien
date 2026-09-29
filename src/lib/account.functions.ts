@@ -477,8 +477,11 @@ export const registerMyTeam = createServerFn({ method: "POST" })
       await db.from("registrations").delete().eq("id", reg.data.id);
       throw new Error("Your account is already on a team for this tournament.");
     }
+    const { closeRegistrationIfFull } = await import("./season-setup.server");
+    await closeRegistrationIfFull(db, key);
     return { ok: true as const };
   });
+
 
 export const joinTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

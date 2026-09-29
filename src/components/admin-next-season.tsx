@@ -15,6 +15,7 @@ import {
 import {
   buildSeedSuggestion,
   deleteRegistration,
+  lockRegistrationAndAssign,
   lockSeedingAndStartSeason,
   saveSeedBoard,
   setRegistrationOpen,
@@ -23,6 +24,7 @@ import {
   updateSeasonSettings,
   type RegistrationStatus,
 } from "@/lib/registration.functions";
+
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
@@ -137,8 +139,10 @@ export function NextSeasonAdmin() {
   const setPaid = useServerFn(setRegistrationPaid);
   const removeReg = useServerFn(deleteRegistration);
   const suggest = useServerFn(buildSeedSuggestion);
+  const lockRegistration = useServerFn(lockRegistrationAndAssign);
   const saveBoard = useServerFn(saveSeedBoard);
   const lock = useServerFn(lockSeedingAndStartSeason);
+
   const { busy, run } = useRunner();
 
   const [targetSeason, setTargetSeason] = useState("");
@@ -165,7 +169,11 @@ export function NextSeasonAdmin() {
 
   const rows = registrations.data ?? [];
   const accepted = rows.filter((r) => r.status === "accepted");
+  const signedUp = rows.filter((r) => r.status !== "rejected");
   const acceptedNames = accepted.map((r) => r.team_name);
+
+
+
   const issues = validateSeedBoard(entries, acceptedNames.slice(0, DIVISION_COUNT * TEAMS_PER_DIVISION));
 
   const totalSlots = DIVISION_COUNT * TEAMS_PER_DIVISION;
@@ -217,9 +225,12 @@ export function NextSeasonAdmin() {
       <div>
         <h2 className="text-2xl font-bold uppercase tracking-wide">Next season</h2>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Open registration, accept 30 teams, arrange the divisions, then lock the seeding to start
-          the new season from week 1.
+          Registration closes by itself once 30 teams have signed up — you can reopen it here at any
+          time. "Lock registration & assign divisions" closes sign-ups, accepts the 30 teams in the
+          order they registered and fills the divisions from their division choice, with new teams
+          starting in Division 10 and working upwards. You can then adjust every placement by hand.
         </p>
+
       </div>
 
       {/* registration toggle */}
@@ -262,10 +273,40 @@ export function NextSeasonAdmin() {
         >
           Close registration
         </button>
+        <button
+          className={btn}
+          disabled={busy || signedUp.length === 0}
+          onClick={() =>
+            run(
+              async () => {
+                const result = await lockRegistration({ data: undefined });
+                setEntries(result.entries);
+              },
+              "Registration locked and divisions assigned — adjust below if you like.",
+              [
+                ["registration-info"],
+                ["registrations", "admin"],
+                ["seed-board", "admin"],
+                ["registered-teams"],
+              ],
+            )
+          }
+        >
+          Lock registration & assign divisions
+        </button>
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {info.data?.isOpen ? "Currently open" : "Currently closed"} · {accepted.length}/30 accepted
+          {info.data?.isOpen ? "Currently open" : "Currently closed"} · {signedUp.length}/
+          {totalSlots} signed up · {accepted.length} accepted
         </span>
       </div>
+
+      {signedUp.length >= totalSlots ? (
+        <p className="rounded border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">
+          The tournament is full with {totalSlots} teams, so registration closed automatically. You
+          can reopen it above at any time.
+        </p>
+      ) : null}
+
 
       {/* registrations table */}
       <div className="overflow-x-auto rounded border border-border">
