@@ -58,10 +58,11 @@ function RegisterPage() {
               <h2 className="font-display text-lg font-bold text-primary">Before You Register</h2>
               <p className="mt-2 text-sm leading-relaxed text-foreground">
                 The registration fee is <strong>800 kr per team</strong>, payable via Swish to{" "}
-                <strong>123-111 21 43</strong>. Swish message should be your team name. Please send
-                your payment before the tournament. Team reservations are strictly first-come,
-                first-served, so don't wait—secure your spot today!
+                <strong>123-111 21 43</strong>. <strong>Swish message should be Team Name.</strong>{" "}
+                Please send your payment before the tournament. Team reservations are strictly
+                first-come, first-served, so don't wait—secure your spot today!
               </p>
+
             </section>
           </>
         ) : (
