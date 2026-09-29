@@ -17,13 +17,23 @@ export const Route = createFileRoute("/shuttles")({
         content:
           "Order badminton shuttles for your team and see every approved purchase with the running total for Motionsserien HT-26.",
       },
+      {
+        name: "keywords",
+        content:
+          "badminton shuttles Ludvika, badmintonbollar, feather shuttles, köpa badmintonbollar, Motionsserien shuttles, badminton gear Dalarna",
+      },
       { property: "og:title", content: "Shuttle purchase — Motionsserien HT-26" },
       {
         property: "og:description",
         content: "Order shuttles for your team and follow the approved purchase list.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/shuttles" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/shuttles" }],
   }),
+
   loader: ({ context }) => context.queryClient.ensureQueryData(shuttleOrdersQueryOptions),
   component: ShuttlesPage,
 });

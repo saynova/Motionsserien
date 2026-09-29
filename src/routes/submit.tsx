@@ -18,13 +18,23 @@ export const Route = createFileRoute("/submit")({
         content:
           "Report your Monday badminton result: best of three sets, Set 3 to 11 points only when the first two sets are split.",
       },
+      {
+        name: "keywords",
+        content:
+          "submit badminton score, rapportera resultat badminton, Motionsserien result, badminton match score Ludvika, best of three sets badminton",
+      },
       { property: "og:title", content: "Submit a match score — Motionsserien HT-26" },
       {
         property: "og:description",
         content: "Report your result straight after play. An admin approves it before it counts.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/submit" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/submit" }],
   }),
+
   loader: ({ context }) => context.queryClient.ensureQueryData(tournamentQueryOptions),
   component: SubmitPage,
 });

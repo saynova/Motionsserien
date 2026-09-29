@@ -11,14 +11,24 @@ export const Route = createFileRoute("/terms")({
         content:
           "Terms and conditions for using the Motionsserien HT-26 badminton site: scoring rules, shuttle purchases, privacy and data use, and liability.",
       },
+      {
+        name: "keywords",
+        content:
+          "Motionsserien terms, badminton rules Ludvika, villkor Motionsserien, privacy policy badminton, scoring rules badminton",
+      },
       { property: "og:title", content: "Terms & Conditions — Motionsserien HT-26" },
       {
         property: "og:description",
         content:
           "The rules and policies for using the Motionsserien HT-26 site, including scoring, shuttle orders, privacy and liability.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/terms" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/terms" }],
   }),
+
   component: TermsPage,
 });
 
