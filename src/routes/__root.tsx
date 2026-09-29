@@ -15,14 +15,17 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 // Keeps browser calls to the backend on this domain (restricted office networks
 // block the backend's own address). Must load before the client is used.
-import "@/integrations/supabase/same-origin";
+import { initSameOriginRelay } from "@/integrations/supabase/same-origin";
+
+initSameOriginRelay();
+
 import { supabase } from "@/integrations/supabase/client";
 import { consumeAuthSessionFromUrl } from "@/lib/auth-url-session";
 
 
 import { Toaster } from "@/components/ui/sonner";
 import { DonationButton, SponsorBanner } from "@/components/support-ui";
-import { ContactBar, WeeklyBanner } from "@/components/tournament-ui";
+import { ContactBar } from "@/components/tournament-ui";
 import { logVisit } from "@/lib/visitors.functions";
 
 import appCss from "../styles.css?url";
@@ -272,7 +275,6 @@ function RootComponent() {
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
         <SiteHeader />
         <main className="mx-auto w-full max-w-[96rem] flex-1 px-3 py-5 sm:px-5 sm:py-8 lg:px-8">
-          <WeeklyBanner />
           <SponsorBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />

@@ -57,4 +57,12 @@ function install() {
   }) as typeof window.fetch;
 }
 
+/**
+ * Explicit entry point. Called from the app bootstrap so the rewrite can never
+ * be dropped from the production bundle as unused side-effect-only code.
+ */
+export function initSameOriginRelay(): void {
+  install();
+}
+
 install();

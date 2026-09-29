@@ -1,7 +1,11 @@
 {
   "name": "tanstack_start_ts",
   "private": true,
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css",
+    "./src/integrations/supabase/same-origin.ts",
+    "./src/lib/auth-url-callback.ts"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite dev",

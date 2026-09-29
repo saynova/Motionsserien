@@ -1,10 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { consumeAuthSessionFromUrl } from "@/lib/auth-url-session";
 
 export const Route = createFileRoute("/auth")({
@@ -25,13 +24,19 @@ const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm";
 const label = "mb-1 block text-xs uppercase tracking-widest text-muted-foreground";
 const SPAM_NOTE = "If you can't find it, please check your junk or spam folder.";
 
+type Mode = "signin" | "signup" | "forgot";
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [code, setCode] = useState("");
 
   useEffect(() => {
     consumeAuthSessionFromUrl()
@@ -48,6 +53,13 @@ function AuthPage() {
     return () => data.subscription.unsubscribe();
   }, [navigate]);
 
+  function switchMode(next: Mode) {
+    setMode(next);
+    setSent(null);
+    setVerifying(false);
+    setCode("");
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -56,13 +68,15 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else if (mode === "signup") {
+        if (!agreed) throw new Error("Please accept the Terms and Conditions to continue.");
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/account` },
+          options: { data: { full_name: name.trim(), terms_accepted: true } },
         });
         if (error) throw error;
-        setSent("We've sent you a confirmation email. Click the link in it to activate your account.");
+        setVerifying(true);
+        toast.success("We've emailed you a 6-digit verification code.");
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -77,12 +91,49 @@ function AuthPage() {
     }
   }
 
-  async function social(provider: "google" | "apple") {
-    const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/auth` });
-    if (result && "error" in result && result.error) {
-      toast.error(result.error instanceof Error ? result.error.message : "Sign-in failed.");
+  async function onVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const token = code.replace(/\D/g, "");
+      if (token.length !== 6) throw new Error("Please enter the 6-digit code from your email.");
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+      if (error) throw error;
+      toast.success("Your account is verified.");
+      navigate({ to: "/account", replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "That code could not be verified.");
+    } finally {
+      setBusy(false);
     }
   }
+
+  async function resendCode() {
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      toast.success("A new code is on its way.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send a new code.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const tab = (value: Mode, text: string) => (
+    <button
+      type="button"
+      onClick={() => switchMode(value)}
+      className={`flex-1 rounded px-4 py-2 text-sm font-bold transition ${
+        mode === value
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary text-foreground hover:bg-secondary/70"
+      }`}
+    >
+      {text}
+    </button>
+  );
 
   return (
     <>
@@ -92,30 +143,64 @@ function AuthPage() {
         description="One account for team registration, score submission and receipts — for this and every future tournament."
       />
       <div className="mx-auto max-w-md space-y-4 rounded-lg border border-border bg-card p-5">
-        {sent ? (
+        {verifying ? (
+          <form onSubmit={onVerify} className="space-y-3">
+            <div className="rounded border border-primary/20 bg-primary/5 p-4 text-sm">
+              <p className="font-semibold">Enter your verification code</p>
+              <p className="mt-1">
+                We sent a 6-digit code to <strong>{email}</strong>. Type it below to finish creating your
+                account — there is no link to click. <strong>{SPAM_NOTE}</strong>
+              </p>
+            </div>
+            <div>
+              <label className={label} htmlFor="code">Verification code</label>
+              <input
+                id="code"
+                name="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                className={`${field} text-center text-2xl font-bold tracking-[0.4em]`}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" disabled={busy} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-40">
+              {busy ? "Please wait…" : "Verify my account"}
+            </button>
+            <div className="flex flex-wrap justify-between gap-2 text-sm">
+              <button type="button" className="text-primary underline" onClick={resendCode} disabled={busy}>
+                Send a new code
+              </button>
+              <button type="button" className="text-muted-foreground underline" onClick={() => switchMode("signin")}>
+                Back to sign in
+              </button>
+            </div>
+          </form>
+        ) : sent ? (
           <div className="space-y-2 rounded border border-primary/20 bg-primary/5 p-4 text-sm">
             <p className="font-semibold">{sent}</p>
             <p>
               <strong>{SPAM_NOTE}</strong>
             </p>
-            <button className="text-primary underline" onClick={() => { setSent(null); setMode("signin"); }}>
+            <button className="text-primary underline" onClick={() => switchMode("signin")}>
               Back to sign in
             </button>
           </div>
         ) : (
           <>
-            {mode !== "forgot" ? (
-              <div className="grid gap-2">
-                <button type="button" onClick={() => social("google")} className="w-full rounded border border-input bg-background px-4 py-2 text-sm font-semibold hover:bg-secondary">
-                  Continue with Google
-                </button>
-                <button type="button" onClick={() => social("apple")} className="w-full rounded border border-input bg-foreground px-4 py-2 text-sm font-semibold text-background hover:opacity-90">
-                  Continue with Apple
-                </button>
-                <p className="text-center text-xs text-muted-foreground">or with email</p>
-              </div>
-            ) : null}
+            <div className="flex gap-2 rounded-lg border border-border bg-background p-1">
+              {tab("signin", "Sign In")}
+              {tab("signup", "Sign Up")}
+            </div>
             <form onSubmit={onSubmit} className="space-y-3" method="post" action="#">
+              {mode === "signup" ? (
+                <div>
+                  <label className={label} htmlFor="name">Full name</label>
+                  <input id="name" name="name" type="text" autoComplete="name" className={field} value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+              ) : null}
               <div>
                 <label className={label} htmlFor="email">Email</label>
                 <input id="email" name="email" type="email" autoComplete={mode === "signup" ? "email" : "username"} className={field} value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -129,22 +214,45 @@ function AuthPage() {
                 <p className="text-xs text-muted-foreground">{SPAM_NOTE}</p>
               )}
               {mode === "signup" ? (
-                <p className="text-xs text-muted-foreground">
-                  After signing up, confirm your email from the message we send you. {SPAM_NOTE}
-                </p>
+                <>
+                  <label className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4"
+                      checked={agreed}
+                      onChange={(e) => setAgreed(e.target.checked)}
+                      required
+                    />
+                    <span>
+                      I have read and agree to the{" "}
+                      <Link to="/terms" className="font-semibold text-primary underline">
+                        Terms and Conditions
+                      </Link>
+                      .
+                    </span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    We'll email you a 6-digit code to confirm your address. {SPAM_NOTE}
+                  </p>
+                </>
               ) : null}
-              <button type="submit" disabled={busy} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-40">
+              <button
+                type="submit"
+                disabled={busy || (mode === "signup" && !agreed)}
+                className="w-full rounded bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-40"
+              >
                 {busy ? "Please wait…" : mode === "signup" ? "Create account" : mode === "forgot" ? "Send reset link" : "Sign in"}
               </button>
             </form>
             <div className="flex flex-wrap justify-between gap-2 text-sm">
-              {mode === "signin" ? (
-                <>
-                  <button className="text-primary underline" onClick={() => setMode("signup")}>Create an account</button>
-                  <button className="text-muted-foreground underline" onClick={() => setMode("forgot")}>Forgot password?</button>
-                </>
+              {mode === "forgot" ? (
+                <button className="text-primary underline" onClick={() => switchMode("signin")}>
+                  Back to sign in
+                </button>
               ) : (
-                <button className="text-primary underline" onClick={() => setMode("signin")}>I already have an account</button>
+                <button className="text-muted-foreground underline" onClick={() => switchMode("forgot")}>
+                  Forgot password?
+                </button>
               )}
             </div>
           </>

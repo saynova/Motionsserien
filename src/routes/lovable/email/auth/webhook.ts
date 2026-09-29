@@ -16,13 +16,6 @@ const ROOT_DOMAIN = "motionsserien.se"
 const FROM_DOMAIN = "motionsserien.se"
 const SITE_URL = `https://${ROOT_DOMAIN}`
 
-// Confirmation links point at our own domain so recipients never see an
-// internal hosting address; the page there completes the verification.
-const ownDomainConfirmUrl = (email: string, token: string | null, type: string) =>
-  `${SITE_URL}/confirm?token=${encodeURIComponent(token ?? '')}&email=${encodeURIComponent(
-    email,
-  )}&type=${encodeURIComponent(type)}`
-
 // The SDK handler owns verification, dispatch, and retry semantics; this file
 // owns only the email decisions: subjects, templates, and per-type props.
 export const Route = createFileRoute("/lovable/email/auth/webhook")({
@@ -36,15 +29,15 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           sendUrl: process.env['LOVABLE_SEND_URL'],
           emails: {
             signup: {
-              subject: 'Confirm your email',
+              subject: 'Your verification code',
               render: (data) =>
                 React.createElement(SignupEmail, {
                   siteName: SITE_NAME,
                   siteUrl: SITE_URL,
                   recipient: data.email,
-                  confirmationUrl: data.token
-                    ? ownDomainConfirmUrl(data.email, data.token, 'signup')
-                    : data.url,
+                  // A code the visitor types on our own site; no link to click,
+                  // so restricted office networks cannot break verification.
+                  code: data.token ?? '',
                 }),
             },
             invite: {

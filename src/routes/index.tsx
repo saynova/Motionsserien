@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { CalendarRange, Layers3, ScrollText, Send, Trophy, Users, X } from "lucide-react";
 
 
-import { MovementBadge, PageHeader, ScoreText, StatusPill } from "@/components/tournament-ui";
+import { MovementBadge, PageHeader, ScoreText, StatusPill, WeeklyBanner } from "@/components/tournament-ui";
 import { Button } from "@/components/ui/button";
 import {
   computeStandings,
@@ -87,6 +87,7 @@ function HomePage() {
   if (memories.data.seasonFinished) {
     return (
       <>
+        <WeeklyBanner />
         <PageHeader
           eyebrow="Photos"
           title="Champions & Gallery"
@@ -98,7 +99,12 @@ function HomePage() {
       </>
     );
   }
-  return <StandingsPage />;
+  return (
+    <>
+      <WeeklyBanner />
+      <StandingsPage />
+    </>
+  );
 }
 
 function stockholmNow(): string {
