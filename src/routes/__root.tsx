@@ -105,9 +105,43 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Weekly badminton ladder for Motionsserien HT-26: standings, court schedule, score submission and division movement.",
       },
+      {
+        name: "keywords",
+        content:
+          "Motionsserien, Motionsserien HT-26, badminton Ludvika, Hitachi IF badminton, Ludvika Badmintonklubb, badminton ladder, badminton division standings, motionsserie badminton, badmintonstege, Rackethallen Ludvika, badminton Dalarna, badminton resultat, badminton tournament Sweden",
+      },
+      { name: "author", content: "Md Rabiul Islam" },
+      { name: "robots", content: "index, follow" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Motionsserien" },
+      { property: "og:locale", content: "sv_SE" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SportsOrganization",
+          name: "Motionsserien",
+          sport: "Badminton",
+          url: "https://www.motionsserien.se",
+          description:
+            "Weekly badminton ladder in Ludvika with promotion and relegation across 10 divisions, organized by Hitachi IF and Ludvika Badminton Club.",
+          areaServed: "Ludvika, Dalarna, Sweden",
+          parentOrganization: [
+            { "@type": "SportsOrganization", name: "Hitachi IF" },
+            { "@type": "SportsOrganization", name: "Ludvika Badminton Club" },
+          ],
+          employee: {
+            "@type": "Person",
+            name: "Md Rabiul Islam",
+            jobTitle: "The General",
+          },
+        }),
+      },
+    ],
+
     links: [
       {
         rel: "stylesheet",

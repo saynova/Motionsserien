@@ -12,15 +12,25 @@ export const Route = createFileRoute("/register")({
       {
         name: "description",
         content:
-          "Register your team for the next Motionsserien badminton season: team name, both players and your previous division. Accepted teams appear in the public list.",
+          "Register your team for the next Motionsserien badminton season in Ludvika: team name, both players and your previous division. Accepted teams appear in the public list.",
+      },
+      {
+        name: "keywords",
+        content:
+          "badminton registration Ludvika, join badminton tournament, badminton anmälan, motionsserie anmälan, team sign up badminton, badminton Dalarna registration, Hitachi IF badminton",
       },
       { property: "og:title", content: "Team registration — Motionsserien badminton" },
       {
         property: "og:description",
         content: "Sign your team up for the next season and see the accepted teams and divisions.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/register" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/register" }],
   }),
+
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(registrationInfoQueryOptions),

@@ -12,3 +12,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /account
+Disallow: /auth
+Disallow: /confirm
+Disallow: /reset-password
+Disallow: /api/
+
+Sitemap: https://www.motionsserien.se/sitemap.xml

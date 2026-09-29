@@ -20,7 +20,12 @@ export const Route = createFileRoute("/progress")({
       {
         name: "description",
         content:
-          "Week-by-week division and rank history for all 30 teams in the Motionsserien HT-26 badminton ladder.",
+          "Week-by-week division and rank history for all 30 teams in the Motionsserien HT-26 badminton ladder in Ludvika.",
+      },
+      {
+        name: "keywords",
+        content:
+          "badminton division history, Motionsserien team rankings, badminton ladder stats, division movement, badminton statistik, team progress badminton Ludvika",
       },
       { property: "og:title", content: "Team progress — Motionsserien HT-26" },
       {
@@ -28,9 +33,12 @@ export const Route = createFileRoute("/progress")({
         content: "Track how all 30 teams move up and down the divisions week by week.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/progress" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/progress" }],
   }),
+
   loader: ({ context }) => context.queryClient.ensureQueryData(tournamentQueryOptions),
   errorComponent: ({ error }) => <p role="alert">Could not load team progress: {error.message}</p>,
   notFoundComponent: () => <p>Team progress was not found.</p>,

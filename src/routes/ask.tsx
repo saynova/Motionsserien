@@ -16,13 +16,23 @@ export const Route = createFileRoute("/ask")({
         content:
           "Send questions, feedback or scoring issues to the General for Motionsserien HT-26.",
       },
+      {
+        name: "keywords",
+        content:
+          "Motionsserien contact, ask the General, Md Rabiul Islam badminton, kontakt Motionsserien, badminton Ludvika contact",
+      },
       { property: "og:title", content: "Ask the General — Motionsserien HT-26" },
       {
         property: "og:description",
         content: "Send questions, feedback or scoring issues to the General.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/ask" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/ask" }],
   }),
+
   component: AskPage,
 });
 
