@@ -170,6 +170,9 @@ export function NextSeasonAdmin() {
   const rows = registrations.data ?? [];
   const accepted = rows.filter((r) => r.status === "accepted");
   const signedUp = rows.filter((r) => r.status !== "rejected");
+  const acceptedNames = accepted.map((r) => r.team_name);
+
+
 
   const issues = validateSeedBoard(entries, acceptedNames.slice(0, DIVISION_COUNT * TEAMS_PER_DIVISION));
 
