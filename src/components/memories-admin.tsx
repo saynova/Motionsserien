@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Camera, Home, Play, Trash2, Trophy, Upload } from "lucide-react";
+import { Camera, Home, Pin, PinOff, Play, Trash2, Trophy, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   deleteChampion,
   deleteGalleryPhoto,
   saveChampion,
+  setGalleryPinned,
   setSeasonFinished,
   updateGalleryPhoto,
 } from "@/lib/memories.functions";
