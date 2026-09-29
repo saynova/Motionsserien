@@ -55,8 +55,36 @@ const label = "block text-xs font-semibold uppercase tracking-widest text-muted-
 const btn =
   "rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40";
 
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+
+/** Keeps full detail: only very large photos are scaled down before sending. */
+async function preparePhoto(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file).catch(() => {
+    throw new Error("Could not read that photo. Use a JPEG, PNG or WebP picture.");
+  });
+  const max = 3000;
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Your browser could not process the photo.");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Could not process the photo."))),
+      "image/jpeg",
+      0.92,
+    ),
+  );
+}
+
 function AskPage() {
   const submit = useServerFn(sendMessage);
+  const getUploadSlot = useServerFn(createMessageAttachmentUpload);
   const [topic, setTopic] = useState<MessageTopic>("question");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -64,12 +92,53 @@ function AskPage() {
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!photo) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(photo);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photo]);
+
+  function choosePhoto(file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only photos can be attached.");
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      toast.error("That photo is larger than 10 MB. Please pick a smaller one.");
+      return;
+    }
+    setPhoto(file);
+  }
+
+  function clearPhoto() {
+    setPhoto(null);
+    if (fileInput.current) fileInput.current.value = "";
+  }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     try {
-      await submit({ data: { topic, email, name, teamName, body } });
+      let attachmentPath: string | null = null;
+      if (photo) {
+        const blob = await preparePhoto(photo);
+        const slot = await getUploadSlot({ data: { ext: "jpg" } });
+        const { error } = await supabase.storage
+          .from("message-attachments")
+          .uploadToSignedUrl(slot.path, slot.token, blob, { contentType: "image/jpeg" });
+        if (error) throw new Error("The photo could not be sent. Please try again.");
+        attachmentPath = slot.path;
+      }
+      await submit({ data: { topic, email, name, teamName, body, attachmentPath } });
       setSent(true);
       toast.success("Message sent. The General will get back to you.");
     } catch (error) {
@@ -78,6 +147,7 @@ function AskPage() {
       setBusy(false);
     }
   }
+
 
   if (sent) {
     return (
