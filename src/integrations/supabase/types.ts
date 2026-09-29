@@ -545,6 +545,7 @@ export type Database = {
           created_at: string
           id: string
           is_open: boolean
+          require_sign_in: boolean
           target_season: string
           updated_at: string
         }
@@ -552,6 +553,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_open?: boolean
+          require_sign_in?: boolean
           target_season?: string
           updated_at?: string
         }
@@ -559,6 +561,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_open?: boolean
+          require_sign_in?: boolean
           target_season?: string
           updated_at?: string
         }
