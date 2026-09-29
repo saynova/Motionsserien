@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Camera, Home, Trash2, Trophy, Upload } from "lucide-react";
+import { Camera, Home, Play, Trash2, Trophy, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,27 @@ import {
 
 const control = "w-full rounded border border-input bg-card px-3 py-2 text-sm";
 
-/** Resize to max 2400px and re-encode as high-quality JPEG so photos load fast everywhere. */
+const VIDEO_EXT = ["mp4", "webm", "mov"] as const;
+
+function isVideo(file: File): boolean {
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  return file.type.startsWith("video/") || (VIDEO_EXT as readonly string[]).includes(ext);
+}
+
+function videoExt(file: File): string {
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  if ((VIDEO_EXT as readonly string[]).includes(ext)) return ext;
+  if (file.type.includes("webm")) return "webm";
+  if (file.type.includes("quicktime")) return "mov";
+  return "mp4";
+}
+
+/** Keeps full detail: only very large photos are scaled, and always at top JPEG quality. */
 async function prepareImage(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file).catch(() => {
     throw new Error(`Could not read ${file.name}. Use a JPEG, PNG or WebP photo.`);
   });
-  const max = 2400;
+  const max = 4000;
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
@@ -37,23 +52,30 @@ async function prepareImage(file: File): Promise<Blob> {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not process the photo."))), "image/jpeg", 0.88),
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not process the photo."))), "image/jpeg", 0.95),
   );
 }
 
-async function uploadFiles(
-  files: File[],
-  kind: "champion" | "photo",
-  getSlots: (args: { data: { kind: "champion" | "photo"; count: number } }) => Promise<{ slots: { path: string; token: string }[] }>,
-) {
-  const { slots } = await getSlots({ data: { kind, count: files.length } });
+type SlotFn = (args: {
+  data: { kind: "champion" | "photo" | "video"; count: number; ext?: string };
+}) => Promise<{ slots: { path: string; token: string }[] }>;
+
+async function uploadFiles(files: File[], kind: "champion" | "photo", getSlots: SlotFn) {
   const paths: string[] = [];
-  for (let i = 0; i < files.length; i++) {
-    const blob = await prepareImage(files[i]!);
-    const slot = slots[i]!;
+  for (const file of files) {
+    const video = kind === "photo" && isVideo(file);
+    const { slots } = await getSlots({
+      data: video
+        ? { kind: "video", count: 1, ext: videoExt(file) }
+        : { kind, count: 1 },
+    });
+    const slot = slots[0]!;
+    // Videos are uploaded untouched so quality is preserved.
+    const blob = video ? file : await prepareImage(file);
+    const contentType = video ? file.type || "video/mp4" : "image/jpeg";
     const { error } = await supabase.storage
       .from("gallery")
-      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType: "image/jpeg" });
+      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType });
     if (error) throw new Error(`Upload failed: ${error.message}`);
     paths.push(slot.path);
   }
@@ -253,10 +275,11 @@ export function MemoriesAdmin() {
       <section className="glass-surface rounded-2xl border border-border p-5 sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
           <Camera className="h-5 w-5 text-primary" />
-          Match day photos
+          Match day photos &amp; videos
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Upload high quality photos (JPEG, PNG or WebP, up to 7 MB each, 6 at a time).
+          Upload high quality photos (JPEG, PNG or WebP) and videos (MP4, WebM or MOV, up to 200 MB
+          each), 10 at a time. Newest uploads show first on the page.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="space-y-1">
@@ -272,13 +295,13 @@ export function MemoriesAdmin() {
           </label>
           <label className="space-y-1">
             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Photos
+              Photos or videos
             </span>
             <input
               className={control}
               type="file"
               multiple
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime"
               onChange={(event) => setPhotoFiles([...(event.target.files ?? [])])}
             />
           </label>
@@ -292,23 +315,38 @@ export function MemoriesAdmin() {
               await addPhotos({ data: { caption, paths } });
               setCaption("");
               setPhotoFiles([]);
-            }, "Photos uploaded.")
+            }, "Uploaded.")
           }
         >
           <Upload className="mr-1.5 h-4 w-4" />
-          Upload photos
+          Upload
         </Button>
 
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(memories.data?.photos ?? []).map((photo) => (
             <li key={photo.id} className="rounded-xl border border-border bg-card/60 p-2">
               {photo.image_url ? (
-                <img
-                  src={photo.image_url}
-                  alt=""
-                  className="h-32 w-full rounded object-cover"
-                  loading="lazy"
-                />
+                photo.media_type === "video" ? (
+                  <div className="relative">
+                    <video
+                      src={photo.image_url}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="h-32 w-full rounded bg-black object-cover"
+                    />
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <Play className="h-8 w-8 fill-current text-white/90" />
+                    </span>
+                  </div>
+                ) : (
+                  <img
+                    src={photo.image_url}
+                    alt=""
+                    className="h-32 w-full rounded object-cover"
+                    loading="lazy"
+                  />
+                )
               ) : null}
               <input
                 className={`${control} mt-2`}

@@ -16,6 +16,7 @@ export type GalleryPhoto = {
   caption: string;
   image_path: string;
   image_url: string | null;
+  media_type: "photo" | "video";
   sort_order: number;
   created_at: string;
 };
@@ -57,8 +58,8 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
         .order("sort_order", { ascending: true }),
       client
         .from("gallery_photos")
-        .select("id, caption, image_path, sort_order, created_at")
-        .order("sort_order", { ascending: true })
+        .select("id, caption, image_path, media_type, sort_order, created_at")
+        // Newest uploads first.
         .order("created_at", { ascending: false }),
     ]);
     if (champions.error) throw new Error(champions.error.message);
@@ -84,10 +85,18 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
   },
 );
 
-function validPath(path: unknown, prefix: string): string | null {
+type MediaKind = "champion" | "photo" | "video";
+
+const KIND_EXT: Record<MediaKind, string> = {
+  champion: "jpg",
+  photo: "jpg",
+  video: "(?:mp4|webm|mov)",
+};
+
+function validPath(path: unknown, prefix: MediaKind): string | null {
   if (typeof path !== "string" || path.length === 0) return null;
-  if (!new RegExp(`^${prefix}-\\d+-[a-f0-9]{8}\\.jpg$`).test(path)) {
-    throw new Error("Invalid photo reference. Please upload again.");
+  if (!new RegExp(`^${prefix}-\\d+-[a-f0-9]{8}\\.${KIND_EXT[prefix]}$`).test(path)) {
+    throw new Error("Invalid media reference. Please upload again.");
   }
   return path;
 }
@@ -102,10 +111,13 @@ async function assertUploaded(
 
 /** Gives the admin browser one-time direct upload slots (avoids request size limits). */
 export const createImageUploads = createServerFn({ method: "POST" })
-  .inputValidator((data: { kind: "champion" | "photo"; count: number }) => {
-    const kind = data?.kind === "champion" ? "champion" : "photo";
+  .inputValidator((data: { kind: MediaKind; count: number; ext?: string }) => {
+    const kind: MediaKind =
+      data?.kind === "champion" ? "champion" : data?.kind === "video" ? "video" : "photo";
     const count = Math.max(1, Math.min(10, Math.trunc(Number(data?.count) || 1)));
-    return { kind, count };
+    const raw = String(data?.ext ?? "").toLowerCase();
+    const ext = kind === "video" ? (["mp4", "webm", "mov"].includes(raw) ? raw : "mp4") : "jpg";
+    return { kind, count, ext };
   })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("./admin-session.server");
@@ -114,7 +126,7 @@ export const createImageUploads = createServerFn({ method: "POST" })
     const client = adminClient();
     const slots: { path: string; token: string }[] = [];
     for (let i = 0; i < data.count; i++) {
-      const path = `${data.kind}-${Date.now()}-${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}.jpg`;
+      const path = `${data.kind}-${Date.now()}-${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}.${data.ext}`;
       const { data: signed, error } = await client.storage
         .from("gallery")
         .createSignedUploadUrl(path);
@@ -227,9 +239,13 @@ export const addGalleryPhotos = createServerFn({ method: "POST" })
   .inputValidator((data: { caption: string; paths: string[] }) => {
     const caption = (data?.caption ?? "").trim().slice(0, 160);
     const raw = Array.isArray(data?.paths) ? data.paths : [];
-    if (raw.length === 0) throw new Error("Choose at least one photo.");
-    if (raw.length > 10) throw new Error("Upload at most 10 photos at a time.");
-    const paths = raw.map((p) => validPath(p, "photo") as string);
+    if (raw.length === 0) throw new Error("Choose at least one photo or video.");
+    if (raw.length > 10) throw new Error("Upload at most 10 files at a time.");
+    const paths = raw.map((p) =>
+      String(p).startsWith("video-")
+        ? (validPath(p, "video") as string)
+        : (validPath(p, "photo") as string),
+    );
     return { caption, paths };
   })
   .handler(async ({ data }) => {
@@ -240,9 +256,11 @@ export const addGalleryPhotos = createServerFn({ method: "POST" })
 
     for (const path of data.paths) {
       await assertUploaded(client, path);
-      const { error } = await client
-        .from("gallery_photos")
-        .insert({ caption: data.caption, image_path: path });
+      const { error } = await client.from("gallery_photos").insert({
+        caption: data.caption,
+        image_path: path,
+        media_type: path.startsWith("video-") ? "video" : "photo",
+      });
       if (error) throw new Error(error.message);
     }
     return { ok: true as const, added: data.paths.length };
