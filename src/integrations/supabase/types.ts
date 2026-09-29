@@ -685,6 +685,9 @@ export type Database = {
       }
       seasons: {
         Row: {
+          auto_finalize_enabled: boolean
+          auto_finalize_offset_days: number
+          auto_finalize_time: string
           created_at: string
           current_week: number
           id: string
@@ -698,6 +701,9 @@ export type Database = {
           total_weeks: number
         }
         Insert: {
+          auto_finalize_enabled?: boolean
+          auto_finalize_offset_days?: number
+          auto_finalize_time?: string
           created_at?: string
           current_week?: number
           id?: string
@@ -711,6 +717,9 @@ export type Database = {
           total_weeks?: number
         }
         Update: {
+          auto_finalize_enabled?: boolean
+          auto_finalize_offset_days?: number
+          auto_finalize_time?: string
           created_at?: string
           current_week?: number
           id?: string
