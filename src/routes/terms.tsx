@@ -58,19 +58,14 @@ function TermsPage() {
         description="Please read these terms before using this site. By submitting a shuttle order or a team registration, you accept them."
       />
       <p className="mb-6 text-xs uppercase tracking-widest text-muted-foreground">
-        Last updated: 17 September 2026
+        Last updated: 29 September 2026
       </p>
 
       <div className="space-y-6">
         <Section title="1. Tournament & scoring rules">
           <p>
-            Motionsserien is a friendly weekly badminton ladder. All players are expected to play
-            fair and report scores honestly.
-          </p>
-          <p>
-            After each match you have <strong>2 days</strong> to submit the score. Any missing
-            result is treated as a <strong>no-show</strong> and is recorded as{" "}
-            <strong>0–0</strong>, which counts as a loss for both teams.
+            Motionsserien is a friendly weekly badminton ladder organized by Hitachi IF and Ludvika
+            Badmintonklubb. All players are expected to play fair and report scores honestly.
           </p>
           <p>
             Matches are best of 3 sets to 21 points. If the teams split the first two sets, a
@@ -79,16 +74,101 @@ function TermsPage() {
           <p>
             Weekly division movement (promotion, staying, relegation) is calculated automatically
             from approved results: match wins first, then total points, then set and point
-            difference. The organizer (The General) may correct mistakes, adjust divisions
-            manually, and make the final decision in any dispute.
+            difference.
           </p>
         </Section>
 
-        <Section title="2. Shuttle purchases">
+        <Section title="2. Score deadline: Wednesday 10:00 — final">
+          <p>
+            Results must be submitted on the{" "}
+            <Link to="/submit" className="font-semibold text-primary underline">
+              Submit score
+            </Link>{" "}
+            page <strong>before Wednesday at 10:00 (Swedish time)</strong> after the Monday match.
+          </p>
+          <p>
+            If no result is submitted before that time, the match is automatically recorded as a{" "}
+            <strong>no-show, 0–0</strong>, which counts as a loss for both teams.
+          </p>
+          <p>
+            <strong>
+              After Wednesday 10:00 the week is closed and the result cannot be changed. The
+              General (the organizer) cannot help, cannot accept a late score, and cannot undo a
+              0–0 or a division movement — not for anyone, for any reason.
+            </strong>{" "}
+            The next week's divisions and schedule are generated from the closed week, so late
+            changes are not possible. There is no appeal.
+          </p>
+          <p>
+            It is each team's own responsibility to report in time. Both teams may report; one
+            correct submission is enough. Before the deadline, a clear typing mistake can be
+            corrected by contacting the organizer — after the deadline it cannot.
+          </p>
+        </Section>
+
+        <Section title="3. What is public and what is private">
+          <p>
+            <strong>
+              Team names and player names are public on this website.
+            </strong>{" "}
+            They appear in standings, schedules, results, team pages, progress history and the Hall
+            of Fame, and may be seen by anyone, including search engines.
+          </p>
+          <p>
+            <strong>
+              Shuttle purchases are also public: the team name and the name of the person who
+              ordered are shown in the public shuttle list,
+            </strong>{" "}
+            together with the number of boxes and the date. This keeps deliveries and payments
+            transparent for everyone.
+          </p>
+          <p>
+            Email addresses, phone numbers, passwords, messages and payment details are{" "}
+            <strong>never published</strong>. They are visible only to the organizer and are used
+            only to run the tournament.
+          </p>
+          <p>
+            By registering a team, joining as a player, or ordering shuttles, you confirm that you
+            accept this public display of team and player names. If you do not accept it, please do
+            not register.
+          </p>
+        </Section>
+
+        <Section title="4. Photos and videos">
+          <p>
+            Photos and videos are taken during match evenings in the Rackethall and published in
+            the Photos and Hall of Fame sections of this website, and may also be used in
+            tournament summaries, emails and club information about Motionsserien.
+          </p>
+          <p>
+            By taking part in the tournament, or by being present in the hall during match
+            evenings, you agree that pictures and video in which you appear may be published in
+            this way, without payment. The organizer keeps them as part of the tournament history.
+          </p>
+          <p>
+            Only material connected to the tournament is published. Nothing offensive, private or
+            harmful is published knowingly.
+          </p>
+          <p>
+            If you do not want a specific photo or video of yourself on the site, write to the
+            organizer through the{" "}
+            <Link to="/ask" className="font-semibold text-primary underline">
+              Contact page
+            </Link>{" "}
+            and it will be removed. Photos of children are removed on request from a parent or
+            guardian without any questions.
+          </p>
+          <p>
+            Anything you upload or send to the organizer must be your own material and must not
+            break anyone's rights. The organizer may remove any content at any time.
+          </p>
+        </Section>
+
+        <Section title="5. Shuttle purchases">
           <p>
             Shuttle boxes cost <strong>135 kr</strong>, paid by Swish to{" "}
-            <strong>1234785069, Ludvika Badmintonklubb</strong>. Please swish before or when you
-            place the order.
+            <strong>1234785069, Ludvika Badmintonklubb</strong>, with the team name as the Swish
+            message. Please swish before or when you place the order.
           </p>
           <p>
             Each team may order a <strong>maximum of 1 shuttle box per two weeks</strong>. Orders
@@ -96,50 +176,71 @@ function TermsPage() {
           </p>
           <p>
             Ordered shuttles are delivered <strong>every Monday at 20:00 in the Rackethall</strong>.
-            An approved order is binding and is not refundable once delivered.
+            An approved order is binding and is not refundable once delivered. Registration fees
+            are not refundable either.
           </p>
         </Section>
 
-        <Section title="3. Privacy & data use">
+        <Section title="6. Conduct, health and safety">
           <p>
-            We collect only what is needed to run the tournament: team names, player names, email
-            addresses, and an optional phone number.
+            Play fair and be respectful to opponents, other players, the hall staff and the
+            organizer. False results, playing with unregistered players, abusive behaviour or
+            repeated no-shows may lead to corrected results, loss of a place, or removal from the
+            tournament.
           </p>
           <p>
-            Emails are used for match reminders and replies from the organizer.{" "}
-            <strong>Only team names and divisions are shown publicly.</strong> Player names,
-            emails, and phone numbers are visible to the admin only and are never published.
+            You take part <strong>at your own risk</strong> and are responsible for being healthy
+            enough to play. You are responsible for your own insurance and for your own equipment
+            and belongings in the hall.
           </p>
           <p>
-            Messages sent through the Contact page and shuttle orders are stored until the
-            organizer removes them.
+            Follow the rules of the Rackethall at all times, including opening hours, court use and
+            safety instructions.
+          </p>
+        </Section>
+
+        <Section title="7. Accounts and website use">
+          <p>
+            You are responsible for the information you enter and for keeping your password to
+            yourself. Do not register other people without their permission.
+          </p>
+          <p>
+            Do not try to break, overload or misuse the website, and do not submit results for
+            matches you did not play.
+          </p>
+          <p>
+            You may at any time ask to see, correct, or delete your personal data by contacting the
+            organizer through the{" "}
+            <Link to="/ask" className="font-semibold text-primary underline">
+              Contact page
+            </Link>
+            . Please note that results, team names and player names that are part of the finished
+            tournament history normally remain published.
           </p>
           <p>
             Visit information (IP address, device, browser and approximate location) is logged for
             security and fair-play checks, kept for a limited time, and visible only to the
             organizer.
           </p>
-          <p>
-            You may at any time ask to see, correct, or delete your personal data by contacting
-            the organizer through the{" "}
-            <Link to="/ask" className="font-semibold text-primary underline">
-              Contact page
-            </Link>
-            .
-          </p>
         </Section>
 
-        <Section title="4. Liability & contact">
+        <Section title="8. Liability & contact">
           <p>
-            This site is provided as-is. The organizer is not liable for injuries, lost or damaged
-            property, technical errors, or incorrect information on the site.
+            This site is provided as-is, without any guarantee that it is always available or free
+            from errors. The organizer, Hitachi IF and Ludvika Badmintonklubb are not liable for
+            injuries, illness, lost or damaged property, missed matches, technical errors, lost
+            submissions, or incorrect information on the site.
+          </p>
+          <p>
+            The organizer (The General) has the final decision in all sporting questions,
+            including divisions, seeding, results and disputes, within the rules above.
           </p>
           <p>
             These terms may be updated from time to time; the current version is always published
-            on this page with its date.
+            on this page with its date. Swedish law applies.
           </p>
           <p>
-            Questions, feedback, and scoring issues are handled through the{" "}
+            Questions and feedback are handled through the{" "}
             <Link to="/ask" className="font-semibold text-primary underline">
               Contact page
             </Link>{" "}
