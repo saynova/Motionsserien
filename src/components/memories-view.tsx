@@ -1,7 +1,7 @@
 import type React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
-import { Camera, ChevronLeft, ChevronRight, Crown, Play, Trophy, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Crown, Play, Star, Trophy, X } from "lucide-react";
 
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import type { ChampionEntry, GalleryPhoto } from "@/lib/memories.functions";
