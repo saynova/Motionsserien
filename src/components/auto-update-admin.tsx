@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Switch } from "@/components/ui/switch";
-import { getAutoUpdateSettings, saveAutoUpdateSettings } from "@/lib/auto-update.functions";
+import {
+  getAutoUpdateSettings,
+  getReminderSettings,
+  saveAutoUpdateSettings,
+  saveReminderSettings,
+} from "@/lib/auto-update.functions";
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
@@ -124,6 +129,102 @@ export function AutoUpdateAdmin() {
       <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
         {busy ? "Saving…" : "Save"}
       </button>
+
+      <ReminderSettingsBlock />
     </section>
+  );
+}
+
+function ReminderSettingsBlock() {
+  const queryClient = useQueryClient();
+  const settings = useQuery({ queryKey: ["reminder-settings"], queryFn: () => getReminderSettings() });
+  const save = useServerFn(saveReminderSettings);
+  const [enabled, setEnabled] = useState(true);
+  const [offsetDays, setOffsetDays] = useState(1);
+  const [time, setTime] = useState("12:00");
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (loaded || !settings.data) return;
+    setEnabled(settings.data.enabled);
+    setOffsetDays(settings.data.offsetDays);
+    setTime(settings.data.time);
+    setLoaded(true);
+  }, [loaded, settings.data]);
+
+  async function persist() {
+    setBusy(true);
+    try {
+      await save({ data: { enabled, offsetDays, time } });
+      await queryClient.invalidateQueries({ queryKey: ["reminder-settings"] });
+      toast.success("Reminder time saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this setting.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const hours = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, "0")}:00`);
+
+  return (
+    <div className="mt-8 border-t border-border pt-6">
+      <h3 className="text-xl font-bold uppercase tracking-wide">Missing score reminders</h3>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Automatically email both teams of every match that still has no submitted score. Each
+        match is reminded once. Swedish time.
+      </p>
+      <label className="mt-4 flex max-w-2xl items-center justify-between gap-4 rounded border border-border bg-secondary/30 p-3">
+        <span>
+          <span className="block font-semibold">Send reminders automatically</span>
+          <span className="block text-xs text-muted-foreground">
+            Turn this off to send reminders by hand from Match scores.
+          </span>
+        </span>
+        <Switch checked={enabled} onCheckedChange={setEnabled} />
+      </label>
+      <div className="mt-4 grid max-w-2xl gap-4 sm:grid-cols-2">
+        <label className="space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Day</span>
+          <select
+            className={`${control} w-full`}
+            value={offsetDays}
+            disabled={!enabled}
+            onChange={(event) => setOffsetDays(Number(event.target.value))}
+          >
+            {DAY_CHOICES.map((choice) => (
+              <option key={choice.value} value={choice.value}>{choice.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Time</span>
+          <select
+            className={`${control} w-full`}
+            value={time}
+            disabled={!enabled}
+            onChange={(event) => setTime(event.target.value)}
+          >
+            {hours.map((h) => (
+              <option key={h} value={h}>{h}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="mt-3 text-sm">
+        {settings.data?.nextRun ? (
+          <>
+            <span className="font-semibold">Next reminder:</span>{" "}
+            <span className="tabnum">{settings.data.nextRun}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">Automatic reminders are switched off.</span>
+        )}
+      </p>
+      <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
+        {busy ? "Saving…" : "Save reminders"}
+      </button>
+    </div>
   );
 }
