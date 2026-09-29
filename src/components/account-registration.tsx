@@ -6,10 +6,13 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount, registerMyTeam, requestPartner } from "@/lib/account.functions";
+import { submitRegistration } from "@/lib/registration.functions";
+import { registrationInfoQueryOptions } from "@/lib/tournament-query";
 import { DIVISION_COUNT } from "@/lib/tournament";
 
 const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const label = "mb-1 block text-xs uppercase tracking-widest text-muted-foreground";
+
 
 function useSignedIn() {
   const [state, setState] = useState<"loading" | "in" | "out">("loading");
