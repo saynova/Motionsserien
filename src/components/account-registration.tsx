@@ -136,6 +136,12 @@ function SignedInRegistration() {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">Signed in as {account.data?.email}. This email is used for your registration.</p>
+      {mode === "team" ? (
+        <div>
+          <label className={label}>Team name</label>
+          <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
+        </div>
+      ) : null}
       <div>
         <label className={label}>{mode === "team" ? "Player 1 name (you)" : "Your name"}</label>
         <input className={field} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -143,10 +149,6 @@ function SignedInRegistration() {
 
       {mode === "team" ? (
         <>
-          <div>
-            <label className={label}>Team name</label>
-            <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
-          </div>
           <div>
             <label className={label}>Player 1 phone number</label>
             <input className={field} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
