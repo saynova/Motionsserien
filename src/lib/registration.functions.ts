@@ -86,7 +86,7 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
     const [settings, season] = await Promise.all([
       supabase
         .from("registration_settings")
-        .select("is_open, target_season")
+        .select("is_open, target_season, require_sign_in")
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle(),
@@ -102,12 +102,14 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
     if (season.error) throw new Error(season.error.message);
     return {
       isOpen: settings.data?.is_open === true,
+      requireSignIn: settings.data?.require_sign_in !== false,
       targetSeason: settings.data?.target_season ?? "",
       paymentDetails: season.data?.payment_details ?? "",
       seasonName: season.data?.name ?? "",
     };
   },
 );
+
 
 export const getRegisteredTeams = createServerFn({ method: "GET" }).handler(
   async (): Promise<RegisteredTeam[]> => {
