@@ -58,11 +58,14 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 }),
             },
             recovery: {
-              subject: 'Reset your password',
+              subject: 'Your password reset code',
               render: (data) =>
                 React.createElement(RecoveryEmail, {
                   siteName: SITE_NAME,
-                  confirmationUrl: data.url,
+                  recipient: data.email,
+                  // A code the visitor types on our own site; no link to click,
+                  // so restricted office networks cannot break the reset.
+                  code: data.token ?? '',
                 }),
             },
             email_change: {
