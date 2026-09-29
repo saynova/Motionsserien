@@ -304,6 +304,35 @@ export function NextSeasonAdmin() {
         </span>
       </div>
 
+      {/* sign-in requirement */}
+      <div className="flex flex-wrap items-center gap-3 rounded border border-border bg-secondary/30 p-4">
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={info.data?.requireSignIn !== false}
+            disabled={busy}
+            onChange={(e) =>
+              run(
+                () => toggleSignIn({ data: { requireSignIn: e.target.checked } }),
+                e.target.checked
+                  ? "Teams must sign in before registering."
+                  : "Teams can now register without signing in.",
+                [["registration-info"]],
+              )
+            }
+          />
+          Require sign-in to register a team
+        </label>
+        <span className="text-xs text-muted-foreground">
+          {info.data?.requireSignIn === false
+            ? "Anyone can register a team without an account. When they later create an account with the same email, their team links automatically."
+            : "Players must sign in or create an account before registering."}
+        </span>
+      </div>
+
+
+
       {signedUp.length >= totalSlots ? (
         <p className="rounded border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">
           The tournament is full with {totalSlots} teams, so registration closed automatically. You
