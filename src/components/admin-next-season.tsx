@@ -137,6 +137,8 @@ export function NextSeasonAdmin() {
   const board = useQuery(seedBoardQueryOptions);
 
   const toggleOpen = useServerFn(setRegistrationOpen);
+  const toggleSignIn = useServerFn(setRegistrationSignInRequired);
+
   const setStatus = useServerFn(setRegistrationStatus);
   const setPaid = useServerFn(setRegistrationPaid);
   const removeReg = useServerFn(deleteRegistration);
