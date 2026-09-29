@@ -55,6 +55,7 @@ import { PaymentsAdmin } from "@/components/payments-admin";
 import { PartnerRequestsAdmin, ReceiptsAdmin } from "@/components/account-admin";
 import { MemoriesAdmin } from "@/components/memories-admin";
 import { AutoUpdateAdmin } from "@/components/auto-update-admin";
+import { BackupAdmin } from "@/components/backup-admin";
 import {
   adminShuttleOrdersQueryOptions,
   adminStatusQueryOptions,
