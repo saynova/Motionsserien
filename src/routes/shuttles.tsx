@@ -105,7 +105,14 @@ function ShuttlesPage() {
               min={1}
               max={1}
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              onChange={(e) => setQuantity("1")}
+              onKeyDown={(e) => {
+                e.preventDefault();
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+              }}
+              readOnly
               required
             />
             <p className="mt-1 text-xs text-muted-foreground">
