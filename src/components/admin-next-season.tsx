@@ -225,9 +225,12 @@ export function NextSeasonAdmin() {
       <div>
         <h2 className="text-2xl font-bold uppercase tracking-wide">Next season</h2>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Open registration, accept 30 teams, arrange the divisions, then lock the seeding to start
-          the new season from week 1.
+          Registration closes by itself once 30 teams have signed up — you can reopen it here at any
+          time. "Lock registration & assign divisions" closes sign-ups, accepts the 30 teams in the
+          order they registered and fills the divisions from their division choice, with new teams
+          starting in Division 10 and working upwards. You can then adjust every placement by hand.
         </p>
+
       </div>
 
       {/* registration toggle */}
