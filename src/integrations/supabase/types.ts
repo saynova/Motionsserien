@@ -112,6 +112,21 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notification_dismissals: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       admin_trusted_devices: {
         Row: {
           created_at: string

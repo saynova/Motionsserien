@@ -122,6 +122,25 @@ export const getAdminNotifications = createServerFn({ method: "POST" }).handler(
     for (const r of receipts.data ?? []) {
       out.push({ id: `i-${r.id}`, kind: "registration", title: `Receipt issued · ${r.amount} kr`, detail: `${r.player_name} · ${r.team_name}`, at: r.created_at, section: "receipts" });
     }
-    return out.sort((a, b) => b.at.localeCompare(a.at));
+    const { data: dismissed } = await (client as any).from("admin_notification_dismissals").select("id");
+    const gone = new Set<string>((dismissed ?? []).map((d: { id: string }) => d.id));
+    return out.filter((n) => !gone.has(n.id)).sort((a, b) => b.at.localeCompare(a.at));
   },
 );
+
+export const dismissAdminNotifications = createServerFn({ method: "POST" })
+  .inputValidator((input: { ids: string[] }) => {
+    if (!Array.isArray(input?.ids)) throw new Error("Invalid input");
+    return { ids: input.ids.filter((i) => typeof i === "string" && i.length < 200).slice(0, 500) };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    if (data.ids.length === 0) return { ok: true };
+    const { error } = await (adminClient() as any)
+      .from("admin_notification_dismissals")
+      .upsert(data.ids.map((id) => ({ id })), { onConflict: "id", ignoreDuplicates: true });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
