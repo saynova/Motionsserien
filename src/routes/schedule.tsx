@@ -19,15 +19,25 @@ export const Route = createFileRoute("/schedule")({
       {
         name: "description",
         content:
-          "Monday badminton schedule for Motionsserien HT-26: filter by week, court, division or team to find your match time.",
+          "Monday badminton schedule for Motionsserien HT-26: filter by week, court, division or team to find your match time in Rackethallen Ludvika.",
+      },
+      {
+        name: "keywords",
+        content:
+          "badminton match schedule, Motionsserien schema, court planner, Monday badminton Ludvika, badminton speltider, division schedule, Rackethallen Ludvika courts, badminton Dalarna",
       },
       { property: "og:title", content: "Weekly schedule & court planner — Motionsserien HT-26" },
       {
         property: "og:description",
         content: "Find your Monday badminton match by week, court, division or team name.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/schedule" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/schedule" }],
   }),
+
   validateSearch: (search: Record<string, unknown>): Search => ({
     week: search["week"] ? Number(search["week"]) : undefined,
     court: search["court"] ? Number(search["court"]) : undefined,

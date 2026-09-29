@@ -26,6 +26,11 @@ export const Route = createFileRoute("/")({
         content:
           "Live division standings for the Motionsserien HT-26 badminton tournament, featuring promotion and relegation across all 10 divisions, organized by Hitachi IF and Ludvika Badminton Club. For inquiries, contact the General: Md Rabiul Islam",
       },
+      {
+        name: "keywords",
+        content:
+          "Motionsserien standings, Motionsserien HT-26, badminton Ludvika, Hitachi IF badminton, Ludvika Badmintonklubb, badminton division standings, badmintonstege, motionsserie badminton, badminton resultat, Rackethallen Ludvika, badminton Dalarna, promotion and relegation badminton",
+      },
       { property: "og:title", content: "Standings — Motionsserien HT-26" },
       {
         property: "og:description",
@@ -33,9 +38,45 @@ export const Route = createFileRoute("/")({
           "Live division standings for the Motionsserien HT-26 badminton tournament, featuring promotion and relegation across all 10 divisions, organized by Hitachi IF and Ludvika Badminton Club.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.motionsserien.se/" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SportsEvent",
+          name: "Motionsserien HT-26 Badminton Ladder",
+          sport: "Badminton",
+          url: "https://www.motionsserien.se/",
+          description:
+            "Weekly Monday badminton ladder with 30 teams across 10 divisions, with promotion and relegation each week.",
+          eventSchedule: {
+            "@type": "Schedule",
+            byDay: "https://schema.org/Monday",
+            repeatFrequency: "P1W",
+          },
+          location: {
+            "@type": "Place",
+            name: "Rackethallen Ludvika",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Ludvika",
+              addressRegion: "Dalarna",
+              addressCountry: "SE",
+            },
+          },
+          organizer: [
+            { "@type": "SportsOrganization", name: "Hitachi IF" },
+            { "@type": "SportsOrganization", name: "Ludvika Badminton Club" },
+          ],
+        }),
+      },
+    ],
   }),
+
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(tournamentQueryOptions),
