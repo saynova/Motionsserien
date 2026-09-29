@@ -25,7 +25,7 @@ import { consumeAuthSessionFromUrl } from "@/lib/auth-url-session";
 
 import { Toaster } from "@/components/ui/sonner";
 import { DonationButton, SponsorBanner } from "@/components/support-ui";
-import { ContactBar, WeeklyBanner } from "@/components/tournament-ui";
+import { ContactBar } from "@/components/tournament-ui";
 import { logVisit } from "@/lib/visitors.functions";
 
 import appCss from "../styles.css?url";
