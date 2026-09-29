@@ -274,7 +274,21 @@ export const deleteMessage = createServerFn({ method: "POST" })
     const { requireAdmin } = await import("./admin-session.server");
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
-    const { error } = await adminClient().from("messages").delete().eq("id", data.messageId);
+    const client = adminClient();
+
+    // Remove the attached photo too, so deleting clears the whole message.
+    const existing = await client
+      .from("messages")
+      .select("attachment_path")
+      .eq("id", data.messageId)
+      .maybeSingle();
+    const path = existing.data?.attachment_path;
+    if (isMessageAttachmentPath(path)) {
+      await client.storage.from("message-attachments").remove([path]);
+    }
+
+    const { error } = await client.from("messages").delete().eq("id", data.messageId);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
