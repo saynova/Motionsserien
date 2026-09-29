@@ -706,6 +706,9 @@ export type Database = {
           name: string
           payment_details: string | null
           registration_key: string | null
+          reminder_enabled: boolean
+          reminder_offset_days: number
+          reminder_time: string
           require_login_for_scores: boolean
           start_monday: string
           total_weeks: number
@@ -726,6 +729,9 @@ export type Database = {
           name: string
           payment_details?: string | null
           registration_key?: string | null
+          reminder_enabled?: boolean
+          reminder_offset_days?: number
+          reminder_time?: string
           require_login_for_scores?: boolean
           start_monday: string
           total_weeks?: number
@@ -746,6 +752,9 @@ export type Database = {
           name?: string
           payment_details?: string | null
           registration_key?: string | null
+          reminder_enabled?: boolean
+          reminder_offset_days?: number
+          reminder_time?: string
           require_login_for_scores?: boolean
           start_monday?: string
           total_weeks?: number
