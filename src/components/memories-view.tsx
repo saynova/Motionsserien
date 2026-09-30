@@ -336,12 +336,10 @@ function MediaCard({
       type="button"
       onClick={onOpen}
       className={`group relative block overflow-hidden rounded-2xl border bg-card text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-        featured
-          ? "border-[#d4a017]/50 ring-1 ring-[#d4a017]/25 sm:col-span-2 sm:row-span-2"
-          : "border-border"
+        featured ? "border-[#d4a017]/50 ring-1 ring-[#d4a017]/25" : "border-border"
       }`}
     >
-      <div className={`overflow-hidden bg-secondary ${featured ? "aspect-[16/10] sm:aspect-square" : "aspect-[4/3]"}`}>
+      <div className="aspect-[4/3] overflow-hidden bg-secondary">
         {photo.image_url ? (
           photo.media_type === "video" ? (
             <video
@@ -532,7 +530,7 @@ export function MemoriesView() {
                 Nothing matches this filter yet. Try another week or media type.
               </p>
             ) : (
-              <div className="mt-8 grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="mt-8 grid auto-rows-auto grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {pagedPhotos.map((photo, i) => (
                   <MediaCard
                     key={photo.id}
