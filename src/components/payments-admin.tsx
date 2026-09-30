@@ -163,7 +163,7 @@ export function PaymentsAdmin() {
           </Button>
         </div>
       </header>
-
+      <AdminSendReceipt />
       {payments.isLoading ? (
         <p className="mt-6 text-sm text-muted-foreground">Loading teams…</p>
       ) : rows.length === 0 ? (
@@ -300,7 +300,6 @@ export function PaymentsAdmin() {
         </ul>
         </>
       )}
-      <AdminSendReceipt />
     </section>
   );
 }
