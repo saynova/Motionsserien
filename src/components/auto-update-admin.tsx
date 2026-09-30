@@ -105,7 +105,7 @@ function StageBlock({
   offsetDays: number;
   time: string;
   nextRun: string | null;
-  currentWeek?: number;
+  currentWeek?: number | undefined;
   loaded: boolean;
 }) {
   const queryClient = useQueryClient();
