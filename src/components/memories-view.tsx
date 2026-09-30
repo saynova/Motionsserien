@@ -277,7 +277,7 @@ function SectionTitle({
 }: {
   icon: React.ReactNode;
   eyebrow: string;
-  title: string;
+  title?: string;
   sub?: string;
 }) {
   return (
@@ -286,7 +286,7 @@ function SectionTitle({
         {icon}
         {eyebrow}
       </span>
-      <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{title}</h2>
+      {title ? <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{title}</h2> : null}
       {sub ? <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">{sub}</p> : null}
     </header>
   );
