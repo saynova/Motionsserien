@@ -484,12 +484,8 @@ export function MemoriesView() {
       </section>
 
       <section>
-        <SectionTitle
-          icon={<Camera className="h-4 w-4" />}
-          eyebrow="Gallery"
-          title="Photos & Videos"
-          sub="Match night moments from the Rackethall."
-        />
+        <SectionTitle icon={<Camera className="h-4 w-4" />} eyebrow="Gallery" />
+
 
         {allPhotos.length === 0 ? (
           <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
