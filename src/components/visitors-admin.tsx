@@ -366,8 +366,8 @@ export function VisitorsAdmin() {
                 <h3 className="text-sm font-bold">Visits over the last 14 days</h3>
                 <ChartContainer
                   config={{
-                    visits: { label: "Page visits", color: "hsl(var(--primary))" },
-                    visitors: { label: "Unique visitors", color: "hsl(var(--accent))" },
+                    visits: { label: "Page visits", color: "var(--primary)" },
+                    visitors: { label: "Unique visitors", color: "var(--accent)" },
                   }}
                   className="mt-3 aspect-[16/7] w-full"
                 >
@@ -410,10 +410,10 @@ export function VisitorsAdmin() {
                 <h3 className="text-sm font-bold">Devices</h3>
                 <ChartContainer
                   config={{
-                    Mobile: { label: "Mobile", color: "hsl(var(--primary))" },
-                    Desktop: { label: "Computer", color: "hsl(var(--accent))" },
-                    Tablet: { label: "Tablet", color: "hsl(var(--muted-foreground))" },
-                    Unknown: { label: "Unknown", color: "hsl(var(--muted-foreground))" },
+                    Mobile: { label: "Mobile", color: "var(--primary)" },
+                    Desktop: { label: "Computer", color: "var(--accent)" },
+                    Tablet: { label: "Tablet", color: "var(--muted-foreground)" },
+                    Unknown: { label: "Unknown", color: "var(--muted-foreground)" },
                   }}
                   className="mt-3 aspect-square max-h-48 w-full"
                 >
@@ -458,7 +458,7 @@ export function VisitorsAdmin() {
                 Swedish time. Match nights and the Wednesday score deadline show up clearly.
               </p>
               <ChartContainer
-                config={{ visits: { label: "Visits", color: "hsl(var(--primary))" } }}
+                config={{ visits: { label: "Visits", color: "var(--primary)" } }}
                 className="mt-3 aspect-[16/5] w-full"
               >
                 <BarChart data={stats.hourly} margin={{ left: -20, right: 6, top: 6 }}>
