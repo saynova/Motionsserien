@@ -277,7 +277,7 @@ function SectionTitle({
 }: {
   icon: React.ReactNode;
   eyebrow: string;
-  title: string;
+  title?: string;
   sub?: string;
 }) {
   return (
@@ -286,7 +286,7 @@ function SectionTitle({
         {icon}
         {eyebrow}
       </span>
-      <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{title}</h2>
+      {title ? <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{title}</h2> : null}
       {sub ? <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">{sub}</p> : null}
     </header>
   );
@@ -399,7 +399,6 @@ export function MemoriesView() {
   const { data } = useSuspenseQuery(memoriesQueryOptions);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
-  const [weekFilter, setWeekFilter] = useState<number | null>(null);
   const [page, setPage] = useState(0);
 
   const [current, ...past] = data.champions;
@@ -411,24 +410,14 @@ export function MemoriesView() {
     return { all: allPhotos.length, video, photo: allPhotos.length - video };
   }, [allPhotos]);
 
-  const weeks = useMemo(() => {
-    const set = new Set<number>();
-    for (const p of allPhotos) {
-      const n = weekNumber(p);
-      if (n !== null) set.add(n);
-    }
-    return [...set].sort((a, b) => a - b);
-  }, [allPhotos]);
-
   const photos = useMemo(
     () =>
       allPhotos.filter((p) => {
         if (mediaFilter === "video" && p.media_type !== "video") return false;
         if (mediaFilter === "photo" && p.media_type === "video") return false;
-        if (weekFilter !== null && weekNumber(p) !== weekFilter) return false;
         return true;
       }),
-    [allPhotos, mediaFilter, weekFilter],
+    [allPhotos, mediaFilter],
   );
 
   const PER_PAGE = 24;
@@ -441,7 +430,8 @@ export function MemoriesView() {
   useEffect(() => {
     setOpenIndex(null);
     setPage(0);
-  }, [mediaFilter, weekFilter]);
+  }, [mediaFilter]);
+
 
 
   return (
@@ -484,12 +474,8 @@ export function MemoriesView() {
       </section>
 
       <section>
-        <SectionTitle
-          icon={<Camera className="h-4 w-4" />}
-          eyebrow="Gallery"
-          title="Photos & Videos"
-          sub="Match night moments from the Rackethall."
-        />
+        <SectionTitle icon={<Camera className="h-4 w-4" />} eyebrow="Gallery" />
+
 
         {allPhotos.length === 0 ? (
           <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
@@ -512,22 +498,10 @@ export function MemoriesView() {
               </FilterPill>
             </div>
 
-            {weeks.length > 0 ? (
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <FilterPill active={weekFilter === null} onClick={() => setWeekFilter(null)}>
-                  Every week
-                </FilterPill>
-                {weeks.map((w) => (
-                  <FilterPill key={w} active={weekFilter === w} onClick={() => setWeekFilter(w)}>
-                    Week {w}
-                  </FilterPill>
-                ))}
-              </div>
-            ) : null}
 
             {photos.length === 0 ? (
               <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-                Nothing matches this filter yet. Try another week or media type.
+                Nothing matches this filter yet. Try another media type.
               </p>
             ) : (
               <div className="mt-8 grid auto-rows-auto grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
