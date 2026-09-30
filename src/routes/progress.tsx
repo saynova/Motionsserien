@@ -40,7 +40,7 @@ export const Route = createFileRoute("/progress")({
   }),
 
   loader: ({ context }) => context.queryClient.ensureQueryData(tournamentQueryOptions),
-  errorComponent: ({ error }) => <p role="alert">Could not load team progress: {error.message}</p>,
+  errorComponent: ({ error }) => <p role="alert">Could not load team progress: {error instanceof Error ? error.message : String(error)}</p>,
   notFoundComponent: () => <p>Team progress was not found.</p>,
   component: ProgressPage,
 });
