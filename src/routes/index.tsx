@@ -82,7 +82,7 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(tournamentQueryOptions),
       context.queryClient.ensureQueryData(memoriesQueryOptions),
     ]),
-  errorComponent: ({ error }) => <p role="alert">Could not load the standings: {error.message}</p>,
+  errorComponent: ({ error }) => <p role="alert">Could not load the standings: {error instanceof Error ? error.message : String(error)}</p>,
   notFoundComponent: () => <p>Standings were not found.</p>,
   component: HomePage,
 });
