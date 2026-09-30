@@ -533,18 +533,55 @@ export function MemoriesView() {
               </p>
             ) : (
               <div className="mt-8 grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {photos.map((photo, i) => (
+                {pagedPhotos.map((photo, i) => (
                   <MediaCard
                     key={photo.id}
                     photo={photo}
                     featured={photo.is_pinned}
-                    onOpen={() => setOpenIndex(i)}
+                    onOpen={() => setOpenIndex(page * PER_PAGE + i)}
                   />
                 ))}
               </div>
             )}
 
+            {pageCount > 1 ? (
+              <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Gallery pages">
+                <button
+                  type="button"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground transition hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: pageCount }, (_, p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? "page" : undefined}
+                    className={`h-9 w-9 rounded-full border text-xs font-bold transition ${
+                      p === page
+                        ? "border-primary bg-primary text-primary-foreground shadow"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    }`}
+                  >
+                    {p + 1}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  disabled={page >= pageCount - 1}
+                  onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground transition hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </nav>
+            ) : null}
+
           </>
+
         )}
       </section>
 
