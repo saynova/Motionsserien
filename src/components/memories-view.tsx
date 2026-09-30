@@ -402,6 +402,8 @@ export function MemoriesView() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
   const [weekFilter, setWeekFilter] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
+
   const [current, ...past] = data.champions;
   const allPhotos = data.photos;
 
@@ -431,9 +433,18 @@ export function MemoriesView() {
     [allPhotos, mediaFilter, weekFilter],
   );
 
+  const PER_PAGE = 24;
+  const pageCount = Math.max(1, Math.ceil(photos.length / PER_PAGE));
+  const pagedPhotos = useMemo(
+    () => photos.slice(page * PER_PAGE, (page + 1) * PER_PAGE),
+    [photos, page],
+  );
+
   useEffect(() => {
     setOpenIndex(null);
+    setPage(0);
   }, [mediaFilter, weekFilter]);
+
 
   return (
     <div className="space-y-16">
@@ -522,22 +533,55 @@ export function MemoriesView() {
               </p>
             ) : (
               <div className="mt-8 grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {photos.map((photo, i) => (
+                {pagedPhotos.map((photo, i) => (
                   <MediaCard
                     key={photo.id}
                     photo={photo}
                     featured={photo.is_pinned}
-                    onOpen={() => setOpenIndex(i)}
+                    onOpen={() => setOpenIndex(page * PER_PAGE + i)}
                   />
                 ))}
               </div>
             )}
 
-            <p className="mx-auto mt-10 max-w-2xl rounded-2xl border border-border bg-card px-5 py-4 text-center text-sm text-muted-foreground">
-              Captured a great rally or a team photo on Monday? Send it to the General through{" "}
-              <span className="font-semibold text-foreground">Ask the General</span> to have it featured here.
-            </p>
+            {pageCount > 1 ? (
+              <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Gallery pages">
+                <button
+                  type="button"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground transition hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: pageCount }, (_, p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? "page" : undefined}
+                    className={`h-9 w-9 rounded-full border text-xs font-bold transition ${
+                      p === page
+                        ? "border-primary bg-primary text-primary-foreground shadow"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    }`}
+                  >
+                    {p + 1}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  disabled={page >= pageCount - 1}
+                  onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground transition hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </nav>
+            ) : null}
+
           </>
+
         )}
       </section>
 
