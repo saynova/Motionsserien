@@ -19,7 +19,7 @@ const MATCH_COLUMNS =
   "id, week_no, division, match_no, team_a_id, team_b_id, court, start_time, status, s1a, s1b, s2a, s2b, s3a, s3b, submitted_by";
 const SLOT_COLUMNS = "id, week_no, team_id, division, position, tie_break_adj";
 const SEASON_COLUMNS =
-  "id, name, start_monday, total_weeks, current_week, is_active, auto_finalize_enabled, auto_finalize_offset_days, auto_finalize_time";
+  "id, name, start_monday, total_weeks, current_week, is_active, auto_finalize_enabled, auto_finalize_offset_days, auto_finalize_time, auto_approve_enabled, auto_approve_offset_days, auto_approve_time";
 
 /** "YYYY-MM-DD HH:mm" in Swedish time. */
 function stockholmNow(): string {
@@ -54,6 +54,9 @@ type Result = {
   noShows?: number;
   nextWeek?: number | null;
   seasonComplete?: boolean;
+  /** Which stages actually did work on this run. */
+  scoresApproved?: boolean;
+  scheduleGenerated?: boolean;
 };
 
 export async function autoFinalizeDueWeek(force = false): Promise<Result> {
@@ -72,22 +75,39 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
     auto_finalize_enabled?: boolean;
     auto_finalize_offset_days?: number;
     auto_finalize_time?: string;
+    auto_approve_enabled?: boolean;
+    auto_approve_offset_days?: number;
+    auto_approve_time?: string;
   }) | null;
   if (!season) return { ran: false, reason: "No active season." };
 
-  if (!force && season.auto_finalize_enabled === false) {
-    return { ran: false, reason: "Automatic updates are switched off." };
-  }
-
   const weekNo = season.current_week;
   const now = stockholmNow();
-  // Deadline: the admin-configured number of days after this week's match
-  // Monday, at the admin-configured Swedish time (default next Monday 11:00).
-  const offsetDays = season.auto_finalize_offset_days ?? 7;
-  const time = season.auto_finalize_time ?? "11:00";
-  const deadline = `${addDays(mondayOfWeek(season.start_monday, weekNo), offsetDays)} ${time}`;
-  if (!force && now < deadline) {
-    return { ran: false, reason: `Not due yet (deadline ${deadline}).` };
+  const matchMonday = mondayOfWeek(season.start_monday, weekNo);
+
+  // Two independent stages, each with its own admin-configured day and time.
+  const approveEnabled = season.auto_approve_enabled !== false;
+  const approveDeadline = `${addDays(matchMonday, season.auto_approve_offset_days ?? 2)} ${
+    season.auto_approve_time ?? "10:00"
+  }`;
+  const approveDue = force || (approveEnabled && now >= approveDeadline);
+
+  const scheduleEnabled = season.auto_finalize_enabled !== false;
+  const scheduleDeadline = `${addDays(matchMonday, season.auto_finalize_offset_days ?? 7)} ${
+    season.auto_finalize_time ?? "11:00"
+  }`;
+  const scheduleDue = force || (scheduleEnabled && now >= scheduleDeadline);
+
+  if (!approveDue && !scheduleDue) {
+    if (!approveEnabled && !scheduleEnabled) {
+      return { ran: false, reason: "Automatic updates are switched off." };
+    }
+    return {
+      ran: false,
+      reason: `Not due yet (score approval ${approveEnabled ? approveDeadline : "off"}, schedule ${
+        scheduleEnabled ? scheduleDeadline : "off"
+      }).`,
+    };
   }
 
   const [teamsRes, slotsRes, matchesRes] = await Promise.all([
@@ -106,41 +126,62 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
 
   const stamp = new Date().toISOString();
 
-  // 1. Approve every submitted score that is still waiting.
-  const pending = matches.filter((m) => m.status === "pending");
-  if (pending.length > 0) {
-    const { error } = await admin
-      .from("matches")
-      .update({ status: "final", approved_at: stamp })
-      .in(
-        "id",
-        pending.map((m) => m.id),
-      );
-    if (error) throw new Error(error.message);
-    for (const match of pending) match.status = "final";
-  }
+  // Stage 1 — score approval. Runs at its own deadline; the schedule stage also
+  // needs final scores, so it triggers this stage too when it runs first.
+  let pending: MatchRow[] = [];
+  let noShows: MatchRow[] = [];
 
-  // 2. Matches with no score at all count as a 0-0 no-show.
-  const noShows = matches.filter((m) => m.status === "scheduled");
-  if (noShows.length > 0) {
-    const { error } = await admin
-      .from("matches")
-      .update({ status: "final", ...NO_SHOW_SCORE, approved_at: stamp })
-      .in(
-        "id",
-        noShows.map((m) => m.id),
-      );
-    if (error) throw new Error(error.message);
-    for (const match of noShows) {
-      match.status = "final";
-      match.s1a = 0;
-      match.s1b = 0;
-      match.s2a = 0;
-      match.s2b = 0;
+  if (approveDue || scheduleDue) {
+    // Approve every submitted score that is still waiting.
+    pending = matches.filter((m) => m.status === "pending");
+    if (pending.length > 0) {
+      const { error } = await admin
+        .from("matches")
+        .update({ status: "final", approved_at: stamp })
+        .in(
+          "id",
+          pending.map((m) => m.id),
+        );
+      if (error) throw new Error(error.message);
+      for (const match of pending) match.status = "final";
+    }
+
+    // Matches with no score at all count as a 0-0 no-show.
+    noShows = matches.filter((m) => m.status === "scheduled");
+    if (noShows.length > 0) {
+      const { error } = await admin
+        .from("matches")
+        .update({ status: "final", ...NO_SHOW_SCORE, approved_at: stamp })
+        .in(
+          "id",
+          noShows.map((m) => m.id),
+        );
+      if (error) throw new Error(error.message);
+      for (const match of noShows) {
+        match.status = "final";
+        match.s1a = 0;
+        match.s1b = 0;
+        match.s2a = 0;
+        match.s2b = 0;
+      }
     }
   }
 
-  // 3. Finalise and generate the next week.
+  // Stage 2 — promotion/relegation and next week's schedule.
+  if (!scheduleDue) {
+    return {
+      ran: true,
+      approved: pending.length,
+      noShows: noShows.length,
+      scoresApproved: true,
+      scheduleGenerated: false,
+      nextWeek: null,
+      reason: scheduleEnabled
+        ? `Schedule generation not due yet (${scheduleDeadline}).`
+        : "Automatic schedule generation is switched off.",
+    };
+  }
+
   const standings = computeStandings(slots, matches, teams);
   const assignment = buildNextAssignment(standings);
 
@@ -149,6 +190,8 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
       ran: true,
       approved: pending.length,
       noShows: noShows.length,
+      scoresApproved: true,
+      scheduleGenerated: false,
       nextWeek: null,
       seasonComplete: true,
     };
@@ -165,6 +208,8 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
     ran: true,
     approved: pending.length,
     noShows: noShows.length,
+    scoresApproved: true,
+    scheduleGenerated: true,
     nextWeek: weekNo + 1,
     seasonComplete: false,
   };

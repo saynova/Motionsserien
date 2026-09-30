@@ -27,33 +27,112 @@ const DAY_CHOICES = [
 ];
 
 export function AutoUpdateAdmin() {
-  const queryClient = useQueryClient();
   const settings = useQuery({
     queryKey: ["auto-update-settings"],
     queryFn: () => getAutoUpdateSettings(),
   });
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-6">
+      <h2 className="text-2xl font-bold uppercase tracking-wide">Automatic updates</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Score approval and the next week&apos;s schedule are set separately, so you can approve the
+        results at the submission deadline and publish the new schedule later. All times are Swedish
+        time.
+      </p>
+
+      <StageBlock
+        stage="approve"
+        title="Automatic score approval"
+        description="At this moment every submitted score is approved and any match with no score is recorded as a 0–0 no-show. Standings update straight away."
+        toggleLabel="Approve scores automatically"
+        toggleHint="Turn this off to approve every score by hand under Match scores."
+        nextLabel="Next score approval"
+        offLabel="Automatic score approval is switched off — approve scores yourself under Match scores."
+        enabled={settings.data?.approveEnabled ?? true}
+        offsetDays={settings.data?.approveOffsetDays ?? 2}
+        time={settings.data?.approveTime ?? "10:00"}
+        nextRun={settings.data?.approveNextRun ?? null}
+        loaded={Boolean(settings.data)}
+      />
+
+      <div className="mt-8 border-t border-border pt-6">
+        <StageBlock
+          stage="schedule"
+          title="Automatic schedule update"
+          description="At this moment promotion and relegation are applied and the next week's divisions, courts and times are published."
+          toggleLabel="Update the schedule automatically"
+          toggleHint="Turn this off to publish each new week by hand."
+          nextLabel="Next schedule update"
+          offLabel="Automatic schedule updates are switched off — finalise each week yourself under Match scores."
+          enabled={settings.data?.enabled ?? true}
+          offsetDays={settings.data?.offsetDays ?? 7}
+          time={settings.data?.time ?? "11:00"}
+          nextRun={settings.data?.nextRun ?? null}
+          currentWeek={settings.data?.currentWeek}
+          loaded={Boolean(settings.data)}
+        />
+      </div>
+
+      <ReminderSettingsBlock />
+    </section>
+  );
+}
+
+function StageBlock({
+  stage,
+  title,
+  description,
+  toggleLabel,
+  toggleHint,
+  nextLabel,
+  offLabel,
+  enabled: initialEnabled,
+  offsetDays: initialOffset,
+  time: initialTime,
+  nextRun,
+  currentWeek,
+  loaded: dataLoaded,
+}: {
+  stage: "approve" | "schedule";
+  title: string;
+  description: string;
+  toggleLabel: string;
+  toggleHint: string;
+  nextLabel: string;
+  offLabel: string;
+  enabled: boolean;
+  offsetDays: number;
+  time: string;
+  nextRun: string | null;
+  currentWeek?: number | undefined;
+  loaded: boolean;
+}) {
+  const queryClient = useQueryClient();
   const save = useServerFn(saveAutoUpdateSettings);
 
-  const [enabled, setEnabled] = useState(true);
-  const [offsetDays, setOffsetDays] = useState(7);
-  const [time, setTime] = useState("11:00");
+  const [enabled, setEnabled] = useState(initialEnabled);
+  const [offsetDays, setOffsetDays] = useState(initialOffset);
+  const [time, setTime] = useState(initialTime);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (loaded || !settings.data) return;
-    setEnabled(settings.data.enabled);
-    setOffsetDays(settings.data.offsetDays);
-    setTime(settings.data.time);
+    if (loaded || !dataLoaded) return;
+    setEnabled(initialEnabled);
+    setOffsetDays(initialOffset);
+    setTime(initialTime);
     setLoaded(true);
-  }, [loaded, settings.data]);
+  }, [loaded, dataLoaded, initialEnabled, initialOffset, initialTime]);
 
   async function persist() {
     setBusy(true);
     try {
-      await save({ data: { enabled, offsetDays, time } });
+      await save({ data: { stage, enabled, offsetDays, time } });
       await queryClient.invalidateQueries({ queryKey: ["auto-update-settings"] });
-      toast.success("Automatic update time saved.");
+      toast.success(
+        stage === "approve" ? "Score approval time saved." : "Schedule update time saved.",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save this setting.");
     } finally {
@@ -62,20 +141,14 @@ export function AutoUpdateAdmin() {
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-6">
-      <h2 className="text-2xl font-bold uppercase tracking-wide">Automatic updates</h2>
-      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Choose when the week closes by itself: submitted scores are approved, matches with no score
-        become 0–0, promotion and relegation are applied and the next week&apos;s schedule is
-        published. All times are Swedish time.
-      </p>
+    <div>
+      <h3 className="text-xl font-bold uppercase tracking-wide">{title}</h3>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
 
       <label className="mt-4 flex max-w-2xl items-center justify-between gap-4 rounded border border-border bg-secondary/30 p-3">
         <span>
-          <span className="block font-semibold">Update scores and schedule automatically</span>
-          <span className="block text-xs text-muted-foreground">
-            Turn this off to finalise every week by hand.
-          </span>
+          <span className="block font-semibold">{toggleLabel}</span>
+          <span className="block text-xs text-muted-foreground">{toggleHint}</span>
         </span>
         <Switch checked={enabled} onCheckedChange={setEnabled} />
       </label>
@@ -113,25 +186,21 @@ export function AutoUpdateAdmin() {
       </div>
 
       <p className="mt-3 text-sm">
-        {settings.data?.nextRun ? (
+        {nextRun ? (
           <>
-            <span className="font-semibold">Next automatic update:</span>{" "}
-            <span className="tabnum">{settings.data.nextRun}</span> (week{" "}
-            {settings.data.currentWeek})
+            <span className="font-semibold">{nextLabel}:</span>{" "}
+            <span className="tabnum">{nextRun}</span>
+            {currentWeek ? <> (week {currentWeek})</> : null}
           </>
         ) : (
-          <span className="text-muted-foreground">
-            Automatic updates are switched off — finalise each week yourself under Match scores.
-          </span>
+          <span className="text-muted-foreground">{offLabel}</span>
         )}
       </p>
 
       <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
         {busy ? "Saving…" : "Save"}
       </button>
-
-      <ReminderSettingsBlock />
-    </section>
+    </div>
   );
 }
 
