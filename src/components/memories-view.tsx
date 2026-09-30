@@ -1,7 +1,7 @@
 import type React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
-import { Camera, ChevronLeft, ChevronRight, Crown, Play, Star, Trophy, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Camera, ChevronLeft, ChevronRight, Crown, Film, Image as ImageIcon, Play, Sparkles, Star, Trophy, X } from "lucide-react";
 
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import type { ChampionEntry, GalleryPhoto } from "@/lib/memories.functions";
@@ -74,10 +74,23 @@ function PastChampion({ entry }: { entry: ChampionEntry }) {
   );
 }
 
-function weekTag(photo: GalleryPhoto): string {
+function weekNumber(photo: GalleryPhoto): number | null {
   const m = /(?:week|vecka|v\.?)\s*(\d{1,2})/i.exec(photo.caption ?? "");
-  if (m) return `Week ${m[1]}`;
+  return m ? Number(m[1]) : null;
+}
+
+function weekTag(photo: GalleryPhoto): string {
+  const n = weekNumber(photo);
+  if (n !== null) return `Week ${n}`;
   return new Date(photo.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function dateLabel(photo: GalleryPhoto): string {
+  return new Date(photo.created_at).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function Lightbox({
@@ -92,6 +105,9 @@ function Lightbox({
   onIndex: (i: number) => void;
 }) {
   const photo = photos[index]!;
+  const stripRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef<number | null>(null);
+
   const prev = useCallback(
     () => onIndex((index - 1 + photos.length) % photos.length),
     [index, photos.length, onIndex],
@@ -113,6 +129,13 @@ function Lightbox({
     };
   }, [onClose, prev, next]);
 
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const active = strip.querySelector<HTMLElement>(`[data-strip-index="${index}"]`);
+    active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [index]);
+
   const navBtn =
     "absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-background/30 bg-background/15 p-3 text-background backdrop-blur-md transition hover:bg-background/30";
 
@@ -121,8 +144,21 @@ function Lightbox({
       role="dialog"
       aria-modal="true"
       aria-label={photo.caption || (photo.media_type === "video" ? "Video" : "Photo")}
-      className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-foreground/80 p-4 backdrop-blur-xl"
+      className="fixed inset-0 z-50 flex animate-fade-in flex-col items-center justify-center bg-foreground/85 p-4 backdrop-blur-xl"
       onClick={onClose}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(e) => {
+        const start = touchX.current;
+        const end = e.changedTouches[0]?.clientX ?? null;
+        touchX.current = null;
+        if (start === null || end === null) return;
+        const dx = end - start;
+        if (Math.abs(dx) < 50 || photos.length < 2) return;
+        if (dx > 0) prev();
+        else next();
+      }}
     >
       <button
         type="button"
@@ -137,7 +173,7 @@ function Lightbox({
           <button
             type="button"
             aria-label="Previous"
-            className={`${navBtn} left-3 sm:left-6`}
+            className={`${navBtn} left-3 hidden sm:left-6 sm:block`}
             onClick={(e) => {
               e.stopPropagation();
               prev();
@@ -148,7 +184,7 @@ function Lightbox({
           <button
             type="button"
             aria-label="Next"
-            className={`${navBtn} right-3 sm:right-6`}
+            className={`${navBtn} right-3 hidden sm:right-6 sm:block`}
             onClick={(e) => {
               e.stopPropagation();
               next();
@@ -158,9 +194,10 @@ function Lightbox({
           </button>
         </>
       ) : null}
+
       <figure
         key={photo.id}
-        className="max-h-full w-full max-w-5xl animate-scale-in"
+        className="w-full max-w-5xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {photo.image_url ? (
@@ -171,26 +208,63 @@ function Lightbox({
               autoPlay
               playsInline
               preload="metadata"
-              className="max-h-[80vh] w-full rounded-2xl bg-black object-contain"
+              className="max-h-[68vh] w-full rounded-2xl bg-black object-contain"
             />
           ) : (
             <img
               src={photo.image_url}
               alt={photo.caption || "Match photo"}
-              className="max-h-[80vh] w-full rounded-2xl object-contain"
+              className="max-h-[68vh] w-full rounded-2xl object-contain"
             />
           )
         ) : null}
-        <figcaption className="mt-3 flex items-center justify-center gap-3 text-sm text-background">
+        <figcaption className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-background">
           <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-primary-foreground">
             {weekTag(photo)}
           </span>
-          {photo.caption ? <span>{photo.caption}</span> : null}
+          {photo.caption ? <span className="font-medium">{photo.caption}</span> : null}
+          <span className="text-background/70">{dateLabel(photo)}</span>
           <span className="text-background/60">
             {index + 1} / {photos.length}
           </span>
         </figcaption>
       </figure>
+
+      {photos.length > 1 ? (
+        <div
+          ref={stripRef}
+          className="mt-4 flex w-full max-w-5xl gap-2 overflow-x-auto pb-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {photos.map((p, i) => (
+            <button
+              key={p.id}
+              type="button"
+              data-strip-index={i}
+              aria-label={`Open ${p.caption || "media"} ${i + 1}`}
+              onClick={() => onIndex(i)}
+              className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                i === index
+                  ? "border-primary opacity-100"
+                  : "border-background/20 opacity-60 hover:opacity-100"
+              }`}
+            >
+              {p.image_url ? (
+                p.media_type === "video" ? (
+                  <video src={p.image_url} muted playsInline preload="metadata" className="h-full w-full bg-black object-cover" />
+                ) : (
+                  <img src={p.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                )
+              ) : null}
+              {p.media_type === "video" ? (
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <Play className="h-4 w-4 fill-current text-background drop-shadow" />
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -218,11 +292,148 @@ function SectionTitle({
   );
 }
 
+function FilterPill({
+  active,
+  onClick,
+  children,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  count?: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        active
+          ? "border-primary bg-primary text-primary-foreground shadow"
+          : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+      }`}
+    >
+      {children}
+      {typeof count === "number" ? (
+        <span className={active ? "text-primary-foreground/80" : "text-muted-foreground/70"}>{count}</span>
+      ) : null}
+    </button>
+  );
+}
+
+function MediaCard({
+  photo,
+  onOpen,
+  featured,
+}: {
+  photo: GalleryPhoto;
+  onOpen: () => void;
+  featured?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`group relative block overflow-hidden rounded-2xl border bg-card text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        featured
+          ? "border-[#d4a017]/50 ring-1 ring-[#d4a017]/25 sm:col-span-2 sm:row-span-2"
+          : "border-border"
+      }`}
+    >
+      <div className={`overflow-hidden bg-secondary ${featured ? "aspect-[16/10] sm:aspect-square" : "aspect-[4/3]"}`}>
+        {photo.image_url ? (
+          photo.media_type === "video" ? (
+            <video
+              src={photo.image_url}
+              muted
+              playsInline
+              preload="metadata"
+              className="h-full w-full bg-black object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+            />
+          ) : (
+            <img
+              src={photo.image_url}
+              alt={photo.caption || "Match photo"}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+              loading="lazy"
+            />
+          )
+        ) : null}
+      </div>
+
+      {photo.media_type === "video" ? (
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-background/40 bg-foreground/45 text-background backdrop-blur-md transition duration-300 group-hover:scale-110">
+            <Play className="ml-0.5 h-6 w-6 fill-current" />
+          </span>
+        </span>
+      ) : null}
+
+      <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary-foreground shadow">
+        {weekTag(photo)}
+      </span>
+
+      {photo.is_pinned ? (
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#d4a017] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-background shadow">
+          <Star className="h-3 w-3 fill-current" aria-hidden />
+          Featured
+        </span>
+      ) : null}
+
+      <span className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-gradient-to-t from-foreground/85 via-foreground/35 to-transparent px-3.5 pb-3 pt-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+        {photo.caption ? (
+          <span className={`font-semibold text-background ${featured ? "text-base" : "text-sm"}`}>
+            {photo.caption}
+          </span>
+        ) : null}
+        <span className="text-[11px] font-medium uppercase tracking-wide text-background/80">
+          {photo.media_type === "video" ? "Video" : "Photo"} · {dateLabel(photo)}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+type MediaFilter = "all" | "photo" | "video";
+
 export function MemoriesView() {
   const { data } = useSuspenseQuery(memoriesQueryOptions);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
+  const [weekFilter, setWeekFilter] = useState<number | null>(null);
   const [current, ...past] = data.champions;
-  const photos = data.photos;
+  const allPhotos = data.photos;
+
+  const counts = useMemo(() => {
+    let video = 0;
+    for (const p of allPhotos) if (p.media_type === "video") video += 1;
+    return { all: allPhotos.length, video, photo: allPhotos.length - video };
+  }, [allPhotos]);
+
+  const weeks = useMemo(() => {
+    const set = new Set<number>();
+    for (const p of allPhotos) {
+      const n = weekNumber(p);
+      if (n !== null) set.add(n);
+    }
+    return [...set].sort((a, b) => a - b);
+  }, [allPhotos]);
+
+  const photos = useMemo(
+    () =>
+      allPhotos.filter((p) => {
+        if (mediaFilter === "video" && p.media_type !== "video") return false;
+        if (mediaFilter === "photo" && p.media_type === "video") return false;
+        if (weekFilter !== null && weekNumber(p) !== weekFilter) return false;
+        return true;
+      }),
+    [allPhotos, mediaFilter, weekFilter],
+  );
+
+  useEffect(() => {
+    setOpenIndex(null);
+  }, [mediaFilter, weekFilter]);
 
   return (
     <div className="space-y-16">
@@ -270,63 +481,63 @@ export function MemoriesView() {
           title="Photos & Videos"
           sub="Match night moments from the Rackethall."
         />
-        {photos.length === 0 ? (
+
+        {allPhotos.length === 0 ? (
           <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
             Nothing here yet. Match day photos and videos will be published here.
           </p>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {photos.map((photo, i) => (
-              <button
-                key={photo.id}
-                type="button"
-                onClick={() => setOpenIndex(i)}
-                className="group relative block overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-shadow hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <div className="aspect-[4/3] overflow-hidden bg-secondary">
-                  {photo.image_url ? (
-                    photo.media_type === "video" ? (
-                      <video
-                        src={photo.image_url}
-                        muted
-                        playsInline
-                        preload="metadata"
-                        className="h-full w-full bg-black object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <img
-                        src={photo.image_url}
-                        alt={photo.caption || "Match photo"}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    )
-                  ) : null}
-                </div>
-                {photo.media_type === "video" ? (
-                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-background/40 bg-foreground/45 text-background backdrop-blur-md transition group-hover:scale-110">
-                      <Play className="ml-0.5 h-6 w-6 fill-current" />
-                    </span>
-                  </span>
-                ) : null}
-                <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary-foreground shadow">
-                  {weekTag(photo)}
-                </span>
-                {photo.is_pinned ? (
-                  <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#d4a017] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow">
-                    <Star className="h-3 w-3 fill-current" aria-hidden />
-                    Featured
-                  </span>
-                ) : null}
-                {photo.caption ? (
-                  <span className="block truncate px-3 py-2.5 text-sm font-medium text-muted-foreground">
-                    {photo.caption}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
+          <>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+              <FilterPill active={mediaFilter === "all"} onClick={() => setMediaFilter("all")} count={counts.all}>
+                <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                All moments
+              </FilterPill>
+              <FilterPill active={mediaFilter === "photo"} onClick={() => setMediaFilter("photo")} count={counts.photo}>
+                <ImageIcon className="h-3.5 w-3.5" aria-hidden />
+                Photos
+              </FilterPill>
+              <FilterPill active={mediaFilter === "video"} onClick={() => setMediaFilter("video")} count={counts.video}>
+                <Film className="h-3.5 w-3.5" aria-hidden />
+                Videos
+              </FilterPill>
+            </div>
+
+            {weeks.length > 0 ? (
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                <FilterPill active={weekFilter === null} onClick={() => setWeekFilter(null)}>
+                  Every week
+                </FilterPill>
+                {weeks.map((w) => (
+                  <FilterPill key={w} active={weekFilter === w} onClick={() => setWeekFilter(w)}>
+                    Week {w}
+                  </FilterPill>
+                ))}
+              </div>
+            ) : null}
+
+            {photos.length === 0 ? (
+              <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+                Nothing matches this filter yet. Try another week or media type.
+              </p>
+            ) : (
+              <div className="mt-8 grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {photos.map((photo, i) => (
+                  <MediaCard
+                    key={photo.id}
+                    photo={photo}
+                    featured={photo.is_pinned}
+                    onOpen={() => setOpenIndex(i)}
+                  />
+                ))}
+              </div>
+            )}
+
+            <p className="mx-auto mt-10 max-w-2xl rounded-2xl border border-border bg-card px-5 py-4 text-center text-sm text-muted-foreground">
+              Captured a great rally or a team photo on Monday? Send it to the General through{" "}
+              <span className="font-semibold text-foreground">Ask the General</span> to have it featured here.
+            </p>
+          </>
         )}
       </section>
 
