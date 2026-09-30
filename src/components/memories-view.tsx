@@ -399,7 +399,6 @@ export function MemoriesView() {
   const { data } = useSuspenseQuery(memoriesQueryOptions);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
-  const [weekFilter, setWeekFilter] = useState<number | null>(null);
   const [page, setPage] = useState(0);
 
   const [current, ...past] = data.champions;
@@ -508,18 +507,6 @@ export function MemoriesView() {
               </FilterPill>
             </div>
 
-            {weeks.length > 0 ? (
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <FilterPill active={weekFilter === null} onClick={() => setWeekFilter(null)}>
-                  Every week
-                </FilterPill>
-                {weeks.map((w) => (
-                  <FilterPill key={w} active={weekFilter === w} onClick={() => setWeekFilter(w)}>
-                    Week {w}
-                  </FilterPill>
-                ))}
-              </div>
-            ) : null}
 
             {photos.length === 0 ? (
               <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
