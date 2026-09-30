@@ -6,6 +6,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
+import { PlayerHistory } from "@/components/player-history";
 import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -190,6 +191,9 @@ function AccountPage() {
       </div>
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
       {error ? <p className="text-sm text-destructive">{(error as Error).message}</p> : null}
+      <div className="mb-6">
+        <PlayerHistory />
+      </div>
       {data ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <section className="rounded-lg border border-border bg-card p-4">

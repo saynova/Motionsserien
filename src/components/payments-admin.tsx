@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { AdminSendReceipt } from "@/components/admin-send-receipt";
 import { Switch } from "@/components/ui/switch";
 import { teamPaymentsQueryOptions } from "@/lib/tournament-query";
 import { bulkSetPaid, remindAllUnpaid, saveTeamPayment, sendPaymentReminder } from "@/lib/payments.functions";
@@ -299,6 +300,7 @@ export function PaymentsAdmin() {
         </ul>
         </>
       )}
+      <AdminSendReceipt />
     </section>
   );
 }
