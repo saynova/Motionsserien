@@ -430,7 +430,8 @@ export function MemoriesView() {
   useEffect(() => {
     setOpenIndex(null);
     setPage(0);
-  }, [mediaFilter, weekFilter]);
+  }, [mediaFilter]);
+
 
 
   return (
@@ -500,7 +501,7 @@ export function MemoriesView() {
 
             {photos.length === 0 ? (
               <p className="mt-8 rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-                Nothing matches this filter yet. Try another week or media type.
+                Nothing matches this filter yet. Try another media type.
               </p>
             ) : (
               <div className="mt-8 grid auto-rows-auto grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
