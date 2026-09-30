@@ -126,41 +126,62 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
 
   const stamp = new Date().toISOString();
 
-  // 1. Approve every submitted score that is still waiting.
-  const pending = matches.filter((m) => m.status === "pending");
-  if (pending.length > 0) {
-    const { error } = await admin
-      .from("matches")
-      .update({ status: "final", approved_at: stamp })
-      .in(
-        "id",
-        pending.map((m) => m.id),
-      );
-    if (error) throw new Error(error.message);
-    for (const match of pending) match.status = "final";
-  }
+  // Stage 1 — score approval. Runs at its own deadline; the schedule stage also
+  // needs final scores, so it triggers this stage too when it runs first.
+  let pending: MatchRow[] = [];
+  let noShows: MatchRow[] = [];
 
-  // 2. Matches with no score at all count as a 0-0 no-show.
-  const noShows = matches.filter((m) => m.status === "scheduled");
-  if (noShows.length > 0) {
-    const { error } = await admin
-      .from("matches")
-      .update({ status: "final", ...NO_SHOW_SCORE, approved_at: stamp })
-      .in(
-        "id",
-        noShows.map((m) => m.id),
-      );
-    if (error) throw new Error(error.message);
-    for (const match of noShows) {
-      match.status = "final";
-      match.s1a = 0;
-      match.s1b = 0;
-      match.s2a = 0;
-      match.s2b = 0;
+  if (approveDue || scheduleDue) {
+    // Approve every submitted score that is still waiting.
+    pending = matches.filter((m) => m.status === "pending");
+    if (pending.length > 0) {
+      const { error } = await admin
+        .from("matches")
+        .update({ status: "final", approved_at: stamp })
+        .in(
+          "id",
+          pending.map((m) => m.id),
+        );
+      if (error) throw new Error(error.message);
+      for (const match of pending) match.status = "final";
+    }
+
+    // Matches with no score at all count as a 0-0 no-show.
+    noShows = matches.filter((m) => m.status === "scheduled");
+    if (noShows.length > 0) {
+      const { error } = await admin
+        .from("matches")
+        .update({ status: "final", ...NO_SHOW_SCORE, approved_at: stamp })
+        .in(
+          "id",
+          noShows.map((m) => m.id),
+        );
+      if (error) throw new Error(error.message);
+      for (const match of noShows) {
+        match.status = "final";
+        match.s1a = 0;
+        match.s1b = 0;
+        match.s2a = 0;
+        match.s2b = 0;
+      }
     }
   }
 
-  // 3. Finalise and generate the next week.
+  // Stage 2 — promotion/relegation and next week's schedule.
+  if (!scheduleDue) {
+    return {
+      ran: true,
+      approved: pending.length,
+      noShows: noShows.length,
+      scoresApproved: true,
+      scheduleGenerated: false,
+      nextWeek: null,
+      reason: scheduleEnabled
+        ? `Schedule generation not due yet (${scheduleDeadline}).`
+        : "Automatic schedule generation is switched off.",
+    };
+  }
+
   const standings = computeStandings(slots, matches, teams);
   const assignment = buildNextAssignment(standings);
 
@@ -169,6 +190,8 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
       ran: true,
       approved: pending.length,
       noShows: noShows.length,
+      scoresApproved: true,
+      scheduleGenerated: false,
       nextWeek: null,
       seasonComplete: true,
     };
@@ -185,6 +208,8 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
     ran: true,
     approved: pending.length,
     noShows: noShows.length,
+    scoresApproved: true,
+    scheduleGenerated: true,
     nextWeek: weekNo + 1,
     seasonComplete: false,
   };
