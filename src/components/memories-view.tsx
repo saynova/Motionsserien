@@ -410,24 +410,14 @@ export function MemoriesView() {
     return { all: allPhotos.length, video, photo: allPhotos.length - video };
   }, [allPhotos]);
 
-  const weeks = useMemo(() => {
-    const set = new Set<number>();
-    for (const p of allPhotos) {
-      const n = weekNumber(p);
-      if (n !== null) set.add(n);
-    }
-    return [...set].sort((a, b) => a - b);
-  }, [allPhotos]);
-
   const photos = useMemo(
     () =>
       allPhotos.filter((p) => {
         if (mediaFilter === "video" && p.media_type !== "video") return false;
         if (mediaFilter === "photo" && p.media_type === "video") return false;
-        if (weekFilter !== null && weekNumber(p) !== weekFilter) return false;
         return true;
       }),
-    [allPhotos, mediaFilter, weekFilter],
+    [allPhotos, mediaFilter],
   );
 
   const PER_PAGE = 24;
