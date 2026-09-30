@@ -402,6 +402,8 @@ export function MemoriesView() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
   const [weekFilter, setWeekFilter] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
+
   const [current, ...past] = data.champions;
   const allPhotos = data.photos;
 
@@ -533,10 +535,6 @@ export function MemoriesView() {
               </div>
             )}
 
-            <p className="mx-auto mt-10 max-w-2xl rounded-2xl border border-border bg-card px-5 py-4 text-center text-sm text-muted-foreground">
-              Captured a great rally or a team photo on Monday? Send it to the General through{" "}
-              <span className="font-semibold text-foreground">Ask the General</span> to have it featured here.
-            </p>
           </>
         )}
       </section>
