@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Camera, ChevronLeft, ChevronRight, Crown, Film, Image as ImageIcon, Play, Sparkles, Star, Trophy, X } from "lucide-react";
 
 import { memoriesQueryOptions } from "@/lib/tournament-query";
-import type { ChampionEntry, GalleryPhoto } from "@/lib/memories.functions";
+import { recordGalleryView, type ChampionEntry, type GalleryPhoto } from "@/lib/memories.functions";
 
 function ChampionHero({ entry }: { entry: ChampionEntry }) {
   return (
@@ -431,6 +431,15 @@ export function MemoriesView() {
     setOpenIndex(null);
     setPage(0);
   }, [mediaFilter]);
+
+  const viewed = useRef(new Set<string>());
+  useEffect(() => {
+    if (openIndex === null) return;
+    const item = photos[openIndex];
+    if (!item || viewed.current.has(item.id)) return;
+    viewed.current.add(item.id);
+    recordGalleryView({ data: { id: item.id } }).catch(() => {});
+  }, [openIndex, photos]);
 
 
 

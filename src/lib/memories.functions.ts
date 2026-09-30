@@ -19,6 +19,7 @@ export type GalleryPhoto = {
   media_type: "photo" | "video";
   sort_order: number;
   is_pinned: boolean;
+  view_count: number;
   created_at: string;
 };
 
@@ -59,7 +60,7 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
         .order("sort_order", { ascending: true }),
       client
         .from("gallery_photos")
-        .select("id, caption, image_path, media_type, sort_order, is_pinned, created_at")
+        .select("id, caption, image_path, media_type, sort_order, is_pinned, view_count, created_at")
         // Pinned items first, then newest uploads.
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false }),
@@ -357,5 +358,19 @@ export const setSeasonFinished = createServerFn({ method: "POST" })
           .eq("id", existing.data.id)
       : await client.from("site_support_settings").insert({ season_finished: data.finished });
     if (result.error) throw new Error(result.error.message);
+    return { ok: true as const };
+  });
+
+/** Counts one view when a visitor opens a photo or video. */
+export const recordGalleryView = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: string }) => {
+    if (typeof data?.id !== "string" || !/^[0-9a-f-]{36}$/i.test(data.id)) throw new Error("Invalid item.");
+    return { id: data.id };
+  })
+  .handler(async ({ data }) => {
+    const { readVisitorMeta } = await import("./visitors.server");
+    if (readVisitorMeta().isBot) return { ok: true as const };
+    const { adminClient } = await import("./tournament.server");
+    await adminClient().rpc("increment_gallery_view" as never, { _id: data.id } as never);
     return { ok: true as const };
   });
