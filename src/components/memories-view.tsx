@@ -433,9 +433,18 @@ export function MemoriesView() {
     [allPhotos, mediaFilter, weekFilter],
   );
 
+  const PER_PAGE = 24;
+  const pageCount = Math.max(1, Math.ceil(photos.length / PER_PAGE));
+  const pagedPhotos = useMemo(
+    () => photos.slice(page * PER_PAGE, (page + 1) * PER_PAGE),
+    [photos, page],
+  );
+
   useEffect(() => {
     setOpenIndex(null);
+    setPage(0);
   }, [mediaFilter, weekFilter]);
+
 
   return (
     <div className="space-y-16">
