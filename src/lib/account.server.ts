@@ -73,6 +73,7 @@ export async function notifyPlayer(
   messageEn: string,
   messageSv: string,
   key: string,
+  button?: { url: string; label: string },
 ) {
   if (!to) return;
   try {
@@ -86,7 +87,8 @@ export async function notifyPlayer(
         title: subject,
         messageEn,
         messageSv,
-        buttonUrl: `${siteOrigin()}/account`,
+        buttonUrl: button?.url ?? `${siteOrigin()}/account`,
+        ...(button ? { buttonLabel: button.label } : {}),
         signature: settings.signature,
         footer: settings.footer,
       },

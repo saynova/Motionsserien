@@ -282,3 +282,39 @@ export const sampleReceiptPdf = createServerFn({ method: "POST" })
     return { base64: Buffer.from(pdf).toString("base64") };
   });
 
+
+export const adminSendReceipt = createServerFn({ method: "POST" })
+  .inputValidator((d: { amount: number; name: string; email: string }) => {
+    const amount = Number(d?.amount);
+    if (amount !== 400 && amount !== 800) throw new Error("Choose 400 kr or 800 kr.");
+    const name = String(d?.name ?? "").trim();
+    if (name.length < 2 || name.length > 80) throw new Error("Enter the person's name.");
+    const email = String(d?.email ?? "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) throw new Error("Enter a valid email.");
+    return { amount: amount as 400 | 800, name, email };
+  })
+  .handler(async ({ data }) => {
+    const db = await gate();
+    const season = await db.from("seasons").select("name, registration_key").eq("is_active", true).limit(1).maybeSingle();
+    const key = season.data?.registration_key || season.data?.name || "";
+    const { buildReceiptPdf, todayStockholm, notifyPlayer } = await import("./account.server");
+    const pdf = await buildReceiptPdf(data.amount, data.name, todayStockholm(), key);
+    const path = `admin/${crypto.randomUUID()}.pdf`;
+    const up = await db.storage.from("invoices").upload(path, pdf, { contentType: "application/pdf" });
+    if (up.error) throw new Error("Could not save the receipt.");
+    const signed = await db.storage.from("invoices").createSignedUrl(path, 60 * 60 * 24 * 30);
+    if (signed.error || !signed.data) throw new Error("Could not create the download link.");
+    await notifyPlayer(
+      data.email,
+      `Your receipt (${data.amount} kr) – ${key || "Motionsserien"}`,
+      `Your receipt for ${data.amount} kr is ready. Use the button below to download it (the link works for 30 days).`,
+      `Ditt kvitto på ${data.amount} kr är klart. Använd knappen nedan för att ladda ner det (länken fungerar i 30 dagar).`,
+      `admin-receipt-${path}`,
+      { url: signed.data.signedUrl, label: "Download receipt" },
+    );
+    const safe = (v: string) => v.replace(/[^\w-]+/g, "-");
+    return {
+      base64: Buffer.from(pdf).toString("base64"),
+      filename: `Kvitto-${safe(key)}-${safe(data.name)}-${data.amount}kr.pdf`,
+    };
+  });
