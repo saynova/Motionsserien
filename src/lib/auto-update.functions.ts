@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export type AutoUpdateSettings = {
+  /** Score auto-approval stage. */
+  approveEnabled: boolean;
+  approveOffsetDays: number;
+  approveTime: string;
+  /** Next score approval run in Swedish time, or null when off. */
+  approveNextRun: string | null;
+  /** Next week schedule generation stage. */
   enabled: boolean;
   offsetDays: number;
   time: string;
