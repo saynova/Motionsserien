@@ -39,7 +39,7 @@ export const getAutoUpdateSettings = createServerFn({ method: "GET" }).handler(
     const season = await supabase
       .from("seasons")
       .select(
-        "id, start_monday, current_week, auto_finalize_enabled, auto_finalize_offset_days, auto_finalize_time",
+        "id, start_monday, current_week, auto_finalize_enabled, auto_finalize_offset_days, auto_finalize_time, auto_approve_enabled, auto_approve_offset_days, auto_approve_time",
       )
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -53,8 +53,15 @@ export const getAutoUpdateSettings = createServerFn({ method: "GET" }).handler(
     const nextRun = row.auto_finalize_enabled
       ? `${addDays(matchDay, row.auto_finalize_offset_days)} ${row.auto_finalize_time}`
       : null;
+    const approveNextRun = row.auto_approve_enabled
+      ? `${addDays(matchDay, row.auto_approve_offset_days)} ${row.auto_approve_time}`
+      : null;
 
     return {
+      approveEnabled: row.auto_approve_enabled,
+      approveOffsetDays: row.auto_approve_offset_days,
+      approveTime: row.auto_approve_time,
+      approveNextRun,
       enabled: row.auto_finalize_enabled,
       offsetDays: row.auto_finalize_offset_days,
       time: row.auto_finalize_time,
@@ -64,15 +71,23 @@ export const getAutoUpdateSettings = createServerFn({ method: "GET" }).handler(
   },
 );
 
+type StageInput = {
+  stage: "approve" | "schedule";
+  enabled: boolean;
+  offsetDays: number;
+  time: string;
+};
+
 export const saveAutoUpdateSettings = createServerFn({ method: "POST" })
-  .inputValidator((data: { enabled: boolean; offsetDays: number; time: string }) => {
+  .inputValidator((data: StageInput) => {
+    const stage = data?.stage === "approve" ? "approve" : "schedule";
     const offsetDays = Number(data?.offsetDays);
     if (!Number.isInteger(offsetDays) || offsetDays < 0 || offsetDays > 13) {
       throw new Error("Choose a day between match day and 13 days after.");
     }
     const time = String(data?.time ?? "").trim();
     if (!TIME_PATTERN.test(time)) throw new Error("Enter a time such as 11:00.");
-    return { enabled: Boolean(data?.enabled), offsetDays, time };
+    return { stage, enabled: Boolean(data?.enabled), offsetDays, time };
   })
   .handler(async ({ data }) => {
     const { requireAdmin } = await import("./admin-session.server");
@@ -88,14 +103,19 @@ export const saveAutoUpdateSettings = createServerFn({ method: "POST" })
       .maybeSingle();
     if (season.error) throw new Error(season.error.message);
     if (!season.data) throw new Error("No active season found.");
-    const { error } = await supabase
-      .from("seasons")
-      .update({
-        auto_finalize_enabled: data.enabled,
-        auto_finalize_offset_days: data.offsetDays,
-        auto_finalize_time: data.time,
-      })
-      .eq("id", season.data.id);
+    const patch =
+      data.stage === "approve"
+        ? {
+            auto_approve_enabled: data.enabled,
+            auto_approve_offset_days: data.offsetDays,
+            auto_approve_time: data.time,
+          }
+        : {
+            auto_finalize_enabled: data.enabled,
+            auto_finalize_offset_days: data.offsetDays,
+            auto_finalize_time: data.time,
+          };
+    const { error } = await supabase.from("seasons").update(patch).eq("id", season.data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
