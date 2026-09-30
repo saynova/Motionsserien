@@ -275,6 +275,7 @@ export type Database = {
           media_type: string
           sort_order: number
           updated_at: string
+          view_count: number
         }
         Insert: {
           caption?: string
@@ -285,6 +286,7 @@ export type Database = {
           media_type?: string
           sort_order?: number
           updated_at?: string
+          view_count?: number
         }
         Update: {
           caption?: string
@@ -295,6 +297,7 @@ export type Database = {
           media_type?: string
           sort_order?: number
           updated_at?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -1141,6 +1144,7 @@ export type Database = {
         }
         Returns: string
       }
+      increment_gallery_view: { Args: { _id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
