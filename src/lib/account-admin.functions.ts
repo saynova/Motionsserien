@@ -297,7 +297,7 @@ export const adminSendReceipt = createServerFn({ method: "POST" })
     const db = await gate();
     const season = await db.from("seasons").select("name, registration_key").eq("is_active", true).limit(1).maybeSingle();
     const key = season.data?.registration_key || season.data?.name || "";
-    const { buildReceiptPdf, todayStockholm, notifyPlayer } = await import("./account.server");
+    const { buildReceiptPdf, todayStockholm, notifyPlayer, siteDownloadLink } = await import("./account.server");
     const pdf = await buildReceiptPdf(data.amount, data.name, todayStockholm(), key);
     const path = `admin/${crypto.randomUUID()}.pdf`;
     const up = await db.storage.from("invoices").upload(path, pdf, { contentType: "application/pdf" });
@@ -310,7 +310,7 @@ export const adminSendReceipt = createServerFn({ method: "POST" })
       `Your receipt for ${data.amount} kr is ready. Use the button below to download it (the link works for 30 days).`,
       `Ditt kvitto på ${data.amount} kr är klart. Använd knappen nedan för att ladda ner det (länken fungerar i 30 dagar).`,
       `admin-receipt-${path}`,
-      { url: signed.data.signedUrl, label: "Download receipt" },
+      { url: siteDownloadLink(signed.data.signedUrl), label: "Download receipt" },
     );
     const safe = (v: string) => v.replace(/[^\w-]+/g, "-");
     return {
@@ -318,3 +318,28 @@ export const adminSendReceipt = createServerFn({ method: "POST" })
       filename: `Kvitto-${safe(key)}-${safe(data.name)}-${data.amount}kr.pdf`,
     };
   });
+
+export type ReceiptPlayerOption = { name: string; email: string; teamName: string; division: number | null };
+
+/** Players in the running tournament, grouped by division, for the receipt picker. */
+export const listReceiptPlayers = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ReceiptPlayerOption[]> => {
+    const db = await gate();
+    const season = await db.from("seasons").select("id, current_week").eq("is_active", true).limit(1).maybeSingle();
+    if (!season.data) return [];
+    const slots = await db.from("week_slots").select("team_id, division")
+      .eq("season_id", season.data.id).eq("week_no", season.data.current_week);
+    const div = new Map((slots.data ?? []).map((s) => [s.team_id as string, s.division as number]));
+    const ids = [...div.keys()];
+    if (ids.length === 0) return [];
+    const [teams, players] = await Promise.all([
+      db.from("teams").select("id, name").in("id", ids),
+      db.from("team_players").select("team_id, name, email, player_no").in("team_id", ids),
+    ]);
+    const tn = new Map((teams.data ?? []).map((t) => [t.id, t.name]));
+    return (players.data ?? [])
+      .filter((p) => p.name?.trim())
+      .map((p) => ({ name: p.name, email: p.email ?? "", teamName: tn.get(p.team_id) ?? "", division: div.get(p.team_id) ?? null }))
+      .sort((a, b) => (a.division ?? 99) - (b.division ?? 99) || a.teamName.localeCompare(b.teamName) || a.name.localeCompare(b.name));
+  },
+);

@@ -174,3 +174,17 @@ export async function receiptBase64(path: string): Promise<string> {
   if (error || !data) throw new Error("Could not open the receipt.");
   return Buffer.from(await data.arrayBuffer()).toString("base64");
 }
+
+/**
+ * Rewrites a backend download link so it opens through motionsserien.se
+ * (office networks block the backend's own address).
+ */
+export function siteDownloadLink(signedUrl: string): string {
+  try {
+    const u = new URL(signedUrl);
+    const path = u.pathname.replace(/^\/+/, "");
+    return `https://www.motionsserien.se/api/public/sb/${path}${u.search}`;
+  } catch {
+    return signedUrl;
+  }
+}

@@ -328,7 +328,8 @@ async function storeBackup(file: BackupFile): Promise<{ path: string; url: strin
   if (upload.error) throw new Error(upload.error.message);
   const signed = await admin.storage.from("backups").createSignedUrl(path, 60 * 60 * 24 * 365);
   if (signed.error || !signed.data) throw new Error(signed.error?.message ?? "Could not create the link.");
-  return { path, url: signed.data.signedUrl };
+  const { siteDownloadLink } = await import("./account.server");
+  return { path, url: siteDownloadLink(signed.data.signedUrl) };
 }
 
 export type BackupResult = {
