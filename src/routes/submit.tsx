@@ -154,6 +154,12 @@ function SubmitPage() {
         description="Best of three sets. Set 1 and Set 2 are played to 21. Set 3 is played only when the first two sets are split 1–1, and only to 11 points. Team A is the first-listed team."
       />
 
+      {season.score_submission_enabled === false ? (
+        <p className="mb-4 max-w-2xl rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-lg font-bold text-destructive">
+          It's Locked!
+        </p>
+      ) : null}
+
       <form
         onSubmit={onSubmit}
         className="max-w-2xl space-y-6 rounded-lg border border-border bg-card p-6"
@@ -321,7 +327,7 @@ function SubmitPage() {
 
         <button
           type="submit"
-          disabled={busy || !selected}
+          disabled={busy || !selected || season.score_submission_enabled === false}
           className="rounded bg-primary px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
         >
           {busy ? "Submitting…" : "Submit result"}
