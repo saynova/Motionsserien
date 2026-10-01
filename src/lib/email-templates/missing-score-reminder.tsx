@@ -67,8 +67,8 @@ const Email = ({
             </Link>
           </Text>
           <Text style={muted}>
-            You have 2 days to submit the score. A missing result is treated as a no-show and
-            recorded as 0–0.
+            You have until Wednesday at 10:00 (Swedish time) to submit the score. A missing result
+            is treated as a no-show and recorded as 0–0.
           </Text>
           <Text style={text}>{closingEn}</Text>
         </Section>
@@ -89,8 +89,8 @@ const Email = ({
             </Link>
           </Text>
           <Text style={muted}>
-            Ni har 2 dagar på er att rapportera resultatet. Saknat resultat räknas som walkover och
-            registreras som 0–0.
+            Ni har till onsdag kl 10:00 (svensk tid) på er att rapportera resultatet. Saknat
+            resultat räknas som walkover och registreras som 0–0.
           </Text>
           <Text style={text}>{closingSv}</Text>
         </Section>
