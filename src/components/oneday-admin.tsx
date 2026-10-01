@@ -53,7 +53,7 @@ function SettingsTab() {
   const { data } = useQuery(onedaySettingsAdminQueryOptions);
   const save = useServerFn(updateOnedaySettings);
   const qc = useQueryClient();
-  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "" });
+  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day" });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (data) setForm(data);
@@ -92,6 +92,10 @@ function SettingsTab() {
       <div>
         <label className={labelCls}>Event name</label>
         <input className={field} maxLength={80} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+      </div>
+      <div>
+        <label className={labelCls}>Menu name (replaces "Register" in the menu while the event is shown)</label>
+        <input className={field} maxLength={24} value={form.menuLabel} onChange={(e) => setForm((f) => ({ ...f, menuLabel: e.target.value }))} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>

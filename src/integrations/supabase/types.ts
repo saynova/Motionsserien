@@ -556,6 +556,7 @@ export type Database = {
           event_date: string
           id: string
           is_open: boolean
+          menu_label: string
           name: string
           payment_details: string
           updated_at: string
@@ -567,6 +568,7 @@ export type Database = {
           event_date?: string
           id?: string
           is_open?: boolean
+          menu_label?: string
           name?: string
           payment_details?: string
           updated_at?: string
@@ -578,6 +580,7 @@ export type Database = {
           event_date?: string
           id?: string
           is_open?: boolean
+          menu_label?: string
           name?: string
           payment_details?: string
           updated_at?: string

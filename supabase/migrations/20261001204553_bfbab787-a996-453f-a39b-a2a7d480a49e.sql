@@ -1,0 +1,1 @@
+ALTER TABLE public.oneday_settings ADD COLUMN menu_label text NOT NULL DEFAULT 'One-day';
