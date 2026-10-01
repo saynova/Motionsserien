@@ -3,7 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Lock, ShieldCheck, Smartphone, Trophy, Users } from "lucide-react";
 
 import { AccountRegistration } from "@/components/account-registration";
-import { TournamentCountdown } from "@/components/tournament-countdown";
+import { useEffect, useState } from "react";
 import { registeredTeamsQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
 
 const TOTAL_SPOTS = 30;
@@ -187,6 +187,34 @@ function RegisterPage() {
           )}
         </section>
       </div>
+    </div>
+  );
+}
+
+function SimpleCountdown({ startsAt }: { startsAt: string | null | undefined }) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+  if (!startsAt || now === null) return null;
+  const ms = new Date(startsAt).getTime() - now;
+  if (Number.isNaN(ms) || ms <= 0) return null;
+  const parts: [number, string][] = [
+    [Math.floor(ms / 86_400_000), "days"],
+    [Math.floor((ms % 86_400_000) / 3_600_000), "hrs"],
+    [Math.floor((ms % 3_600_000) / 60_000), "min"],
+    [Math.floor((ms % 60_000) / 1000), "sec"],
+  ];
+  return (
+    <div className="mt-4 flex gap-2" aria-label="Time until the tournament starts">
+      {parts.map(([n, l]) => (
+        <div key={l} className="min-w-14 rounded-lg border border-border bg-card px-2 py-1.5 text-center">
+          <div className="tabnum font-display text-xl font-bold">{n}</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{l}</div>
+        </div>
+      ))}
     </div>
   );
 }
