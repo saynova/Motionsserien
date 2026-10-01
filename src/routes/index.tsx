@@ -398,7 +398,7 @@ function StandingsPage() {
                   {rows.map((row) => (
                     <tr key={row.teamId} className={`border-b border-border/60 transition-colors last:border-0 even:bg-secondary/30 hover:bg-primary/5 ${row.rank === 1 ? "bg-amber-500/5" : ""}`}>
                       <td className="tabnum px-2 py-2.5 font-bold text-muted-foreground sm:px-3">
-                        {row.rank === 1 ? <Crown className="size-4 text-amber-500" aria-label="Leader" /> : row.rank}
+                        {row.rank === 1 && division === 1 ? <Crown className="size-4 text-amber-500" aria-label="Leader" /> : row.rank}
                       </td>
                       <td className="min-w-0 px-1 py-2.5 font-semibold">
                         <button
