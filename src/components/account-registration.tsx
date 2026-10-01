@@ -9,8 +9,24 @@ import { getMyAccount, registerMyTeam, requestPartner } from "@/lib/account.func
 import { submitRegistration } from "@/lib/registration.functions";
 import { registrationInfoQueryOptions } from "@/lib/tournament-query";
 import { DIVISION_COUNT } from "@/lib/tournament";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font-medium";
+function FormSkeleton() {
+  return (
+    <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm" aria-busy="true" aria-label="Loading form">
+      <Skeleton className="h-6 w-1/2" />
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="space-y-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ))}
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
+
+const field = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-shadow hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15";
 const label = "mb-1 block text-xs uppercase tracking-widest text-muted-foreground";
 
 
@@ -38,7 +54,7 @@ function DivisionSelect({ value, onChange }: { value: string; onChange: (v: stri
 export function AccountRegistration() {
   const signed = useSignedIn();
   const info = useQuery(registrationInfoQueryOptions);
-  if (signed === "loading" || info.isLoading) return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
+  if (signed === "loading" || info.isLoading) return <FormSkeleton />;
   if (signed === "out") {
     if (info.data?.requireSignIn === false) return <GuestRegistration />;
     return (
@@ -182,7 +198,7 @@ function GuestRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
+      <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
       </button>
       <div className="space-y-1 rounded border-2 border-destructive bg-destructive/10 p-3">
@@ -222,7 +238,7 @@ function SignedInRegistration() {
   const partner = account.data?.partnerRequest;
   const activePartner = partner && !["withdrawn", "rejected"].includes(partner.status);
 
-  if (account.isLoading) return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
+  if (account.isLoading) return <FormSkeleton />;
   if (account.error) return <div className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">{(account.error as Error).message}</div>;
 
   if (current || activePartner) {
@@ -366,7 +382,7 @@ function SignedInRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
+      <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
       {mode === "team" ? (

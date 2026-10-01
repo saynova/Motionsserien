@@ -323,9 +323,19 @@ function RootComponent() {
           <ContactBar />
         </main>
         <footer className="mx-auto w-full max-w-[96rem] space-y-2 px-3 pb-8 text-xs leading-relaxed text-muted-foreground sm:px-5 lg:px-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/80">
-            Organized by Hitachi IF and Ludvika Badminton Club
-          </p>
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Organized by
+            </span>
+            {["Hitachi IF", "Ludvika Badminton Club"].map((club) => (
+              <span
+                key={club}
+                className="rounded-md border border-border bg-card px-3 py-1 font-display text-xs font-bold tracking-wide text-foreground/80"
+              >
+                {club}
+              </span>
+            ))}
+          </div>
           <p>
             Mondays · Divisions 1–5 at 19:00, Divisions 6–10 at 20:00 · Please arrive 10 minutes
             before your start time. ·{" "}
