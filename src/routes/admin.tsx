@@ -83,6 +83,7 @@ import {
   rejectMatch,
   setMatchScore,
   startNewSeason,
+  setScoreSubmissionEnabled,
 } from "@/lib/tournament.functions";
 
 const SECTIONS = [
@@ -344,6 +345,7 @@ function AdminConsole() {
   const signOut = useServerFn(adminSignOut);
   const approveAll = useServerFn(approveAllPending);
   const approveOne = useServerFn(approveMatches);
+  const toggleSubmission = useServerFn(setScoreSubmissionEnabled);
   const reject = useServerFn(rejectMatch);
   const noShow = useServerFn(markNoShow);
   const saveScore = useServerFn(setMatchScore);
@@ -653,6 +655,30 @@ function AdminConsole() {
 
         {section === "matches" ? (
           <>
+            <div className="glass-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold">"Submit Your Score" for players</p>
+                <p className="text-xs text-muted-foreground">
+                  {season.score_submission_enabled === false
+                    ? "Locked — players see \"It's Locked!\" and cannot submit."
+                    : "Open — players can submit scores."}
+                </p>
+              </div>
+              <button
+                className={season.score_submission_enabled === false ? btn : btnGhost}
+                disabled={busy}
+                onClick={() => {
+                  const next = season.score_submission_enabled === false;
+                  run(
+                    () => toggleSubmission({ data: { enabled: next } }),
+                    next ? "Score submission turned on." : "Score submission locked.",
+                  );
+                }}
+              >
+                {season.score_submission_enabled === false ? "Turn on" : "Turn off"}
+              </button>
+            </div>
+
             {notFinal.length > 0 ? (
               <p className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
                 {notFinal.length} match{notFinal.length === 1 ? "" : "es"} in week {week} are not

@@ -1,0 +1,1 @@
+ALTER TABLE public.seasons ADD COLUMN IF NOT EXISTS score_submission_enabled boolean NOT NULL DEFAULT true;

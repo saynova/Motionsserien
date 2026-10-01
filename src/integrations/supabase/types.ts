@@ -734,6 +734,7 @@ export type Database = {
           reminder_offset_days: number
           reminder_time: string
           require_login_for_scores: boolean
+          score_submission_enabled: boolean
           start_monday: string
           total_weeks: number
         }
@@ -760,6 +761,7 @@ export type Database = {
           reminder_offset_days?: number
           reminder_time?: string
           require_login_for_scores?: boolean
+          score_submission_enabled?: boolean
           start_monday: string
           total_weeks?: number
         }
@@ -786,6 +788,7 @@ export type Database = {
           reminder_offset_days?: number
           reminder_time?: string
           require_login_for_scores?: boolean
+          score_submission_enabled?: boolean
           start_monday?: string
           total_weeks?: number
         }

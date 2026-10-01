@@ -57,6 +57,7 @@ export type SeasonRow = {
   total_weeks: number;
   current_week: number;
   is_active: boolean;
+  score_submission_enabled?: boolean;
 };
 
 export type TournamentSnapshot = {
