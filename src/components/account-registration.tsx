@@ -38,7 +38,7 @@ function DivisionSelect({ value, onChange }: { value: string; onChange: (v: stri
 export function AccountRegistration() {
   const signed = useSignedIn();
   const info = useQuery(registrationInfoQueryOptions);
-  if (signed === "loading" || info.isLoading) return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
+  if (signed === "loading" || info.isLoading) return <FormSkeleton />;
   if (signed === "out") {
     if (info.data?.requireSignIn === false) return <GuestRegistration />;
     return (
@@ -222,7 +222,7 @@ function SignedInRegistration() {
   const partner = account.data?.partnerRequest;
   const activePartner = partner && !["withdrawn", "rejected"].includes(partner.status);
 
-  if (account.isLoading) return <div className="rounded-lg border border-border bg-card p-4 text-sm">Loading…</div>;
+  if (account.isLoading) return <FormSkeleton />;
   if (account.error) return <div className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">{(account.error as Error).message}</div>;
 
   if (current || activePartner) {
