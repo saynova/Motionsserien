@@ -368,6 +368,7 @@ function AdminConsole() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
   const notifications = useAdminNotifications();
+  const onedayRegs = useQuery({ ...onedayRegistrationsAdminQueryOptions, refetchInterval: 60_000 });
 
   const { section } = Route.useSearch();
   const navigate = Route.useNavigate();
