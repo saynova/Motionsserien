@@ -10,11 +10,21 @@ A new section on motionsserien.se for a separate one-day badminton event. The cu
 - When registration is closed, the page says "Registration is closed" instead of showing the form.
 - A link in the site menu, which shows only while the event is switched on.
 
-## Admin (new "One-day tournament" section)
-- Event settings: show the event (on/off), registration open/closed, name, date, venue, fee and Swish text.
-- A list of all registrations, with filters for Pending, Approved and Rejected. Each row has Approve, Reject and Delete, and shows team count totals.
-- New registrations also appear in admin Notifications.
-- Divisions and matches are not part of this step. They will be added once registrations are in.
+## Page design
+A professional event page with its own look, separate from the weekly series pages but using the site's fonts and colours:
+- **Top banner:** the event name, plus clear blocks for date, venue and fee, and a "Register your team" button.
+- **Countdown** to the event day, plus a live count of approved teams.
+- **Registration card** with a clean two-column form, clear field labels and friendly error messages.
+- **Approved teams** shown as tidy cards, not a plain table.
+- Works well on phones.
+
+## Admin: one "One day tournament" section
+Every control for this event lives under a single **One day tournament** entry in the admin menu, kept apart from the current tournament's sections. It has tabs:
+- **Event settings:** show the event (on/off), registration open/closed, name, date, venue, and fee and Swish text.
+- **Registrations:** Pending, Approved and Rejected filters, with Approve, Reject and Delete on each row and team count totals.
+- Later tabs for **Divisions**, **Schedule** and **Scores** will be added here in step 2.
+
+New one-day registrations show a badge on this menu entry. They don't go into the current tournament's Notifications list.
 
 ## Protection
 - The same team name can't be registered twice for this event, checked without regard to upper and lower case.
