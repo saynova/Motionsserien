@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CalendarRange, Layers3, Lock, ScrollText, Send, Trophy, Users, X } from "lucide-react";
+import { CalendarRange, Crown, Layers3, Lock, ScrollText, Send, Trophy, Users, X } from "lucide-react";
 
 
 import { MovementBadge, PageHeader, ScoreText, StatusPill, WeeklyBanner } from "@/components/tournament-ui";
@@ -220,6 +220,8 @@ function StandingsPage() {
   const currentWeek = season.current_week;
   const [week, setWeek] = useState(currentWeek);
   const [detailTeamId, setDetailTeamId] = useState<string | null>(null);
+  const [divFilter, setDivFilter] = useState<number | "all">("all");
+  const [views, setViews] = useState<Record<number, "standings" | "matches">>({});
 
   const availableWeeks = [...new Set(slots.map((s) => s.week_no))]
     .filter((w) => w <= currentWeek)
@@ -312,8 +314,22 @@ function StandingsPage() {
         </div>
       </PageHeader>
 
+      <div className="sticky top-16 z-20 -mx-1 mb-5 flex gap-2 overflow-x-auto bg-background/85 px-1 py-2 backdrop-blur">
+        {(["all", ...divisions] as const).map((d) => (
+          <button
+            key={d}
+            type="button"
+            onClick={() => setDivFilter(d)}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${divFilter === d ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+          >
+            {d === "all" ? "All divisions" : `Div ${d}`}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
-        {divisions.map((division) => {
+        {divisions.filter((d) => divFilter === "all" || d === divFilter).map((division) => {
+          const view = views[division] ?? "standings";
           const rows = standings.get(division) ?? [];
           const divisionMatches = weekMatches
             .filter((m) => m.division === division)
@@ -330,8 +346,21 @@ function StandingsPage() {
                 <span className="tabnum text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {sessionForDivision(division)} · Court {courtForDivision(division)}
                 </span>
+                <div className="flex w-full rounded-full border border-border bg-background p-0.5 text-xs font-semibold sm:w-auto">
+                  {(["standings", "matches"] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setViews((p) => ({ ...p, [division]: v }))}
+                      className={`flex-1 rounded-full px-3 py-1 capitalize transition-colors sm:flex-none ${view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      {v === "standings" ? "Standings" : `Match results (${divisionMatches.length})`}
+                    </button>
+                  ))}
+                </div>
               </div>
 
+              {view === "standings" ? (
               <table className="w-full table-fixed text-sm">
                 <colgroup>
                   <col className="w-7 sm:w-9" />
@@ -367,9 +396,9 @@ function StandingsPage() {
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={row.teamId} className="border-b border-border/60 last:border-0">
+                    <tr key={row.teamId} className={`border-b border-border/60 transition-colors last:border-0 even:bg-secondary/30 hover:bg-primary/5 ${row.rank === 1 ? "bg-amber-500/5" : ""}`}>
                       <td className="tabnum px-2 py-2.5 font-bold text-muted-foreground sm:px-3">
-                        {row.rank}
+                        {row.rank === 1 ? <Crown className="size-4 text-amber-500" aria-label="Leader" /> : row.rank}
                       </td>
                       <td className="min-w-0 px-1 py-2.5 font-semibold">
                         <button
@@ -401,8 +430,8 @@ function StandingsPage() {
                   ))}
                 </tbody>
               </table>
-
-              <ul className="divide-y divide-border/60 border-t border-border bg-background/30">
+              ) : (
+              <ul className="divide-y divide-border/60 bg-background/30">
                 {divisionMatches.map((match) => {
                   const teamName = (id: string) =>
                     teams.find((t) => t.id === id)?.name ?? "Unknown";
@@ -422,6 +451,7 @@ function StandingsPage() {
                   );
                 })}
               </ul>
+              )}
             </section>
           );
         })}
