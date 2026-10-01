@@ -64,6 +64,7 @@ function RegisterPage() {
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
               Team <span className="text-primary">registration</span>
             </h1>
+            <SimpleCountdown startsAt={info.tournamentStartsAt} />
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {info.requireSignIn === false
                 ? "Register your team with both players, or sign in to manage it from your account. An admin reviews every entry."
@@ -90,7 +91,6 @@ function RegisterPage() {
         </div>
       </section>
 
-      <TournamentCountdown startsAt={info.tournamentStartsAt} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <div className="space-y-4">
