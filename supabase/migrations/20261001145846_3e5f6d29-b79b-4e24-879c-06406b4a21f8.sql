@@ -1,0 +1,1 @@
+GRANT SELECT (score_unlock_at) ON public.seasons TO anon, authenticated;

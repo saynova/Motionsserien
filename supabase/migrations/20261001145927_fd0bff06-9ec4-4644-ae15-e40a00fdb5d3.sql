@@ -1,0 +1,1 @@
+GRANT SELECT (score_submission_enabled) ON public.seasons TO anon, authenticated;
