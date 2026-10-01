@@ -201,10 +201,6 @@ function GuestRegistration() {
       <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
       </button>
-      <div className="space-y-1 rounded border-2 border-destructive bg-destructive/10 p-3">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-destructive">Late Cancellation</h3>
-        <p className="text-sm font-medium text-destructive">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
-      </div>
     </form>
   );
 }
@@ -385,13 +381,6 @@ function SignedInRegistration() {
       <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
-      {mode === "team" ? (
-        <div className="space-y-1 rounded border-2 border-destructive bg-destructive/10 p-3">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-destructive">Late Cancellation</h3>
-          <p className="text-sm font-medium text-destructive">If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.</p>
-        </div>
-      ) : null}
-
     </form>
   );
 }
