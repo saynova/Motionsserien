@@ -154,10 +154,11 @@ export const submitScore = createServerFn({ method: "POST" })
     if (matchInfo.error) throw new Error(matchInfo.error.message);
     const season = await supabase
       .from("seasons")
-      .select("require_login_for_scores, registration_key")
+      .select("require_login_for_scores, registration_key, score_submission_enabled")
       .eq("id", matchInfo.data.season_id)
       .single();
     if (season.error) throw new Error(season.error.message);
+    if (season.data.score_submission_enabled === false) throw new Error("It's Locked!");
     if (season.data.require_login_for_scores) {
       const { optionalUser } = await import("./account.server");
       const user = await optionalUser();
@@ -275,6 +276,19 @@ export const adminSignOut = createServerFn({ method: "POST" }).handler(async () 
 });
 
 // --------------------------------------------------------------- admin actions
+
+export const setScoreSubmissionEnabled = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => ({ enabled: Boolean(data?.enabled) }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient()
+      .from("seasons")
+      .update({ score_submission_enabled: data.enabled })
+      .eq("is_active", true);
+    if (error) throw new Error(error.message);
+    return { enabled: data.enabled };
+  });
 
 export const approveMatches = createServerFn({ method: "POST" })
   .inputValidator((data: { matchIds: string[] }) => {

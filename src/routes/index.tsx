@@ -236,6 +236,12 @@ function StandingsPage() {
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
             <div className="mt-4 flex flex-wrap items-start gap-4">
+              {season.score_submission_enabled === false ? (
+                <span className="inline-flex h-10 shrink-0 items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-4 text-sm font-semibold text-destructive">
+                  <Lock className="size-4" aria-hidden="true" />
+                  It's Locked!
+                </span>
+              ) : (
               <Button
                 size="default"
                 className="h-10 shrink-0 gap-2 bg-gradient-to-r from-[#6366f1] to-[#4f46e5] font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-[0_8px_20px_rgba(79,70,229,0.35)] active:translate-y-px"
@@ -246,6 +252,7 @@ function StandingsPage() {
                   Submit Your Score
                 </Link>
               </Button>
+              )}
               <div className="min-w-0 flex-1 sm:max-w-md">
                 <MissingScores season={season} week={currentWeek} matches={matches.filter((m) => m.week_no === currentWeek)} teams={teams} />
               </div>
