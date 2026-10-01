@@ -735,6 +735,7 @@ export type Database = {
           reminder_time: string
           require_login_for_scores: boolean
           score_submission_enabled: boolean
+          score_unlock_at: string | null
           start_monday: string
           total_weeks: number
         }
@@ -762,6 +763,7 @@ export type Database = {
           reminder_time?: string
           require_login_for_scores?: boolean
           score_submission_enabled?: boolean
+          score_unlock_at?: string | null
           start_monday: string
           total_weeks?: number
         }
@@ -789,6 +791,7 @@ export type Database = {
           reminder_time?: string
           require_login_for_scores?: boolean
           score_submission_enabled?: boolean
+          score_unlock_at?: string | null
           start_monday?: string
           total_weeks?: number
         }

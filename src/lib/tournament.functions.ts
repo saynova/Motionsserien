@@ -45,7 +45,29 @@ async function requireAdmin() {
 const MATCH_COLUMNS =
   "id, week_no, division, match_no, team_a_id, team_b_id, court, start_time, status, s1a, s1b, s2a, s2b, s3a, s3b, submitted_by";
 const SLOT_COLUMNS = "id, week_no, team_id, division, position, tie_break_adj";
-const SEASON_COLUMNS = "id, name, start_monday, total_weeks, current_week, is_active, score_submission_enabled";
+const SEASON_COLUMNS =
+  "id, name, start_monday, total_weeks, current_week, is_active, score_submission_enabled, score_unlock_at";
+
+/** "YYYY-MM-DD HH:mm" in Swedish time. */
+function stockholmNowText(): string {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(", ", " ");
+}
+
+/** Submission is open when switched on, or when a scheduled unlock time has passed. */
+function scoreSubmissionOpen(enabled: boolean | undefined, unlockAt: string | null | undefined): boolean {
+  if (enabled !== false) return true;
+  return Boolean(unlockAt) && stockholmNowText() >= (unlockAt as string);
+}
 
 export const getTournament = createServerFn({ method: "GET" }).handler(
   async (): Promise<TournamentSnapshot> => {
@@ -60,8 +82,13 @@ export const getTournament = createServerFn({ method: "GET" }).handler(
       .limit(1)
       .maybeSingle();
     if (seasonResult.error) throw new Error(seasonResult.error.message);
-    const season = seasonResult.data as SeasonRow | null;
-    if (!season) throw new Error("No active season found.");
+    const rawSeason = seasonResult.data as (SeasonRow & { score_unlock_at?: string | null }) | null;
+    if (!rawSeason) throw new Error("No active season found.");
+    const { score_unlock_at, ...seasonRest } = rawSeason;
+    const season: SeasonRow = {
+      ...seasonRest,
+      score_submission_enabled: scoreSubmissionOpen(rawSeason.score_submission_enabled, score_unlock_at),
+    };
 
     const [teamsResult, playersResult, slotsResult, matchesResult] = await Promise.all([
       supabase.from("teams").select("id, name, start_division").order("name"),
@@ -154,11 +181,13 @@ export const submitScore = createServerFn({ method: "POST" })
     if (matchInfo.error) throw new Error(matchInfo.error.message);
     const season = await supabase
       .from("seasons")
-      .select("require_login_for_scores, registration_key, score_submission_enabled")
+      .select("require_login_for_scores, registration_key, score_submission_enabled, score_unlock_at")
       .eq("id", matchInfo.data.season_id)
       .single();
     if (season.error) throw new Error(season.error.message);
-    if (season.data.score_submission_enabled === false) throw new Error("It's Locked!");
+    if (!scoreSubmissionOpen(season.data.score_submission_enabled, season.data.score_unlock_at)) {
+      throw new Error("It's Locked!");
+    }
     if (season.data.require_login_for_scores) {
       const { optionalUser } = await import("./account.server");
       const user = await optionalUser();
@@ -284,10 +313,49 @@ export const setScoreSubmissionEnabled = createServerFn({ method: "POST" })
     const { adminClient } = await import("./tournament.server");
     const { error } = await adminClient()
       .from("seasons")
-      .update({ score_submission_enabled: data.enabled })
+      .update(data.enabled ? { score_submission_enabled: true, score_unlock_at: null } : { score_submission_enabled: false })
       .eq("is_active", true);
     if (error) throw new Error(error.message);
     return { enabled: data.enabled };
+  });
+
+export const getScoreUnlockSettings = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const { adminClient } = await import("./tournament.server");
+  const { data, error } = await adminClient()
+    .from("seasons")
+    .select("score_submission_enabled, score_unlock_at")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  const unlockAt = data?.score_unlock_at ?? null;
+  return {
+    manuallyOpen: data?.score_submission_enabled !== false,
+    unlockAt,
+    open: scoreSubmissionOpen(data?.score_submission_enabled, unlockAt),
+  };
+});
+
+export const saveScoreUnlock = createServerFn({ method: "POST" })
+  .inputValidator((data: { unlockAt: string | null }) => {
+    const value = data?.unlockAt ? String(data.unlockAt).trim() : null;
+    if (value && !/^\d{4}-\d{2}-\d{2} ([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
+      throw new Error("Choose a valid date and time.");
+    }
+    return { unlockAt: value };
+  })
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    // Scheduling an unlock implies the button is locked until then.
+    const patch = data.unlockAt
+      ? { score_unlock_at: data.unlockAt, score_submission_enabled: false }
+      : { score_unlock_at: null };
+    const { error } = await adminClient().from("seasons").update(patch).eq("is_active", true);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
   });
 
 export const approveMatches = createServerFn({ method: "POST" })
