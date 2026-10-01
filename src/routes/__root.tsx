@@ -297,11 +297,6 @@ function TitleSync() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const isRegistrationPage = pathname === "/register";
-  const registrationInfo = useQuery({
-    ...registrationInfoQueryOptions,
-    enabled: isRegistrationPage,
-  });
 
   const isAdmin = pathname.startsWith("/admin");
 
@@ -317,6 +312,22 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PublicLayout />
+      <Toaster position="top-center" />
+    </QueryClientProvider>
+  );
+}
+
+function PublicLayout() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isRegistrationPage = pathname === "/register";
+  const registrationInfo = useQuery({
+    ...registrationInfoQueryOptions,
+    enabled: isRegistrationPage,
+  });
+
+  return (
+    <>
       <VisitLogger />
       <TitleSync />
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
@@ -350,7 +361,6 @@ function RootComponent() {
           </p>
         </footer>
       </div>
-      <Toaster position="top-center" />
-    </QueryClientProvider>
+    </>
   );
 }
