@@ -370,9 +370,11 @@ function StandingsPage() {
                     <tr key={row.teamId} className="border-b border-border/60 last:border-0">
                       <td className="tabnum px-2 py-2.5 font-bold text-muted-foreground sm:px-3">
                         {division === 1 && row.rank === 1 ? (
-                          <span className="inline-flex size-5 items-center justify-center text-primary" title="Tournament leader">
-                            <Crown className="size-5" aria-hidden="true" />
-                            <span className="sr-only">Tournament leader</span>
+                          <span className="champion-crown inline-flex size-5 items-center justify-center" title="Champion!">
+                            <span className="champion-flower-left pointer-events-none absolute -left-0.5 -top-1 text-[7px] leading-none text-champion-flower" aria-hidden="true">✿</span>
+                            <Crown className="size-5 fill-champion-gold-light/40 stroke-champion-gold-dark" strokeWidth={2.25} aria-hidden="true" />
+                            <span className="champion-flower-right pointer-events-none absolute -right-0.5 -top-0.5 text-[6px] leading-none text-champion-flower" aria-hidden="true">✿</span>
+                            <span className="sr-only">Champion!</span>
                           </span>
                         ) : row.rank}
                       </td>
