@@ -296,13 +296,25 @@ export const setRegistrationStatus = createServerFn({ method: "POST" })
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
     const db = adminClient();
+    const { data: prev } = await db.from("registrations").select("status").eq("id", data.id).maybeSingle();
     const { data: reg, error } = await db
       .from("registrations")
       .update({ status: data.status })
       .eq("id", data.id)
-      .select("team_name, target_season, previous_division")
+      .select("team_name, target_season, previous_division, player1_email, player2_email")
       .single();
     if (error) throw new Error(error.message);
+    if ((data.status === "accepted" || data.status === "rejected") && prev?.status !== data.status) {
+      const { sendRegistrationStatusEmails } = await import("./registration-status-email.server");
+      await sendRegistrationStatusEmails({
+        client: db,
+        status: data.status === "accepted" ? "approved" : "rejected",
+        tournamentName: `Motionsserien ${reg.target_season}`.trim(),
+        teamName: reg.team_name,
+        emails: [reg.player1_email, reg.player2_email],
+        key: data.id,
+      });
+    }
     // Keep the seeding board in sync: approved teams join it, others leave it.
     const seeds = await db
       .from("season_seeds")
