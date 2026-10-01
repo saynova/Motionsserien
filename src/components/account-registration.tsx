@@ -9,6 +9,22 @@ import { getMyAccount, registerMyTeam, requestPartner } from "@/lib/account.func
 import { submitRegistration } from "@/lib/registration.functions";
 import { registrationInfoQueryOptions } from "@/lib/tournament-query";
 import { DIVISION_COUNT } from "@/lib/tournament";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function FormSkeleton() {
+  return (
+    <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm" aria-busy="true" aria-label="Loading form">
+      <Skeleton className="h-6 w-1/2" />
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="space-y-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ))}
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
 
 const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const label = "mb-1 block text-xs uppercase tracking-widest text-muted-foreground";
