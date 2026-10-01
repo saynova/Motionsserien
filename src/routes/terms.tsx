@@ -58,7 +58,7 @@ function TermsPage() {
         description="Please read these terms before using this site. By submitting a shuttle order or a team registration, you accept them."
       />
       <p className="mb-6 text-xs uppercase tracking-widest text-muted-foreground">
-        Last updated: 29 September 2026
+        Last updated: 1 October 2026
       </p>
 
       <div className="space-y-6">
@@ -164,7 +164,11 @@ function TermsPage() {
           </p>
         </Section>
 
-        <Section title="5. Shuttle purchases">
+        <Section title="5. Fees, cancellations & shuttle purchases">
+          <p>
+            If a team cancels late and does not provide a replacement team, an invoice of 800 SEK
+            may be issued to the registered team.
+          </p>
           <p>
             Shuttle boxes cost <strong>135 kr</strong>, paid by Swish to{" "}
             <strong>1234785069, Ludvika Badmintonklubb</strong>, with the team name as the Swish
