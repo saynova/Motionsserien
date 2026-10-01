@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CalendarRange, Layers3, Lock, ScrollText, Send, Trophy, Users, X } from "lucide-react";
+import { CalendarRange, Crown, Layers3, Lock, ScrollText, Send, Trophy, Users, X } from "lucide-react";
 
 
 import { MovementBadge, PageHeader, ScoreText, StatusPill, WeeklyBanner } from "@/components/tournament-ui";
@@ -369,7 +369,12 @@ function StandingsPage() {
                   {rows.map((row) => (
                     <tr key={row.teamId} className="border-b border-border/60 last:border-0">
                       <td className="tabnum px-2 py-2.5 font-bold text-muted-foreground sm:px-3">
-                        {row.rank}
+                        {division === 1 && row.rank === 1 ? (
+                          <span className="inline-flex size-5 items-center justify-center text-primary" title="Tournament leader">
+                            <Crown className="size-5" aria-hidden="true" />
+                            <span className="sr-only">Tournament leader</span>
+                          </span>
+                        ) : row.rank}
                       </td>
                       <td className="min-w-0 px-1 py-2.5 font-semibold">
                         <button
