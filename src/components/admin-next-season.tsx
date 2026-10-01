@@ -36,6 +36,34 @@ const btn =
 const btnGhost =
   "rounded border border-border bg-secondary px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors hover:bg-secondary/70 disabled:opacity-40";
 
+function stockholmLocalToIso(value: string): string {
+  const [datePart, timePart] = value.split("T");
+  const dateValues = datePart?.split("-").map(Number);
+  const timeValues = timePart?.split(":").map(Number);
+  if (!dateValues || !timeValues || dateValues.length !== 3 || timeValues.length < 2) {
+    throw new Error("Choose a valid tournament start time.");
+  }
+  const [year, month, day] = dateValues;
+  const [hour, minute] = timeValues;
+  if (year === undefined || month === undefined || day === undefined || hour === undefined || minute === undefined) {
+    throw new Error("Choose a valid tournament start time.");
+  }
+  const desiredAsUtc = Date.UTC(year, month - 1, day, hour, minute);
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const rendered = formatter.formatToParts(new Date(desiredAsUtc));
+  const part = (type: Intl.DateTimeFormatPartTypes) => Number(rendered.find((item) => item.type === type)?.value ?? 0);
+  const renderedAsUtc = Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute"));
+  return new Date(desiredAsUtc - (renderedAsUtc - desiredAsUtc)).toISOString();
+}
+
 function useRunner() {
   const [busy, setBusy] = useState(false);
   const queryClient = useQueryClient();
@@ -347,7 +375,7 @@ export function NextSeasonAdmin() {
             disabled={busy || !tournamentStart}
             onClick={() =>
               run(
-                () => saveTournamentStart({ data: { startsAt: new Date(tournamentStart).toISOString() } }),
+                () => saveTournamentStart({ data: { startsAt: stockholmLocalToIso(tournamentStart) } }),
                 "Tournament start saved.",
                 [["registration-info"]],
               )
