@@ -10,6 +10,7 @@ import {
   saveAutoUpdateSettings,
   saveReminderSettings,
 } from "@/lib/auto-update.functions";
+import { getScoreUnlockSettings, saveScoreUnlock } from "@/lib/tournament.functions";
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
@@ -74,8 +75,110 @@ export function AutoUpdateAdmin() {
         />
       </div>
 
+      <ScoreUnlockBlock />
+
       <ReminderSettingsBlock />
     </section>
+  );
+}
+
+function ScoreUnlockBlock() {
+  const queryClient = useQueryClient();
+  const settings = useQuery({ queryKey: ["score-unlock"], queryFn: () => getScoreUnlockSettings() });
+  const save = useServerFn(saveScoreUnlock);
+  const [enabled, setEnabled] = useState(false);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("18:30");
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (loaded || !settings.data) return;
+    if (settings.data.unlockAt) {
+      const [d = "", t = "18:30"] = settings.data.unlockAt.split(" ");
+      setEnabled(true);
+      setDate(d);
+      setTime(t);
+    }
+    setLoaded(true);
+  }, [loaded, settings.data]);
+
+  async function persist() {
+    if (enabled && !date) {
+      toast.error("Choose a date.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await save({ data: { unlockAt: enabled ? `${date} ${time}` : null } });
+      await queryClient.invalidateQueries({ queryKey: ["score-unlock"] });
+      await queryClient.invalidateQueries({ queryKey: ["tournament"] });
+      toast.success(enabled ? "Automatic unlock scheduled." : "Automatic unlock switched off.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this setting.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const data = settings.data;
+  return (
+    <div className="mt-8 border-t border-border pt-6">
+      <h3 className="text-xl font-bold uppercase tracking-wide">Automatic score submission unlock</h3>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Keep &quot;Submit Your Score&quot; locked and open it automatically at the date and time you choose
+        (Swedish time). Saving a time locks the button until then.
+      </p>
+
+      <label className="mt-4 flex max-w-2xl items-center justify-between gap-4 rounded border border-border bg-secondary/30 p-3">
+        <span>
+          <span className="block font-semibold">Unlock automatically</span>
+          <span className="block text-xs text-muted-foreground">
+            Turn this off to open the button yourself under Match scores.
+          </span>
+        </span>
+        <Switch checked={enabled} onCheckedChange={setEnabled} />
+      </label>
+
+      <div className="mt-4 grid max-w-2xl gap-4 sm:grid-cols-2">
+        <label className="space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Date</span>
+          <input
+            type="date"
+            className={`${control} w-full`}
+            value={date}
+            disabled={!enabled}
+            onChange={(event) => setDate(event.target.value)}
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Time</span>
+          <input
+            type="time"
+            className={`${control} w-full`}
+            value={time}
+            disabled={!enabled}
+            onChange={(event) => setTime(event.target.value)}
+          />
+        </label>
+      </div>
+
+      <p className="mt-3 text-sm">
+        {!data ? null : data.open ? (
+          <span className="font-semibold text-primary">Open now — players can submit scores.</span>
+        ) : data.unlockAt ? (
+          <>
+            <span className="font-semibold">Locked until:</span> <span className="tabnum">{data.unlockAt}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">Locked — no automatic unlock scheduled.</span>
+        )}
+      </p>
+
+      <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
+        {busy ? "Saving…" : "Save"}
+      </button>
+    </div>
   );
 }
 
