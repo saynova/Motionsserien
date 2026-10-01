@@ -237,7 +237,7 @@ function StandingsPage() {
             <p className="mt-1 text-sm text-muted-foreground">Report the result for admin approval.</p>
             <div className="mt-4 flex flex-wrap items-start gap-4">
               {season.score_submission_enabled === false ? (
-                <span className="inline-flex h-10 shrink-0 items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-4 text-sm font-semibold text-destructive">
+                <span className="inline-flex h-10 shrink-0 cursor-not-allowed items-center gap-2 rounded-md bg-gradient-to-r from-[#6366f1] to-[#4f46e5] px-4 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)]">
                   <Lock className="size-4" aria-hidden="true" />
                   It's Locked!
                 </span>
