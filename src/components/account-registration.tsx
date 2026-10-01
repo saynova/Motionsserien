@@ -26,7 +26,7 @@ function FormSkeleton() {
   );
 }
 
-const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font-medium";
+const field = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-shadow hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15";
 const label = "mb-1 block text-xs uppercase tracking-widest text-muted-foreground";
 
 
@@ -198,7 +198,7 @@ function GuestRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
+      <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
       </button>
       <div className="space-y-1 rounded border-2 border-destructive bg-destructive/10 p-3">
@@ -382,7 +382,7 @@ function SignedInRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <button type="submit" disabled={busy || !accepted} className="w-full rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-40">
+      <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </button>
       {mode === "team" ? (
