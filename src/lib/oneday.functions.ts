@@ -9,6 +9,7 @@ export type OnedayInfo = {
   eventDate: string;
   venue: string;
   paymentDetails: string;
+  menuLabel: string;
 };
 
 export type OnedayPublicTeam = { id: string; team_name: string; player1_name: string; player2_name: string };
@@ -36,7 +37,7 @@ async function readSettings() {
   const supabase = await db();
   const { data, error } = await supabase
     .from("oneday_settings")
-    .select("id, visible, is_open, name, event_date, venue, payment_details")
+    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label")
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -53,6 +54,7 @@ export const getOnedayInfo = createServerFn({ method: "GET" }).handler(async ():
     eventDate: s?.event_date ?? "",
     venue: s?.venue ?? "",
     paymentDetails: s?.payment_details ?? "",
+    menuLabel: s?.menu_label || "One-day",
   };
 });
 
@@ -117,6 +119,7 @@ export const getOnedaySettingsAdmin = createServerFn({ method: "GET" }).handler(
     eventDate: s?.event_date ?? "",
     venue: s?.venue ?? "",
     paymentDetails: s?.payment_details ?? "",
+    menuLabel: s?.menu_label || "One-day",
   };
 });
 
@@ -127,6 +130,7 @@ const settingsSchema = z.object({
   eventDate: z.string().trim().max(40),
   venue: z.string().trim().max(160),
   paymentDetails: z.string().trim().max(1000),
+  menuLabel: z.string().trim().min(1, "Enter a menu name").max(24),
 });
 
 export const updateOnedaySettings = createServerFn({ method: "POST" })
@@ -141,6 +145,7 @@ export const updateOnedaySettings = createServerFn({ method: "POST" })
       event_date: data.eventDate,
       venue: data.venue,
       payment_details: data.paymentDetails,
+      menu_label: data.menuLabel,
     };
     const result = existing
       ? await supabase.from("oneday_settings").update(payload).eq("id", existing.id)
