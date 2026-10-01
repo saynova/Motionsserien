@@ -60,6 +60,10 @@ export const Route = createFileRoute("/")({
           url: "https://www.motionsserien.se/",
           description:
             "Weekly Monday badminton ladder with 30 teams across 10 divisions, with promotion and relegation each week.",
+          startDate: "2026-09-07T19:00:00+02:00",
+          endDate: "2026-11-09T22:00:00+01:00",
+          eventStatus: "https://schema.org/EventScheduled",
+          eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
           eventSchedule: {
             "@type": "Schedule",
             byDay: "https://schema.org/Monday",
