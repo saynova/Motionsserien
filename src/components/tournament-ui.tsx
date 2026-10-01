@@ -185,6 +185,9 @@ export function ContactBar() {
       aria-label="Contact"
       className="glass-surface mt-10 grid w-full grid-cols-1 items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto]"
     >
+      <p className="border-b border-border pb-3 text-xs leading-relaxed text-muted-foreground sm:col-span-2">
+        If a team cancels late and does not provide a replacement team, an invoice of 800 SEK may be issued to the registered team.
+      </p>
       <div className="flex items-center gap-3">
         <UserRound className="size-5 text-primary" aria-hidden="true" />
         <div>
