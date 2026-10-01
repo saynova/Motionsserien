@@ -167,11 +167,26 @@ export const setOnedayStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const supabase = await admin();
-    const { error } = await supabase
+    const { data: prev } = await supabase.from("oneday_registrations").select("status").eq("id", data.id).maybeSingle();
+    const { data: reg, error } = await supabase
       .from("oneday_registrations")
       .update({ status: data.status, seen_by_admin: true })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .select("team_name, email")
+      .single();
     if (error) throw new Error(error.message);
+    if (data.status !== "pending" && prev?.status !== data.status) {
+      const settings = await readSettings();
+      const { sendRegistrationStatusEmails } = await import("./registration-status-email.server");
+      await sendRegistrationStatusEmails({
+        client: supabase,
+        status: data.status,
+        tournamentName: settings?.name || "One-day badminton tournament",
+        teamName: reg.team_name,
+        emails: [reg.email],
+        key: `oneday-${data.id}`,
+      });
+    }
     return { ok: true as const };
   });
 
