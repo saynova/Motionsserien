@@ -38,7 +38,7 @@ function useCountdown(target: string) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     setNow(Date.now());
-    const t = window.setInterval(() => setNow(Date.now()), 60_000);
+    const t = window.setInterval(() => setNow(Date.now()), 1_000);
     return () => window.clearInterval(t);
   }, []);
   if (!target || now === null) return null;
@@ -47,7 +47,8 @@ function useCountdown(target: string) {
   const days = Math.floor(ms / 86_400_000);
   const hours = Math.floor((ms % 86_400_000) / 3_600_000);
   const mins = Math.floor((ms % 3_600_000) / 60_000);
-  return { days, hours, mins };
+  const secs = Math.floor((ms % 60_000) / 1_000);
+  return { days, hours, mins, secs };
 }
 
 function OneDayPage() {
@@ -95,6 +96,7 @@ function OneDayPage() {
                 [countdown.days, "days"],
                 [countdown.hours, "hrs"],
                 [countdown.mins, "min"],
+                [countdown.secs, "sec"],
               ].map(([n, l]) => (
                 <div key={l} className="min-w-14 rounded-lg border border-border bg-card px-2 py-1.5 text-center">
                   <div className="tabnum font-display text-xl font-bold">{n}</div>
