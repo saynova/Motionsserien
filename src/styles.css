@@ -50,6 +50,10 @@
   --color-banner-muted: var(--banner-muted);
   --color-banner-gold: var(--banner-gold);
   --color-banner-gold-soft: var(--banner-gold-soft);
+  --color-champion-gold: var(--champion-gold);
+  --color-champion-gold-light: var(--champion-gold-light);
+  --color-champion-gold-dark: var(--champion-gold-dark);
+  --color-champion-flower: var(--champion-flower);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -97,6 +101,10 @@
   --banner-muted: oklch(0.393 0.08 274);
   --banner-gold: oklch(0.73 0.16 78);
   --banner-gold-soft: oklch(0.95 0.08 92);
+  --champion-gold: oklch(0.78 0.16 82);
+  --champion-gold-light: oklch(0.96 0.1 96);
+  --champion-gold-dark: oklch(0.57 0.13 72);
+  --champion-flower: oklch(0.58 0.23 27);
   --chart-1: oklch(0.511 0.23 277);
   --chart-2: oklch(0.696 0.149 162);
   --chart-3: oklch(0.68 0.14 205);
@@ -219,6 +227,62 @@
   18% { opacity: 1; }
   58% { opacity: 1; transform: translateY(-1.8rem) translateX(0.8rem) rotate(170deg) scale(1); }
   100% { opacity: 0; transform: translateY(1.2rem) translateX(1.5rem) rotate(340deg) scale(0.75); }
+}
+
+@keyframes champion-crown-shine {
+  0%, 58% { transform: translateX(-180%) skewX(-24deg); opacity: 0; }
+  66% { opacity: 0.9; }
+  82%, 100% { transform: translateX(220%) skewX(-24deg); opacity: 0; }
+}
+
+@keyframes champion-flower-bloom-left {
+  0%, 14% { opacity: 0; transform: translate(0.2rem, 0.2rem) scale(0) rotate(0deg); }
+  34%, 58% { opacity: 0.9; transform: translate(-0.12rem, -0.18rem) scale(1) rotate(-18deg); }
+  78%, 100% { opacity: 0; transform: translate(-0.3rem, -0.48rem) scale(0.55) rotate(-40deg); }
+}
+
+@keyframes champion-flower-bloom-right {
+  0%, 34% { opacity: 0; transform: translate(-0.1rem, 0.15rem) scale(0) rotate(0deg); }
+  54%, 72% { opacity: 0.85; transform: translate(0.12rem, -0.2rem) scale(0.9) rotate(16deg); }
+  92%, 100% { opacity: 0; transform: translate(0.28rem, -0.45rem) scale(0.5) rotate(35deg); }
+}
+
+@utility champion-crown {
+  position: relative;
+  color: var(--champion-gold);
+  filter: drop-shadow(0 0 0.2rem color-mix(in oklab, var(--champion-gold) 58%, transparent));
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0.08rem 0.18rem;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, var(--champion-gold-light), transparent);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    animation: champion-crown-shine 3.8s ease-in-out infinite;
+  }
+}
+
+@utility champion-flower-left {
+  animation: champion-flower-bloom-left 4.4s ease-in-out infinite;
+}
+
+@utility champion-flower-right {
+  animation: champion-flower-bloom-right 4.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .champion-crown::after,
+  .champion-flower-left,
+  .champion-flower-right {
+    animation: none;
+  }
+
+  .champion-flower-left,
+  .champion-flower-right {
+    opacity: 0.7;
+  }
 }
 
 @keyframes submit-shimmer {
