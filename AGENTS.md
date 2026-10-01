@@ -19,3 +19,4 @@
 - Authentication callbacks are captured and sanitized by src/lib/auth-url-callback.ts before the backend client initializes, then completed by src/lib/auth-url-session.ts before browser-only protected-route checks — supports token and PKCE links without exposing credentials or causing redirect loops.
 
 - Weekly PDF backup lives in src/lib/weekly-backup.server.ts (pdf-lib -> private `backups` bucket -> signed link in the `weekly-backup` email), scheduled by the hourly token-protected route src/routes/api/public/cron/weekly-backup.ts which checks seasons.backup_* and the weekly_backups log — one backup per season week, admin-configurable, survives the site being unavailable.
+- One-day tournaments live in separate oneday_* tables, src/lib/oneday.functions.ts and one admin section — keeps them from touching the weekly series.

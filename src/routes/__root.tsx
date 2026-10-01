@@ -3,6 +3,7 @@
 import "@/lib/auth-url-callback";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
+import { onedayInfoQueryOptions } from "@/lib/oneday-query";
 import {
   Outlet,
   Link,
@@ -232,6 +233,7 @@ function AccountLink() {
 function SiteHeader() {
   const { data } = useQuery(brandingQueryOptions());
   const brand = data ?? DEFAULT_BRANDING;
+  const onedayVisible = useQuery(onedayInfoQueryOptions).data?.visible === true;
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto w-full max-w-[96rem] px-3 py-3 sm:px-5 lg:px-8">
@@ -245,7 +247,10 @@ function SiteHeader() {
             ) : null}
           </Link>
           <nav className="col-span-2 row-start-2 flex min-w-0 flex-wrap items-center justify-center gap-1 lg:col-span-1 lg:col-start-2 lg:row-start-1">
-            {NAV.map((item) => (
+            {(onedayVisible
+              ? [...NAV.slice(0, 5), { to: "/one-day", label: "One-day" } as const, ...NAV.slice(5)]
+              : NAV
+            ).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

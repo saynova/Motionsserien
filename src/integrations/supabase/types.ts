@@ -511,6 +511,81 @@ export type Database = {
         }
         Relationships: []
       }
+      oneday_registrations: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          phone: string
+          player1_name: string
+          player2_name: string
+          seen_by_admin: boolean
+          status: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          phone: string
+          player1_name: string
+          player2_name: string
+          seen_by_admin?: boolean
+          status?: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          phone?: string
+          player1_name?: string
+          player2_name?: string
+          seen_by_admin?: boolean
+          status?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      oneday_settings: {
+        Row: {
+          created_at: string
+          event_date: string
+          id: string
+          is_open: boolean
+          name: string
+          payment_details: string
+          updated_at: string
+          venue: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          event_date?: string
+          id?: string
+          is_open?: boolean
+          name?: string
+          payment_details?: string
+          updated_at?: string
+          venue?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          id?: string
+          is_open?: boolean
+          name?: string
+          payment_details?: string
+          updated_at?: string
+          venue?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       partner_requests: {
         Row: {
           availability: string

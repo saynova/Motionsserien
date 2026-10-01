@@ -26,12 +26,15 @@ import {
   ShieldCheck,
   Timer,
   UserPlus,
+  Trophy,
   Wallet,
   X,
 
   type LucideIcon,
 } from "lucide-react";
 import { BrandingAdmin } from "@/components/branding-admin";
+import { OnedayAdmin } from "@/components/oneday-admin";
+import { onedayRegistrationsAdminQueryOptions } from "@/lib/oneday-query";
 import { SecurityAdmin } from "@/components/admin-security";
 import { resendAdminCode, verifyAdminCode } from "@/lib/admin-2fa.functions";
 import { useQuery as useBrandQuery } from "@tanstack/react-query";
@@ -108,9 +111,10 @@ const SECTIONS = [
   { id: "partners", label: "Find a partner", group: "Season", icon: UserPlus },
   { id: "receipts", label: "Receipts", group: "Season", icon: Wallet },
   { id: "visitors", label: "Visitors", group: "Season", icon: Eye },
+  { id: "one-day", label: "One day tournament", group: "One day tournament", icon: Trophy },
 ] as const satisfies readonly { id: string; label: string; group: string; icon: LucideIcon }[];
 
-const SECTION_GROUPS = ["Overview", "Weekly work", "Content", "Email", "Season"] as const;
+const SECTION_GROUPS = ["Overview", "Weekly work", "Content", "Email", "Season", "One day tournament"] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -364,6 +368,7 @@ function AdminConsole() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
   const notifications = useAdminNotifications();
+  const onedayRegs = useQuery({ ...onedayRegistrationsAdminQueryOptions, refetchInterval: 60_000 });
 
   const { section } = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -435,6 +440,7 @@ function AdminConsole() {
       await queryClient.invalidateQueries({ queryKey: ["admin-status"] });
     }, "Signed out.");
 
+  const onedayUnseen = (onedayRegs.data ?? []).filter((r) => !r.seen_by_admin).length;
   const navList = (
     <nav aria-label="Admin sections" className="space-y-5">
       {SECTION_GROUPS.map((group) => (
@@ -451,7 +457,9 @@ function AdminConsole() {
                   ? pending.length
                   : item.id === "notifications"
                     ? notifications.unreadCount
-                    : 0;
+                    : item.id === "one-day"
+                      ? onedayUnseen
+                      : 0;
               return (
                 <li key={item.id}>
                   <button
@@ -641,6 +649,7 @@ function AdminConsole() {
           />
         ) : null}
         {section === "next-season" ? <NextSeasonAdmin /> : null}
+        {section === "one-day" ? <OnedayAdmin /> : null}
         {section === "visitors" ? <VisitorsAdmin /> : null}
         {section === "payments" ? <PaymentsAdmin /> : null}
         {section === "partners" ? <PartnerRequestsAdmin /> : null}
