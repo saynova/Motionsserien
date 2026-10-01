@@ -20,6 +20,19 @@ A new section on motionsserien.se for a separate one-day badminton event. The cu
 - The same team name can't be registered twice for this event, checked without regard to upper and lower case.
 - Each field has a length limit, and the email address must be valid.
 
+## Divisions, schedule and scoreboard (step 2, later)
+This step only builds registration. The event-day part comes once you've chosen the format. So far you've decided:
+- **Divisions:** you place approved teams into divisions or groups by hand, choosing how many divisions and how many teams go in each.
+- **Scores:** players submit their result from a public page with no sign-in. You approve it in admin, and only approved results count.
+- **Scoreboard:** a public page shows each division's table and results, and updates as you approve scores.
+
+Still open, to decide before step 2:
+- **Format:** round-robin divisions only, groups then knockout, or knockout only.
+- **Scoring:** best of 3 sets, one set, or a timed match.
+- **Planning:** the number of courts, the start time and match length, so the app can build a court and time schedule.
+
+Step 2 will be planned separately once these are answered, so nothing is built on guesses.
+
 ## How it stays separate from the current tournament
 - **Own storage.** One-day registrations and settings are kept apart from the current series. They never touch its teams, registrations, standings, schedule, payments, receipts or player accounts.
 - **Own page and admin section.** The new page and admin area only read and change one-day data. Nothing in the current series pages, scores, reminders, automatic updates or backups will see these teams.
