@@ -20,7 +20,10 @@ import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Standings — Motionsserien HT-26 Badminton Ladder" },
+      {
+        title:
+          "Motionsserien Badminton tournament- Organized by Hitachi IF and Ludvika Badminton Club",
+      },
       {
         name: "description",
         content:
@@ -31,7 +34,11 @@ export const Route = createFileRoute("/")({
         content:
           "Motionsserien standings, Motionsserien HT-26, badminton Ludvika, Hitachi IF badminton, Ludvika Badmintonklubb, badminton division standings, badmintonstege, motionsserie badminton, badminton resultat, Rackethallen Ludvika, badminton Dalarna, promotion and relegation badminton",
       },
-      { property: "og:title", content: "Standings — Motionsserien HT-26" },
+      {
+        property: "og:title",
+        content:
+          "Motionsserien Badminton tournament- Organized by Hitachi IF and Ludvika Badminton Club",
+      },
       {
         property: "og:description",
         content:
