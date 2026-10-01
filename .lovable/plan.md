@@ -20,6 +20,14 @@ A new section on motionsserien.se for a separate one-day badminton event. The cu
 - The same team name can't be registered twice for this event, checked without regard to upper and lower case.
 - Each field has a length limit, and the email address must be valid.
 
+## How it stays separate from the current tournament
+- **Own storage.** One-day registrations and settings are kept apart from the current series. They never touch its teams, registrations, standings, schedule, payments, receipts or player accounts.
+- **Own page and admin section.** The new page and admin area only read and change one-day data. Nothing in the current series pages, scores, reminders, automatic updates or backups will see these teams.
+- **No automatic emails or reminders.** Score reminders, payment reminders, "email all teams" and weekly backups keep using only the current series' teams.
+- **Turned off by default.** Nothing appears publicly until you switch the event on, and you can switch it off at any time.
+- **Same team name allowed.** A team can use the same name in both events without a clash.
+- **Nothing existing is edited.** The only small changes to existing parts are one menu link and one admin menu entry.
+
 ## Technical details
 - Migration:
   - A `oneday_settings` table (single row): visible, is_open, name, event_date, venue, payment_details. It gets public read.
