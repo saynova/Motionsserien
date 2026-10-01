@@ -42,6 +42,7 @@ export type RegistrationInfo = {
   isOpen: boolean;
   requireSignIn: boolean;
   targetSeason: string;
+  tournamentStartsAt: string | null;
   paymentDetails: string;
   seasonName: string;
 };
@@ -86,7 +87,7 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
     const [settings, season] = await Promise.all([
       supabase
         .from("registration_settings")
-        .select("is_open, target_season, require_sign_in")
+        .select("is_open, target_season, require_sign_in, tournament_starts_at")
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle(),
@@ -104,6 +105,7 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
       isOpen: settings.data?.is_open === true,
       requireSignIn: settings.data?.require_sign_in !== false,
       targetSeason: settings.data?.target_season ?? "",
+      tournamentStartsAt: settings.data?.tournament_starts_at ?? null,
       paymentDetails: season.data?.payment_details ?? "",
       seasonName: season.data?.name ?? "",
     };
@@ -396,6 +398,35 @@ export const setRegistrationSignInRequired = createServerFn({ method: "POST" })
       : await supabase
           .from("registration_settings")
           .insert({ require_sign_in: data.requireSignIn });
+    if (result.error) throw new Error(result.error.message);
+    return { ok: true as const };
+  });
+
+export const setTournamentStart = createServerFn({ method: "POST" })
+  .inputValidator((data: { startsAt: string | null }) => {
+    if (data?.startsAt === null || data?.startsAt === "") return { startsAt: null };
+    const parsed = new Date(data.startsAt);
+    if (Number.isNaN(parsed.getTime())) throw new Error("Choose a valid tournament start time.");
+    return { startsAt: parsed.toISOString() };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const existing = await supabase
+      .from("registration_settings")
+      .select("id")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (existing.error) throw new Error(existing.error.message);
+    const result = existing.data
+      ? await supabase
+          .from("registration_settings")
+          .update({ tournament_starts_at: data.startsAt })
+          .eq("id", existing.data.id)
+      : await supabase.from("registration_settings").insert({ tournament_starts_at: data.startsAt });
     if (result.error) throw new Error(result.error.message);
     return { ok: true as const };
   });

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarClock, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -20,12 +20,14 @@ import {
   saveSeedBoard,
   setRegistrationOpen,
   setRegistrationSignInRequired,
+  setTournamentStart,
 
   setRegistrationStatus,
   setRegistrationPaid,
   updateSeasonSettings,
   type RegistrationStatus,
 } from "@/lib/registration.functions";
+import { Button } from "@/components/ui/button";
 
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
@@ -33,6 +35,34 @@ const btn =
   "rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40";
 const btnGhost =
   "rounded border border-border bg-secondary px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors hover:bg-secondary/70 disabled:opacity-40";
+
+function stockholmLocalToIso(value: string): string {
+  const [datePart, timePart] = value.split("T");
+  const dateValues = datePart?.split("-").map(Number);
+  const timeValues = timePart?.split(":").map(Number);
+  if (!dateValues || !timeValues || dateValues.length !== 3 || timeValues.length < 2) {
+    throw new Error("Choose a valid tournament start time.");
+  }
+  const [year, month, day] = dateValues;
+  const [hour, minute] = timeValues;
+  if (year === undefined || month === undefined || day === undefined || hour === undefined || minute === undefined) {
+    throw new Error("Choose a valid tournament start time.");
+  }
+  const desiredAsUtc = Date.UTC(year, month - 1, day, hour, minute);
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const rendered = formatter.formatToParts(new Date(desiredAsUtc));
+  const part = (type: Intl.DateTimeFormatPartTypes) => Number(rendered.find((item) => item.type === type)?.value ?? 0);
+  const renderedAsUtc = Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute"));
+  return new Date(desiredAsUtc - (renderedAsUtc - desiredAsUtc)).toISOString();
+}
 
 function useRunner() {
   const [busy, setBusy] = useState(false);
@@ -138,6 +168,7 @@ export function NextSeasonAdmin() {
 
   const toggleOpen = useServerFn(setRegistrationOpen);
   const toggleSignIn = useServerFn(setRegistrationSignInRequired);
+  const saveTournamentStart = useServerFn(setTournamentStart);
 
   const setStatus = useServerFn(setRegistrationStatus);
   const setPaid = useServerFn(setRegistrationPaid);
@@ -152,6 +183,7 @@ export function NextSeasonAdmin() {
   const [targetSeason, setTargetSeason] = useState("");
   const [seasonName, setSeasonName] = useState("");
   const [seasonStart, setSeasonStart] = useState("");
+  const [tournamentStart, setTournamentStartValue] = useState("");
   const [entries, setEntries] = useState<SeedEntry[]>([]);
   const [seasonLoaded, setSeasonLoaded] = useState(false);
   const [boardLoaded, setBoardLoaded] = useState(false);
@@ -160,6 +192,19 @@ export function NextSeasonAdmin() {
     if (!seasonLoaded && info.data) {
       setTargetSeason(info.data.targetSeason);
       setSeasonName(info.data.targetSeason);
+      if (info.data.tournamentStartsAt) {
+        const parts = new Intl.DateTimeFormat("sv-SE", {
+          timeZone: "Europe/Stockholm",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hourCycle: "h23",
+        }).formatToParts(new Date(info.data.tournamentStartsAt));
+        const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+        setTournamentStartValue(`${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`);
+      }
       setSeasonLoaded(true);
     }
   }, [seasonLoaded, info.data]);
@@ -302,6 +347,59 @@ export function NextSeasonAdmin() {
           {info.data?.isOpen ? "Currently open" : "Currently closed"} · {signedUp.length}/
           {totalSlots} signed up · {accepted.length} accepted
         </span>
+      </div>
+
+      <div className="rounded border border-border bg-secondary/30 p-4">
+        <div className="flex items-start gap-3">
+          <CalendarClock className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+          <div>
+            <h3 className="font-semibold">Tournament countdown</h3>
+            <p className="text-xs text-muted-foreground">
+              Set the tournament start in Swedish time. A live countdown appears on the registration page.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <label className="space-y-1">
+            <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Start date and time
+            </span>
+            <input
+              type="datetime-local"
+              className={control}
+              value={tournamentStart}
+              onChange={(event) => setTournamentStartValue(event.target.value)}
+            />
+          </label>
+          <Button
+            disabled={busy || !tournamentStart}
+            onClick={() =>
+              run(
+                () => saveTournamentStart({ data: { startsAt: stockholmLocalToIso(tournamentStart) } }),
+                "Tournament start saved.",
+                [["registration-info"]],
+              )
+            }
+          >
+            Save start time
+          </Button>
+          <Button
+            variant="outline"
+            disabled={busy || (!tournamentStart && !info.data?.tournamentStartsAt)}
+            onClick={() =>
+              run(
+                async () => {
+                  await saveTournamentStart({ data: { startsAt: null } });
+                  setTournamentStartValue("");
+                },
+                "Tournament countdown cleared.",
+                [["registration-info"]],
+              )
+            }
+          >
+            Clear
+          </Button>
+        </div>
       </div>
 
       {/* sign-in requirement */}

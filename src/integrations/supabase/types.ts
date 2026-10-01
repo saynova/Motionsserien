@@ -646,6 +646,7 @@ export type Database = {
           is_open: boolean
           require_sign_in: boolean
           target_season: string
+          tournament_starts_at: string | null
           updated_at: string
         }
         Insert: {
@@ -654,6 +655,7 @@ export type Database = {
           is_open?: boolean
           require_sign_in?: boolean
           target_season?: string
+          tournament_starts_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -662,6 +664,7 @@ export type Database = {
           is_open?: boolean
           require_sign_in?: boolean
           target_season?: string
+          tournament_starts_at?: string | null
           updated_at?: string
         }
         Relationships: []
