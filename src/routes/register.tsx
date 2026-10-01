@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Lock, ShieldCheck, Smartphone, Trophy, Users } from "lucide-react";
 
 import { AccountRegistration } from "@/components/account-registration";
+import { TournamentCountdown } from "@/components/tournament-countdown";
 import { registeredTeamsQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
 
 const TOTAL_SPOTS = 30;
@@ -88,6 +89,8 @@ function RegisterPage() {
           </div>
         </div>
       </section>
+
+      <TournamentCountdown startsAt={info.tournamentStartsAt} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <div className="space-y-4">
