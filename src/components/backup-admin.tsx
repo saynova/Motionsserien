@@ -48,6 +48,7 @@ export function BackupAdmin() {
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadingSchedule, setDownloadingSchedule] = useState(false);
 
   useEffect(() => {
     if (loaded || !settings.data) return;
@@ -100,6 +101,24 @@ export function BackupAdmin() {
       toast.error(error instanceof Error ? error.message : "Could not build the backup.");
     } finally {
       setDownloading(false);
+    }
+  }
+
+  async function downloadSchedulePdf() {
+    setDownloadingSchedule(true);
+    try {
+      const file = await downloadSchedule({ data: undefined });
+      const bytes = Uint8Array.from(atob(file.base64), (char) => char.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not build the schedule.");
+    } finally {
+      setDownloadingSchedule(false);
     }
   }
 
@@ -189,6 +208,9 @@ export function BackupAdmin() {
         </button>
         <button className={btnGhost} disabled={downloading} onClick={download}>
           {downloading ? "Building…" : "Download PDF now"}
+        </button>
+        <button className={btnGhost} disabled={downloadingSchedule} onClick={downloadSchedulePdf}>
+          {downloadingSchedule ? "Building…" : "Download schedule PDF"}
         </button>
         <button className={btnGhost} disabled={sending} onClick={testSend}>
           {sending ? "Sending…" : "Send backup email now"}
