@@ -115,11 +115,16 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
         : a.division - b.division
       : a.start_time.localeCompare(b.start_time),
   );
-  const sessions = [...new Set(matches.map((m) => m.start_time))].sort();
-  const divisionsOf = (time: string) =>
-    [...new Set(matches.filter((m) => m.start_time === time).map((m) => m.division))].sort(
-      (a, b) => a - b,
-    );
+  // Matches run in 20-minute slots inside two one-hour sessions: divisions
+  // 1-5 from 19:00, divisions 6-10 from 20:00.
+  const sessionDivisions = new Map<string, number[]>();
+  for (const match of matches) {
+    const session = match.division <= 5 ? "19:00" : "20:00";
+    const list = sessionDivisions.get(session) ?? [];
+    if (!list.includes(match.division)) list.push(match.division);
+    sessionDivisions.set(session, list);
+  }
+  const sessions = [...sessionDivisions.keys()].sort();
 
   const colTime = left + 12;
   const colDiv = left + 74;
@@ -155,8 +160,9 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
   // ----------------------------------------------------------------- session
   for (const time of sessions) {
     const end = `${String(Number(time.slice(0, 2)) + 1).padStart(2, "0")}:${time.slice(3)}`;
+    const divisions = (sessionDivisions.get(time) ?? []).sort((a, b) => a - b);
     page.drawText(
-      safe(`${time}-${end}  ·  Divisions ${divisionsOf(time).join(", ")}  ·  Courts 1-5`),
+      safe(`${time}-${end}  ·  Divisions ${divisions.join(", ")}  ·  Courts 1-5`),
       { x: left, y, size: 10.5, font: bold, color: ink },
     );
     y -= 15;
