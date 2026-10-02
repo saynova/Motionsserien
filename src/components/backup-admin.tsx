@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import {
   downloadBackupNow,
+  downloadScheduleNow,
   getBackupSettings,
   saveBackupSettings,
   sendBackupNow,
@@ -37,6 +38,7 @@ export function BackupAdmin() {
   const save = useServerFn(saveBackupSettings);
   const sendNow = useServerFn(sendBackupNow);
   const downloadNow = useServerFn(downloadBackupNow);
+  const downloadSchedule = useServerFn(downloadScheduleNow);
 
   const [enabled, setEnabled] = useState(true);
   const [offsetDays, setOffsetDays] = useState(0);
