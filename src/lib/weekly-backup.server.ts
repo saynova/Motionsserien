@@ -380,6 +380,17 @@ export async function sendWeeklyBackup(force = false): Promise<BackupResult> {
   const waiting = data.matches.filter((m) => m.week_no === weekNo && m.status !== "final").length;
   const nextWeekMatches = data.matches.filter((m) => m.week_no === weekNo + 1).length;
 
+  // Build and store the player-facing schedule sheet for the upcoming week so
+  // it can ride along in the same email. A failure here must not block the backup.
+  let scheduleUrl: string | undefined;
+  try {
+    const { generateScheduleFile, storeSchedule } = await import("./schedule-pdf.server");
+    const schedule = await generateScheduleFile();
+    scheduleUrl = (await storeSchedule(schedule)).url;
+  } catch (error) {
+    console.error("Schedule PDF generation failed", error);
+  }
+
   const { getEmailSettings } = await import("./email-settings.server");
   const settings = await getEmailSettings(admin);
   const { sendTemplateEmail } = await import("./email-templates/send-email");
@@ -392,6 +403,8 @@ export async function sendWeeklyBackup(force = false): Promise<BackupResult> {
       waiting,
       nextWeekMatches,
       downloadUrl: stored.url,
+      scheduleUrl,
+      scheduleWeekNo: weekNo + 1,
       signature: settings.signature,
       footer: settings.footer,
     },

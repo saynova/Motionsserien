@@ -104,3 +104,14 @@ export const downloadBackupNow = createServerFn({ method: "POST" }).handler(asyn
   for (const byte of file.bytes) binary += String.fromCharCode(byte);
   return { fileName: file.fileName, base64: btoa(binary) };
 });
+
+/** Returns the upcoming week's player-facing schedule PDF as base64. */
+export const downloadScheduleNow = createServerFn({ method: "POST" }).handler(async () => {
+  const { requireAdmin } = await import("./admin-session.server");
+  await requireAdmin();
+  const { generateScheduleFile } = await import("./schedule-pdf.server");
+  const file = await generateScheduleFile();
+  let binary = "";
+  for (const byte of file.bytes) binary += String.fromCharCode(byte);
+  return { fileName: file.fileName, base64: btoa(binary), weekNo: file.weekNo };
+});
