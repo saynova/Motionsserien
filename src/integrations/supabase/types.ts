@@ -819,6 +819,11 @@ export type Database = {
           score_unlock_at: string | null
           start_monday: string
           total_weeks: number
+          weekly_lock_day: number
+          weekly_lock_time: string
+          weekly_unlock_day: number
+          weekly_unlock_time: string
+          weekly_window_enabled: boolean
         }
         Insert: {
           auto_approve_enabled?: boolean
@@ -847,6 +852,11 @@ export type Database = {
           score_unlock_at?: string | null
           start_monday: string
           total_weeks?: number
+          weekly_lock_day?: number
+          weekly_lock_time?: string
+          weekly_unlock_day?: number
+          weekly_unlock_time?: string
+          weekly_window_enabled?: boolean
         }
         Update: {
           auto_approve_enabled?: boolean
@@ -875,6 +885,11 @@ export type Database = {
           score_unlock_at?: string | null
           start_monday?: string
           total_weeks?: number
+          weekly_lock_day?: number
+          weekly_lock_time?: string
+          weekly_unlock_day?: number
+          weekly_unlock_time?: string
+          weekly_window_enabled?: boolean
         }
         Relationships: []
       }
