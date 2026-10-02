@@ -10,7 +10,7 @@ import {
   saveAutoUpdateSettings,
   saveReminderSettings,
 } from "@/lib/auto-update.functions";
-import { getScoreUnlockSettings, saveScoreUnlock } from "@/lib/tournament.functions";
+import { getScoreUnlockSettings, saveScoreUnlock, saveWeeklyScoreWindow } from "@/lib/tournament.functions";
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
 const btn =
@@ -74,6 +74,8 @@ export function AutoUpdateAdmin() {
           loaded={Boolean(settings.data)}
         />
       </div>
+
+      <WeeklyWindowBlock />
 
       <ScoreUnlockBlock />
 
@@ -396,6 +398,97 @@ function ReminderSettingsBlock() {
       </p>
       <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
         {busy ? "Saving…" : "Save reminders"}
+      </button>
+    </div>
+  );
+}
+
+const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function WeeklyWindowBlock() {
+  const queryClient = useQueryClient();
+  const settings = useQuery({ queryKey: ["score-unlock"], queryFn: () => getScoreUnlockSettings() });
+  const save = useServerFn(saveWeeklyScoreWindow);
+  const [form, setForm] = useState({ enabled: false, unlockDay: 1, unlockTime: "19:00", lockDay: 3, lockTime: "10:00" });
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (loaded || !settings.data) return;
+    setForm(settings.data.weekly);
+    setLoaded(true);
+  }, [loaded, settings.data]);
+
+  async function persist() {
+    setBusy(true);
+    try {
+      await save({ data: form });
+      await queryClient.invalidateQueries({ queryKey: ["score-unlock"] });
+      await queryClient.invalidateQueries({ queryKey: ["tournament"] });
+      toast.success(form.enabled ? "Weekly lock and unlock saved." : "Weekly schedule switched off.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this setting.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const label = "block text-xs font-semibold uppercase tracking-widest text-muted-foreground";
+  const dayPicker = (value: number, onChange: (v: number) => void) => (
+    <select className={`${control} w-full`} value={value} disabled={!form.enabled} onChange={(e) => onChange(Number(e.target.value))}>
+      {WEEKDAYS.map((d, i) => (
+        <option key={d} value={i + 1}>
+          {d}
+        </option>
+      ))}
+    </select>
+  );
+
+  return (
+    <div className="mt-8 border-t border-border pt-6">
+      <h3 className="text-xl font-bold uppercase tracking-wide">Weekly score submission lock &amp; unlock</h3>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Open &quot;Submit Your Score&quot; and close it again at the same times every week (Swedish time). While this is on,
+        it decides on its own — the manual switch and the one-time unlock below are ignored.
+      </p>
+
+      <label className="mt-4 flex max-w-2xl items-center justify-between gap-4 rounded border border-border bg-secondary/30 p-3">
+        <span>
+          <span className="block font-semibold">Repeat every week</span>
+          <span className="block text-xs text-muted-foreground">Turn off to go back to the manual switch.</span>
+        </span>
+        <Switch checked={form.enabled} onCheckedChange={(v) => setForm({ ...form, enabled: v })} />
+      </label>
+
+      <div className="mt-4 grid max-w-2xl gap-4 sm:grid-cols-2">
+        <div className="space-y-2 rounded border border-border p-3">
+          <span className="block font-semibold text-primary">Unlock</span>
+          <span className={label}>Day</span>
+          {dayPicker(form.unlockDay, (v) => setForm({ ...form, unlockDay: v }))}
+          <span className={label}>Time</span>
+          <input type="time" className={`${control} w-full`} value={form.unlockTime} disabled={!form.enabled}
+            onChange={(e) => setForm({ ...form, unlockTime: e.target.value })} />
+        </div>
+        <div className="space-y-2 rounded border border-border p-3">
+          <span className="block font-semibold text-destructive">Lock</span>
+          <span className={label}>Day</span>
+          {dayPicker(form.lockDay, (v) => setForm({ ...form, lockDay: v }))}
+          <span className={label}>Time</span>
+          <input type="time" className={`${control} w-full`} value={form.lockTime} disabled={!form.enabled}
+            onChange={(e) => setForm({ ...form, lockTime: e.target.value })} />
+        </div>
+      </div>
+
+      {settings.data?.weekly.enabled ? (
+        <p className="mt-3 text-sm">
+          Every week: open {WEEKDAYS[settings.data.weekly.unlockDay - 1]} {settings.data.weekly.unlockTime}, locked{" "}
+          {WEEKDAYS[settings.data.weekly.lockDay - 1]} {settings.data.weekly.lockTime}.{" "}
+          <span className="font-semibold">{settings.data.open ? "Open now." : "Locked now."}</span>
+        </p>
+      ) : null}
+
+      <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
+        {busy ? "Saving…" : "Save"}
       </button>
     </div>
   );
