@@ -21,6 +21,8 @@ interface Props {
   waiting?: number;
   nextWeekMatches?: number;
   downloadUrl?: string;
+  scheduleUrl?: string;
+  scheduleWeekNo?: number;
   signature?: string;
   footer?: string;
 }
@@ -39,6 +41,8 @@ const Email = ({
   waiting = 0,
   nextWeekMatches = 0,
   downloadUrl = "https://www.motionsserien.se",
+  scheduleUrl,
+  scheduleWeekNo,
   signature = "Best Regards\nThe General\nMd Rabiul Islam",
   footer = "Motionsserien HT-26 · Ludvika Badmintonklubb",
 }: Props) => (
