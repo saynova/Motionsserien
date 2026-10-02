@@ -195,6 +195,18 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
     tableHeader();
   }
 
+  /** Trims text with an ellipsis so it never runs past the right margin. */
+  function fit(value: string, size: number, useBold: boolean, maxWidth: number): string {
+    const f = useBold ? bold : font;
+    const cleaned = safe(value);
+    if (f.widthOfTextAtSize(cleaned, size) <= maxWidth) return cleaned;
+    let out = cleaned;
+    while (out.length > 1 && f.widthOfTextAtSize(`${out}...`, size) > maxWidth) {
+      out = out.slice(0, -1);
+    }
+    return `${out.trimEnd()}...`;
+  }
+
   tableHeader();
   matches.forEach((match, index) => {
     if (y - ROW_H < FOOTER_TOP) newPage();
@@ -208,10 +220,23 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
     page.drawText(safe(match.start_time), { x: colTime, y: y - 2, size: 10, font: bold, color: ink });
     page.drawText(safe(String(match.division)), { x: colDiv, y: y - 2, size: 10, font, color: ink });
     page.drawText(safe(String(match.court)), { x: colCourt, y: y - 2, size: 10, font, color: ink });
-    page.drawText(safe(`${teamA}  v  ${teamB}`), { x: colMatch, y: y - 2, size: 10, font: bold, color: ink });
+    const maxMatchWidth = right - colMatch - 6;
+    page.drawText(fit(`${teamA}  v  ${teamB}`, 10, true, maxMatchWidth), {
+      x: colMatch,
+      y: y - 2,
+      size: 10,
+      font: bold,
+      color: ink,
+    });
     const players = [playersA, playersB].filter(Boolean).join("   ·   ");
     if (players) {
-      page.drawText(safe(players), { x: colMatch, y: y - 13, size: 8, font, color: grey });
+      page.drawText(fit(players, 8, false, maxMatchWidth), {
+        x: colMatch,
+        y: y - 13,
+        size: 8,
+        font,
+        color: grey,
+      });
     }
     y -= ROW_H;
   });
