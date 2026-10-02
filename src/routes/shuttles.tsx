@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/tournament-ui";
+import { Package, ShieldCheck, Smartphone, Truck } from "lucide-react";
 import { shuttleOrdersQueryOptions } from "@/lib/tournament-query";
 import { submitShuttleOrder } from "@/lib/extras.functions";
 
@@ -201,6 +201,6 @@ function ShuttlesPage() {
           )}
         </section>
       </div>
-    </>
+    </div>
   );
 }
