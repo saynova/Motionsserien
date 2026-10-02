@@ -46,7 +46,7 @@ const MATCH_COLUMNS =
   "id, week_no, division, match_no, team_a_id, team_b_id, court, start_time, status, s1a, s1b, s2a, s2b, s3a, s3b, submitted_by";
 const SLOT_COLUMNS = "id, week_no, team_id, division, position, tie_break_adj";
 const SEASON_COLUMNS =
-  "id, name, start_monday, total_weeks, current_week, is_active, score_submission_enabled, score_unlock_at";
+  "id, name, start_monday, total_weeks, current_week, is_active, score_submission_enabled, score_unlock_at, weekly_window_enabled, weekly_unlock_day, weekly_unlock_time, weekly_lock_day, weekly_lock_time";
 
 /** "YYYY-MM-DD HH:mm" in Swedish time. */
 function stockholmNowText(): string {
@@ -64,7 +64,45 @@ function stockholmNowText(): string {
 }
 
 /** Submission is open when switched on, or when a scheduled unlock time has passed. */
-function scoreSubmissionOpen(enabled: boolean | undefined, unlockAt: string | null | undefined): boolean {
+type WeeklyWindow = {
+  weekly_window_enabled?: boolean | null;
+  weekly_unlock_day?: number | null;
+  weekly_unlock_time?: string | null;
+  weekly_lock_day?: number | null;
+  weekly_lock_time?: string | null;
+};
+
+/** Minutes since Monday 00:00 (day 1 = Monday ... 7 = Sunday). */
+function weekMinutes(day: number, time: string): number {
+  const [h = 0, m = 0] = time.split(":").map(Number);
+  return (day - 1) * 1440 + h * 60 + m;
+}
+
+/** True when the Swedish "now" sits inside the weekly open window. */
+function weeklyWindowOpen(w: WeeklyWindow): boolean {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Stockholm",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  const day = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(get("weekday")) + 1;
+  const now = weekMinutes(day, `${get("hour").replace("24", "00")}:${get("minute")}`);
+  const open = weekMinutes(w.weekly_unlock_day ?? 1, w.weekly_unlock_time ?? "19:00");
+  const close = weekMinutes(w.weekly_lock_day ?? 3, w.weekly_lock_time ?? "10:00");
+  if (open === close) return false;
+  return open < close ? now >= open && now < close : now >= open || now < close;
+}
+
+function scoreSubmissionOpen(
+  enabled: boolean | undefined,
+  unlockAt: string | null | undefined,
+  weekly?: WeeklyWindow,
+): boolean {
+  // A weekly schedule, when switched on, decides on its own.
+  if (weekly?.weekly_window_enabled) return weeklyWindowOpen(weekly);
   if (enabled !== false) return true;
   return Boolean(unlockAt) && stockholmNowText() >= (unlockAt as string);
 }
@@ -87,7 +125,7 @@ export const getTournament = createServerFn({ method: "GET" }).handler(
     const { score_unlock_at, ...seasonRest } = rawSeason;
     const season: SeasonRow = {
       ...seasonRest,
-      score_submission_enabled: scoreSubmissionOpen(rawSeason.score_submission_enabled, score_unlock_at),
+      score_submission_enabled: scoreSubmissionOpen(rawSeason.score_submission_enabled, score_unlock_at, rawSeason as WeeklyWindow),
     };
 
     const [teamsResult, playersResult, slotsResult, matchesResult] = await Promise.all([
@@ -181,11 +219,11 @@ export const submitScore = createServerFn({ method: "POST" })
     if (matchInfo.error) throw new Error(matchInfo.error.message);
     const season = await supabase
       .from("seasons")
-      .select("require_login_for_scores, registration_key, score_submission_enabled, score_unlock_at")
+      .select("require_login_for_scores, registration_key, score_submission_enabled, score_unlock_at, weekly_window_enabled, weekly_unlock_day, weekly_unlock_time, weekly_lock_day, weekly_lock_time")
       .eq("id", matchInfo.data.season_id)
       .single();
     if (season.error) throw new Error(season.error.message);
-    if (!scoreSubmissionOpen(season.data.score_submission_enabled, season.data.score_unlock_at)) {
+    if (!scoreSubmissionOpen(season.data.score_submission_enabled, season.data.score_unlock_at, season.data)) {
       throw new Error("It's Locked!");
     }
     if (season.data.require_login_for_scores) {
@@ -324,7 +362,7 @@ export const getScoreUnlockSettings = createServerFn({ method: "GET" }).handler(
   const { adminClient } = await import("./tournament.server");
   const { data, error } = await adminClient()
     .from("seasons")
-    .select("score_submission_enabled, score_unlock_at")
+    .select("score_submission_enabled, score_unlock_at, weekly_window_enabled, weekly_unlock_day, weekly_unlock_time, weekly_lock_day, weekly_lock_time")
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -334,7 +372,14 @@ export const getScoreUnlockSettings = createServerFn({ method: "GET" }).handler(
   return {
     manuallyOpen: data?.score_submission_enabled !== false,
     unlockAt,
-    open: scoreSubmissionOpen(data?.score_submission_enabled, unlockAt),
+    open: scoreSubmissionOpen(data?.score_submission_enabled, unlockAt, data ?? undefined),
+    weekly: {
+      enabled: data?.weekly_window_enabled ?? false,
+      unlockDay: data?.weekly_unlock_day ?? 1,
+      unlockTime: data?.weekly_unlock_time ?? "19:00",
+      lockDay: data?.weekly_lock_day ?? 3,
+      lockTime: data?.weekly_lock_time ?? "10:00",
+    },
   };
 });
 
@@ -354,6 +399,48 @@ export const saveScoreUnlock = createServerFn({ method: "POST" })
       ? { score_unlock_at: data.unlockAt, score_submission_enabled: false }
       : { score_unlock_at: null };
     const { error } = await adminClient().from("seasons").update(patch).eq("is_active", true);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const saveWeeklyScoreWindow = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: { enabled: boolean; unlockDay: number; unlockTime: string; lockDay: number; lockTime: string }) => {
+      const t = /^([01]\d|2[0-3]):[0-5]\d$/;
+      const day = (v: unknown) => {
+        const n = Number(v);
+        if (!Number.isInteger(n) || n < 1 || n > 7) throw new Error("Choose a valid day.");
+        return n;
+      };
+      if (!t.test(String(data?.unlockTime)) || !t.test(String(data?.lockTime))) {
+        throw new Error("Enter times such as 19:00.");
+      }
+      const out = {
+        enabled: Boolean(data?.enabled),
+        unlockDay: day(data?.unlockDay),
+        unlockTime: String(data.unlockTime),
+        lockDay: day(data?.lockDay),
+        lockTime: String(data.lockTime),
+      };
+      if (out.unlockDay === out.lockDay && out.unlockTime === out.lockTime) {
+        throw new Error("Unlock and lock cannot be at the same moment.");
+      }
+      return out;
+    },
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient()
+      .from("seasons")
+      .update({
+        weekly_window_enabled: data.enabled,
+        weekly_unlock_day: data.unlockDay,
+        weekly_unlock_time: data.unlockTime,
+        weekly_lock_day: data.lockDay,
+        weekly_lock_time: data.lockTime,
+      })
+      .eq("is_active", true);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
