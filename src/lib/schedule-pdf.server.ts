@@ -169,16 +169,19 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
   }
   y -= 8;
 
-  // ------------------------------------------------------------------- table
-  function tableHeader() {
-    page.drawRectangle({ x: left, y: y - 7, width: right - left, height: 20, color: headerFill });
-    const hy = y - 1;
-    page.drawText("TIME", { x: colTime, y: hy, size: 8, font: bold, color: white });
-    page.drawText("DIV", { x: colDiv, y: hy, size: 8, font: bold, color: white });
-    page.drawText("COURT", { x: colCourt, y: hy, size: 8, font: bold, color: white });
-    page.drawText("MATCH", { x: colMatch, y: hy, size: 8, font: bold, color: white });
-    y -= 22;
-  }
+  // ------------------------------------------------- divisions with score boxes
+  const MATCH_ROW_H = 34;
+  const BOX_W = 54;
+  const BOX_GAP = 6;
+  const boxesStart = right - 8 - (BOX_W * 3 + BOX_GAP * 2);
+  const colTimeX = left + 10;
+  const colMatchX = left + 58;
+  const maxMatchWidth = boxesStart - colMatchX - 10;
+  void ROW_H;
+  void colTime;
+  void colDiv;
+  void colCourt;
+  void colMatch;
 
   function newPage() {
     page = pdf.addPage([W, H]);
@@ -191,11 +194,10 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
       font: bold,
       color: ink,
     });
-    y -= 18;
-    tableHeader();
+    y -= 24;
   }
 
-  /** Trims text with an ellipsis so it never runs past the right margin. */
+  /** Trims text with an ellipsis so it never runs past its column. */
   function fit(value: string, size: number, useBold: boolean, maxWidth: number): string {
     const f = useBold ? bold : font;
     const cleaned = safe(value);
@@ -207,39 +209,93 @@ export async function buildSchedulePdf(data: ScheduleData): Promise<Uint8Array> 
     return `${out.trimEnd()}...`;
   }
 
-  tableHeader();
-  matches.forEach((match, index) => {
-    if (y - ROW_H < FOOTER_TOP) newPage();
-    if (index % 2 === 0) {
-      page.drawRectangle({ x: left, y: y - ROW_H + 7, width: right - left, height: ROW_H, color: band });
-    }
-    const teamA = nameOf.get(match.team_a_id) ?? "?";
-    const teamB = nameOf.get(match.team_b_id) ?? "?";
-    const playersA = playersLine(match.team_a_id);
-    const playersB = playersLine(match.team_b_id);
-    page.drawText(safe(match.start_time), { x: colTime, y: y - 2, size: 10, font: bold, color: ink });
-    page.drawText(safe(String(match.division)), { x: colDiv, y: y - 2, size: 10, font, color: ink });
-    page.drawText(safe(String(match.court)), { x: colCourt, y: y - 2, size: 10, font, color: ink });
-    const maxMatchWidth = right - colMatch - 6;
-    page.drawText(fit(`${teamA}  v  ${teamB}`, 10, true, maxMatchWidth), {
-      x: colMatch,
-      y: y - 2,
-      size: 10,
-      font: bold,
-      color: ink,
+  const divisionList = [...new Set(matches.map((m) => m.division))].sort((a, b) => a - b);
+  let lastSession: string | null = null;
+  for (const division of divisionList) {
+    const divMatches = matches
+      .filter((m) => m.division === division)
+      .sort((a, b) => a.match_no - b.match_no);
+    const session = division <= 5 ? "19:00" : "20:00";
+    const blockH = 24 + 18 + divMatches.length * MATCH_ROW_H + 14;
+    // Start the 20:00 session on a fresh page so each session prints separately.
+    const sessionBreak = lastSession !== null && session !== lastSession;
+    if (sessionBreak || y - blockH < FOOTER_TOP) newPage();
+    lastSession = session;
+
+    // Division banner
+    const end = session === "19:00" ? "20:00" : "21:00";
+    const court = divMatches[0]?.court ?? "";
+    page.drawRectangle({ x: left, y: y - 16, width: right - left, height: 24, color: headerFill });
+    page.drawText(safe(`DIVISION ${division}`), { x: left + 10, y: y - 8, size: 11, font: bold, color: white });
+    page.drawText(safe(`Court ${court}  ·  ${session}-${end}`), {
+      x: left + 110,
+      y: y - 8,
+      size: 9.5,
+      font,
+      color: white,
     });
-    const players = [playersA, playersB].filter(Boolean).join("   ·   ");
-    if (players) {
-      page.drawText(fit(players, 8, false, maxMatchWidth), {
-        x: colMatch,
-        y: y - 13,
-        size: 8,
-        font,
-        color: grey,
+    y -= 24;
+
+    // Column labels
+    page.drawRectangle({ x: left, y: y - 12, width: right - left, height: 18, color: band });
+    page.drawText("TIME", { x: colTimeX, y: y - 6, size: 7.5, font: bold, color: grey });
+    page.drawText("MATCH & PLAYERS", { x: colMatchX, y: y - 6, size: 7.5, font: bold, color: grey });
+    ["SET 1", "SET 2", "SET 3"].forEach((label, i) => {
+      const bx = boxesStart + i * (BOX_W + BOX_GAP);
+      const w = bold.widthOfTextAtSize(label, 7.5);
+      page.drawText(label, { x: bx + (BOX_W - w) / 2, y: y - 6, size: 7.5, font: bold, color: grey });
+    });
+    y -= 18;
+
+    for (const match of divMatches) {
+      const top = y;
+      const teamA = nameOf.get(match.team_a_id) ?? "?";
+      const teamB = nameOf.get(match.team_b_id) ?? "?";
+      page.drawText(safe(match.start_time), { x: colTimeX, y: top - 14, size: 10, font: bold, color: ink });
+      page.drawText(fit(`${teamA}  v  ${teamB}`, 10, true, maxMatchWidth), {
+        x: colMatchX,
+        y: top - 14,
+        size: 10,
+        font: bold,
+        color: ink,
       });
+      const players = [playersLine(match.team_a_id), playersLine(match.team_b_id)]
+        .filter(Boolean)
+        .join("   v   ");
+      if (players) {
+        page.drawText(fit(players, 8, false, maxMatchWidth), {
+          x: colMatchX,
+          y: top - 25,
+          size: 8,
+          font,
+          color: grey,
+        });
+      }
+      // Write-in score boxes with a centre dash
+      for (let i = 0; i < 3; i++) {
+        const bx = boxesStart + i * (BOX_W + BOX_GAP);
+        page.drawRectangle({
+          x: bx,
+          y: top - MATCH_ROW_H + 6,
+          width: BOX_W,
+          height: MATCH_ROW_H - 10,
+          borderColor: grey,
+          borderWidth: 0.8,
+          color: white,
+        });
+        const dw = font.widthOfTextAtSize("-", 11);
+        page.drawText("-", { x: bx + (BOX_W - dw) / 2, y: top - 21, size: 11, font, color: grey });
+      }
+      page.drawLine({
+        start: { x: left, y: top - MATCH_ROW_H },
+        end: { x: right, y: top - MATCH_ROW_H },
+        thickness: 0.5,
+        color: rule,
+      });
+      y -= MATCH_ROW_H;
     }
-    y -= ROW_H;
-  });
+    y -= 14;
+  }
 
   // ------------------------------------------------------------------ footer
   const pages = pdf.getPages();
