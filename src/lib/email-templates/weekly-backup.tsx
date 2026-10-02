@@ -21,6 +21,8 @@ interface Props {
   waiting?: number;
   nextWeekMatches?: number;
   downloadUrl?: string;
+  scheduleUrl?: string;
+  scheduleWeekNo?: number;
   signature?: string;
   footer?: string;
 }
@@ -39,6 +41,8 @@ const Email = ({
   waiting = 0,
   nextWeekMatches = 0,
   downloadUrl = "https://www.motionsserien.se",
+  scheduleUrl,
+  scheduleWeekNo,
   signature = "Best Regards\nThe General\nMd Rabiul Islam",
   footer = "Motionsserien HT-26 · Ludvika Badmintonklubb",
 }: Props) => (
@@ -61,6 +65,18 @@ const Email = ({
             Download PDF backup
           </Button>
         </Section>
+
+        {scheduleUrl ? (
+          <Section style={{ textAlign: "center", margin: "0 0 24px" }}>
+            <Button href={scheduleUrl} style={buttonAlt}>
+              Download week {String(scheduleWeekNo ?? weekNo + 1)} schedule PDF
+            </Button>
+            <Text style={muted}>
+              The schedule PDF is a clean one-page sheet of the upcoming Monday&apos;s matches —
+              ready to forward to the players if the website is ever down.
+            </Text>
+          </Section>
+        ) : null}
 
         <Section style={box}>
           <Text style={item}>Created: {createdAt}</Text>
@@ -109,6 +125,15 @@ const box = {
 };
 const button = {
   backgroundColor: "#14161a",
+  color: "#ffffff",
+  fontSize: "15px",
+  fontWeight: 700 as const,
+  padding: "13px 26px",
+  borderRadius: "6px",
+  textDecoration: "none",
+};
+const buttonAlt = {
+  backgroundColor: "#4b52d9",
   color: "#ffffff",
   fontSize: "15px",
   fontWeight: 700 as const,
