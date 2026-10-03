@@ -1,0 +1,1 @@
+ALTER TABLE public.oneday_settings ADD COLUMN max_approved_teams integer, ADD COLUMN max_total_registrations integer;

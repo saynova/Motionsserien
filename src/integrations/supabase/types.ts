@@ -556,6 +556,8 @@ export type Database = {
           event_date: string
           id: string
           is_open: boolean
+          max_approved_teams: number | null
+          max_total_registrations: number | null
           menu_label: string
           name: string
           payment_details: string
@@ -568,6 +570,8 @@ export type Database = {
           event_date?: string
           id?: string
           is_open?: boolean
+          max_approved_teams?: number | null
+          max_total_registrations?: number | null
           menu_label?: string
           name?: string
           payment_details?: string
@@ -580,6 +584,8 @@ export type Database = {
           event_date?: string
           id?: string
           is_open?: boolean
+          max_approved_teams?: number | null
+          max_total_registrations?: number | null
           menu_label?: string
           name?: string
           payment_details?: string

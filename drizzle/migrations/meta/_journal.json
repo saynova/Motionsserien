@@ -8,6 +8,13 @@
       "when": 1790955587523,
       "tag": "0000_weekly_score_window",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790986028628,
+      "tag": "0001_oneday_capacity",
+      "breakpoints": true
     }
   ]
 }
