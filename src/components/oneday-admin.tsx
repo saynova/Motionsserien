@@ -11,6 +11,7 @@ import {
   exportOnedayPdf,
   markOnedaySeen,
   setOnedayStatus,
+  setOnedayPayment,
   updateOnedaySettings,
 } from "@/lib/oneday.functions";
 import { onedayRegistrationsAdminQueryOptions, onedaySettingsAdminQueryOptions } from "@/lib/oneday-query";
@@ -133,6 +134,7 @@ function RegistrationsTab() {
   const { data = [] } = useQuery(onedayRegistrationsAdminQueryOptions);
   const qc = useQueryClient();
   const setStatus = useServerFn(setOnedayStatus);
+  const setPayment = useServerFn(setOnedayPayment);
   const remove = useServerFn(deleteOnedayRegistration);
   const markSeen = useServerFn(markOnedaySeen);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
@@ -176,6 +178,7 @@ function RegistrationsTab() {
     approved: data.filter((r) => r.status === "approved").length,
     rejected: data.filter((r) => r.status === "rejected").length,
   };
+  const paidCount = data.filter((r) => r.payment_status === "paid").length;
   const rows = filter === "all" ? data : data.filter((r) => r.status === filter);
 
   async function act(fn: () => Promise<unknown>, msg: string) {
@@ -200,6 +203,9 @@ function RegistrationsTab() {
             {k} ({counts[k]})
           </button>
         ))}
+        <span className="self-center text-xs font-semibold text-muted-foreground">
+          Paid {paidCount} · Unpaid {data.length - paidCount}
+        </span>
         <div className="ml-auto flex gap-2">
           <Button size="sm" variant="outline" onClick={downloadCsv} disabled={data.length === 0}>Download Excel</Button>
           <Button size="sm" variant="outline" onClick={downloadPdf} disabled={data.length === 0}>Download PDF</Button>
@@ -215,6 +221,8 @@ function RegistrationsTab() {
                 <th className="px-3 py-2">Team</th>
                 <th className="px-3 py-2">Players</th>
                 <th className="px-3 py-2">Contact</th>
+                <th className="px-3 py-2">Level</th>
+                <th className="px-3 py-2">Payment</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2 text-right">Actions</th>
               </tr>
@@ -232,6 +240,22 @@ function RegistrationsTab() {
                   <td className="px-3 py-2 text-xs">
                     <div>{r.email}</div>
                     <div className="text-muted-foreground">{r.phone}</div>
+                  </td>
+                  <td className="px-3 py-2 capitalize">{r.level}</td>
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      title="Click to change"
+                      onClick={() =>
+                        act(
+                          () => setPayment({ data: { id: r.id, paymentStatus: r.payment_status === "paid" ? "unpaid" : "paid" } }),
+                          r.payment_status === "paid" ? "Marked unpaid" : "Marked paid",
+                        )
+                      }
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${r.payment_status === "paid" ? "bg-up/15 text-up" : "bg-destructive/10 text-destructive"}`}
+                    >
+                      {r.payment_status === "paid" ? "Paid" : "Unpaid"}
+                    </button>
                   </td>
                   <td className="px-3 py-2 capitalize">{r.status}</td>
                   <td className="px-3 py-2">

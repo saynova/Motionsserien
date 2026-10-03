@@ -516,6 +516,8 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          level: string
+          payment_status: string
           phone: string
           player1_name: string
           player2_name: string
@@ -528,6 +530,8 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          level?: string
+          payment_status?: string
           phone: string
           player1_name: string
           player2_name: string
@@ -540,6 +544,8 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          level?: string
+          payment_status?: string
           phone?: string
           player1_name?: string
           player2_name?: string

@@ -15,12 +15,13 @@ export type OnedayInfo = {
   full?: boolean;
 };
 
-export type OnedayPublicTeam = { id: string; team_name: string; player1_name: string; player2_name: string };
+export type OnedayPublicTeam = { id: string; team_name: string; player1_name: string; player2_name: string; level: "intermediate" | "advanced" };
 
 export type OnedayRegistration = OnedayPublicTeam & {
   email: string;
   phone: string;
   status: "pending" | "approved" | "rejected";
+  payment_status: "paid" | "unpaid";
   seen_by_admin: boolean;
   created_at: string;
 };
@@ -86,11 +87,11 @@ export const getOnedayApprovedTeams = createServerFn({ method: "GET" }).handler(
     const supabase = await db();
     const { data, error } = await supabase
       .from("oneday_registrations")
-      .select("id, team_name, player1_name, player2_name")
+      .select("id, team_name, player1_name, player2_name, level")
       .eq("status", "approved")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []) as OnedayPublicTeam[];
   },
 );
 
@@ -105,6 +106,8 @@ const registrationSchema = z.object({
     .min(6, "Enter a valid phone number")
     .max(25)
     .regex(/^[0-9+()\-\s]+$/, "Enter a valid phone number"),
+  level: z.enum(["intermediate", "advanced"], { errorMap: () => ({ message: "Choose your level" }) }),
+  paymentStatus: z.enum(["paid", "unpaid"], { errorMap: () => ({ message: "Choose your payment status" }) }),
   acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms" }) }),
 });
 
@@ -125,6 +128,8 @@ export const submitOnedayRegistration = createServerFn({ method: "POST" })
       player2_name: data.player2Name,
       email: data.email.toLowerCase(),
       phone: data.phone,
+      level: data.level,
+      payment_status: data.paymentStatus,
     });
     if (error) {
       if (error.code === "23505") throw new Error("That team name is already registered. Pick another.");
@@ -191,7 +196,7 @@ export const listOnedayRegistrations = createServerFn({ method: "GET" }).handler
     const supabase = await admin();
     const { data, error } = await supabase
       .from("oneday_registrations")
-      .select("id, team_name, player1_name, player2_name, email, phone, status, seen_by_admin, created_at")
+      .select("id, team_name, player1_name, player2_name, email, phone, status, level, payment_status, seen_by_admin, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as OnedayRegistration[];
@@ -254,7 +259,7 @@ async function exportData() {
   const s = await readSettings();
   const { data, error } = await supabase
     .from("oneday_registrations")
-    .select("team_name, player1_name, player2_name, email, phone, status, created_at")
+    .select("team_name, player1_name, player2_name, email, phone, status, level, payment_status, created_at")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
   return { rows: data ?? [], meta: { name: s?.name ?? "", eventDate: s?.event_date ?? "", venue: s?.venue ?? "" } };
@@ -272,3 +277,17 @@ export const exportOnedayPdf = createServerFn({ method: "POST" }).handler(async 
   const bytes = await buildPdf(rows, meta);
   return { base64: Buffer.from(bytes).toString("base64") };
 });
+
+export const setOnedayPayment = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z.object({ id: z.string().uuid(), paymentStatus: z.enum(["paid", "unpaid"]) }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { error } = await supabase
+      .from("oneday_registrations")
+      .update({ payment_status: data.paymentStatus })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
