@@ -15,6 +15,13 @@
       "when": 1790986028628,
       "tag": "0001_oneday_capacity",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790986301164,
+      "tag": "0002_oneday_level_payment",
+      "breakpoints": true
     }
   ]
 }
