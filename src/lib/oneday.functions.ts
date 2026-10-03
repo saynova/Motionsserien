@@ -10,6 +10,9 @@ export type OnedayInfo = {
   venue: string;
   paymentDetails: string;
   menuLabel: string;
+  maxApproved: number | null;
+  maxTotal: number | null;
+  full?: boolean;
 };
 
 export type OnedayPublicTeam = { id: string; team_name: string; player1_name: string; player2_name: string };
@@ -33,11 +36,22 @@ async function admin() {
   return db();
 }
 
+async function counts() {
+  const supabase = await db();
+  const { data, error } = await supabase.from("oneday_registrations").select("status");
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+  return {
+    approved: rows.filter((r) => r.status === "approved").length,
+    active: rows.filter((r) => r.status !== "rejected").length,
+  };
+}
+
 async function readSettings() {
   const supabase = await db();
   const { data, error } = await supabase
     .from("oneday_settings")
-    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label")
+    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label, max_approved_teams, max_total_registrations")
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -47,9 +61,16 @@ async function readSettings() {
 
 export const getOnedayInfo = createServerFn({ method: "GET" }).handler(async (): Promise<OnedayInfo> => {
   const s = await readSettings();
+  const c = await counts();
+  const full =
+    (s?.max_total_registrations != null && c.active >= s.max_total_registrations) ||
+    (s?.max_approved_teams != null && c.approved >= s.max_approved_teams);
   return {
+    full,
+    maxApproved: s?.max_approved_teams ?? null,
+    maxTotal: s?.max_total_registrations ?? null,
     visible: s?.visible ?? false,
-    isOpen: (s?.visible ?? false) && (s?.is_open ?? false),
+    isOpen: (s?.visible ?? false) && (s?.is_open ?? false) && !full,
     name: s?.name ?? "One-day badminton tournament",
     eventDate: s?.event_date ?? "",
     venue: s?.venue ?? "",
@@ -92,6 +113,11 @@ export const submitOnedayRegistration = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const s = await readSettings();
     if (!s?.visible || !s.is_open) throw new Error("Registration is closed.");
+    const c = await counts();
+    if (s.max_total_registrations != null && c.active >= s.max_total_registrations)
+      throw new Error("All spots are taken. Registration is closed.");
+    if (s.max_approved_teams != null && c.approved >= s.max_approved_teams)
+      throw new Error("All spots are taken. Registration is closed.");
     const supabase = await db();
     const { error } = await supabase.from("oneday_registrations").insert({
       team_name: data.teamName,
@@ -120,6 +146,8 @@ export const getOnedaySettingsAdmin = createServerFn({ method: "GET" }).handler(
     venue: s?.venue ?? "",
     paymentDetails: s?.payment_details ?? "",
     menuLabel: s?.menu_label || "One-day",
+    maxApproved: s?.max_approved_teams ?? null,
+    maxTotal: s?.max_total_registrations ?? null,
   };
 });
 
@@ -131,6 +159,8 @@ const settingsSchema = z.object({
   venue: z.string().trim().max(160),
   paymentDetails: z.string().trim().max(1000),
   menuLabel: z.string().trim().min(1, "Enter a menu name").max(24),
+  maxApproved: z.number().int().min(1).max(1000).nullable(),
+  maxTotal: z.number().int().min(1).max(1000).nullable(),
 });
 
 export const updateOnedaySettings = createServerFn({ method: "POST" })
@@ -146,6 +176,8 @@ export const updateOnedaySettings = createServerFn({ method: "POST" })
       venue: data.venue,
       payment_details: data.paymentDetails,
       menu_label: data.menuLabel,
+      max_approved_teams: data.maxApproved,
+      max_total_registrations: data.maxTotal,
     };
     const result = existing
       ? await supabase.from("oneday_settings").update(payload).eq("id", existing.id)
@@ -173,6 +205,12 @@ export const setOnedayStatus = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = await admin();
     const { data: prev } = await supabase.from("oneday_registrations").select("status").eq("id", data.id).maybeSingle();
+    if (data.status === "approved" && prev?.status !== "approved") {
+      const s = await readSettings();
+      const c = await counts();
+      if (s?.max_approved_teams != null && c.approved >= s.max_approved_teams)
+        throw new Error(`The approved-team limit (${s.max_approved_teams}) is reached. Raise it in Event settings first.`);
+    }
     const { data: reg, error } = await supabase
       .from("oneday_registrations")
       .update({ status: data.status, seen_by_admin: true })
@@ -210,3 +248,27 @@ export const deleteOnedayRegistration = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+async function exportData() {
+  const supabase = await admin();
+  const s = await readSettings();
+  const { data, error } = await supabase
+    .from("oneday_registrations")
+    .select("team_name, player1_name, player2_name, email, phone, status, created_at")
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return { rows: data ?? [], meta: { name: s?.name ?? "", eventDate: s?.event_date ?? "", venue: s?.venue ?? "" } };
+}
+
+export const exportOnedayCsv = createServerFn({ method: "POST" }).handler(async () => {
+  const { rows } = await exportData();
+  const { buildCsv } = await import("./oneday-export.server");
+  return { csv: buildCsv(rows) };
+});
+
+export const exportOnedayPdf = createServerFn({ method: "POST" }).handler(async () => {
+  const { rows, meta } = await exportData();
+  const { buildPdf } = await import("./oneday-export.server");
+  const bytes = await buildPdf(rows, meta);
+  return { base64: Buffer.from(bytes).toString("base64") };
+});

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   deleteOnedayRegistration,
+  exportOnedayCsv,
+  exportOnedayPdf,
   markOnedaySeen,
   setOnedayStatus,
   updateOnedaySettings,
@@ -53,7 +55,7 @@ function SettingsTab() {
   const { data } = useQuery(onedaySettingsAdminQueryOptions);
   const save = useServerFn(updateOnedaySettings);
   const qc = useQueryClient();
-  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day" });
+  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day", maxApproved: null as number | null, maxTotal: null as number | null });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (data) setForm(data);
@@ -99,6 +101,17 @@ function SettingsTab() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
+          <label className={labelCls}>Max approved teams (empty = no limit)</label>
+          <input type="number" min={1} className={field} value={form.maxApproved ?? ""} onChange={(e) => setForm((f) => ({ ...f, maxApproved: e.target.value ? Number(e.target.value) : null }))} />
+        </div>
+        <div>
+          <label className={labelCls}>Max total sign-ups — approved + unapproved (empty = no limit)</label>
+          <input type="number" min={1} className={field} value={form.maxTotal ?? ""} onChange={(e) => setForm((f) => ({ ...f, maxTotal: e.target.value ? Number(e.target.value) : null }))} />
+        </div>
+        <p className="text-xs text-muted-foreground sm:col-span-2">When a limit is reached, the public form locks automatically.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
           <label className={labelCls}>Date &amp; start time</label>
           <input type="datetime-local" className={field} value={form.eventDate} onChange={(e) => setForm((f) => ({ ...f, eventDate: e.target.value }))} />
         </div>
@@ -123,6 +136,34 @@ function RegistrationsTab() {
   const remove = useServerFn(deleteOnedayRegistration);
   const markSeen = useServerFn(markOnedaySeen);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+  const csvFn = useServerFn(exportOnedayCsv);
+  const pdfFn = useServerFn(exportOnedayPdf);
+  const stamp = new Date().toISOString().slice(0, 10);
+  function save(blob: Blob, name: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  async function downloadCsv() {
+    try {
+      const { csv } = await csvFn();
+      save(new Blob([csv], { type: "text/csv;charset=utf-8" }), `one-day-registrations-${stamp}.csv`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    }
+  }
+  async function downloadPdf() {
+    try {
+      const { base64 } = await pdfFn();
+      const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+      save(new Blob([bytes], { type: "application/pdf" }), `one-day-registrations-${stamp}.pdf`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    }
+  }
 
   const unseen = data.some((r) => !r.seen_by_admin);
   useEffect(() => {
@@ -159,6 +200,10 @@ function RegistrationsTab() {
             {k} ({counts[k]})
           </button>
         ))}
+        <div className="ml-auto flex gap-2">
+          <Button size="sm" variant="outline" onClick={downloadCsv} disabled={data.length === 0}>Download Excel</Button>
+          <Button size="sm" variant="outline" onClick={downloadPdf} disabled={data.length === 0}>Download PDF</Button>
+        </div>
       </div>
       {rows.length === 0 ? (
         <p className="p-5 text-sm text-muted-foreground">No registrations here.</p>
