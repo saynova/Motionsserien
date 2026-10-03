@@ -145,7 +145,12 @@ function OneDayPage() {
                     {i + 1}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate font-semibold">{team.team_name}</p>
+                    <p className="flex items-center gap-2 font-semibold">
+                      <span className="truncate">{team.team_name}</span>
+                      <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                        {team.level === "advanced" ? "Advanced" : "Intermediate"}
+                      </span>
+                    </p>
                     <p className="truncate text-sm text-muted-foreground">
                       {team.player1_name} &amp; {team.player2_name}
                     </p>
@@ -179,6 +184,8 @@ function RegistrationForm() {
   const submit = useServerFn(submitOnedayRegistration);
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ teamName: "", player1Name: "", player2Name: "", email: "", phone: "" });
+  const [level, setLevel] = useState<"" | "intermediate" | "advanced">("");
+  const [payment, setPayment] = useState<"" | "paid" | "unpaid">("");
   const [terms, setTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -190,10 +197,12 @@ function RegistrationForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!level) return setError("Please choose your level.");
+    if (!payment) return setError("Please choose your payment status.");
     if (!terms) return setError("Please accept the Terms & Conditions.");
     setBusy(true);
     try {
-      await submit({ data: { ...form, acceptTerms: true } });
+      await submit({ data: { ...form, level, paymentStatus: payment, acceptTerms: true } });
       setDone(true);
       void queryClient.invalidateQueries({ queryKey: ["oneday"] });
     } catch (err) {
@@ -246,6 +255,31 @@ function RegistrationForm() {
           <input id="od-phone" type="tel" autoComplete="tel" className={field} required maxLength={25} value={form.phone} onChange={set("phone")} />
         </div>
       </div>
+      <Choice
+        label="Level"
+        value={level}
+        onChange={(v) => setLevel(v as "intermediate" | "advanced")}
+        options={[
+          { value: "intermediate", label: "Intermediate" },
+          { value: "advanced", label: "Advanced" },
+        ]}
+        note="The organiser may change your level based on demand."
+      />
+      <Choice
+        label="Payment"
+        value={payment}
+        onChange={(v) => setPayment(v as "paid" | "unpaid")}
+        options={[
+          { value: "paid", label: "Paid" },
+          { value: "unpaid", label: "Unpaid" },
+        ]}
+        note={
+          <>
+            Paying later? Please send your payment reference number to{" "}
+            <Link to="/ask" className="font-semibold text-primary underline">the General</Link>.
+          </>
+        }
+      />
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
         <span>
@@ -259,5 +293,39 @@ function RegistrationForm() {
       </Button>
       <p className="text-xs text-muted-foreground">Email and phone are only seen by the organiser.</p>
     </form>
+  );
+}
+
+function Choice({
+  label,
+  value,
+  onChange,
+  options,
+  note,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  note: React.ReactNode;
+}) {
+  return (
+    <fieldset>
+      <legend className={labelCls}>{label}</legend>
+      <div className="grid grid-cols-2 gap-2">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={value === o.value}
+            onClick={() => onChange(o.value)}
+            className={`rounded-md border px-3 py-2 text-sm font-semibold transition-colors ${value === o.value ? "border-primary bg-primary/10 text-primary" : "border-input bg-background text-muted-foreground hover:border-primary/50"}`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">{note}</p>
+    </fieldset>
   );
 }
