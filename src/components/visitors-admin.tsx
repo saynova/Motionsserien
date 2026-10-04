@@ -16,7 +16,10 @@ import {
 } from "recharts";
 import {
   Clock,
+  Eye,
+  Film,
   Globe2,
+  Images,
   Laptop,
   MapPin,
   Monitor,
@@ -24,12 +27,13 @@ import {
   Smartphone,
   Tablet,
   TrendingUp,
+  Trophy,
   Users,
 } from "lucide-react";
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { visitsQueryOptions } from "@/lib/tournament-query";
+import { galleryViewsQueryOptions, visitsQueryOptions } from "@/lib/tournament-query";
 import { purgeOldVisits } from "@/lib/visitors.functions";
 
 const btnGhost =
@@ -155,6 +159,7 @@ function topCounts(values: string[], limit: number) {
 
 export function VisitorsAdmin() {
   const visits = useQuery(visitsQueryOptions);
+  const galleryViews = useQuery(galleryViewsQueryOptions);
   const queryClient = useQueryClient();
   const purge = useServerFn(purgeOldVisits);
   const [path, setPath] = useState("");
@@ -294,6 +299,34 @@ export function VisitorsAdmin() {
 
   const deviceColors = ["var(--color-mobile)", "var(--color-desktop)", "var(--color-other)"];
 
+  const mediaStats = useMemo(() => {
+    const items = galleryViews.data ?? [];
+    const totalViews = items.reduce((sum, item) => sum + item.viewCount, 0);
+    const viewedItems = items.filter((item) => item.viewCount > 0).length;
+    const photos = items
+      .filter((item) => item.mediaType === "photo")
+      .reduce((sum, item) => sum + item.viewCount, 0);
+    const videos = totalViews - photos;
+    const top = items[0];
+    const ranked = items.slice(0, 10).map((item, index) => ({
+      ...item,
+      rank: index + 1,
+      label: item.caption.trim() || `${item.mediaType === "video" ? "Video" : "Photo"} ${index + 1}`,
+    }));
+    return {
+      items,
+      totalViews,
+      viewedItems,
+      average: items.length ? Math.round(totalViews / items.length) : 0,
+      top,
+      ranked,
+      split: [
+        { name: "Photos", value: photos },
+        { name: "Videos", value: videos },
+      ].filter((entry) => entry.value > 0),
+    };
+  }, [galleryViews.data]);
+
   async function onPurge() {
     if (!window.confirm("Delete all visit records older than 30 days?")) return;
     setBusy(true);
@@ -330,6 +363,7 @@ export function VisitorsAdmin() {
         <Tabs defaultValue="overview" className="mt-6">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="media">Photo &amp; video views</TabsTrigger>
             <TabsTrigger value="logs">Detailed log</TabsTrigger>
           </TabsList>
 
@@ -503,6 +537,146 @@ export function VisitorsAdmin() {
                 icon={MapPin}
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="media" className="mt-5 space-y-5">
+            {galleryViews.isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading gallery views…</p>
+            ) : mediaStats.items.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-background/30 px-6 py-12 text-center">
+                <Images className="mx-auto h-8 w-8 text-primary" />
+                <h3 className="mt-3 font-display text-lg font-bold">No gallery media yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Photos and videos will appear here after they are added to the gallery.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <StatCard label="Total media views" value={mediaStats.totalViews} hint="photo and video opens" icon={Eye} />
+                  <StatCard label="Viewed items" value={mediaStats.viewedItems} hint={`of ${mediaStats.items.length} uploads`} icon={Images} />
+                  <StatCard label="Average views" value={mediaStats.average} hint="per gallery item" icon={TrendingUp} />
+                  <StatCard
+                    label="Most viewed"
+                    value={mediaStats.top?.viewCount ?? 0}
+                    hint={mediaStats.top?.caption || (mediaStats.top?.mediaType === "video" ? "Untitled video" : "Untitled photo")}
+                    icon={Trophy}
+                  />
+                </div>
+
+                {mediaStats.totalViews === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border bg-background/30 px-6 py-10 text-center">
+                    <Eye className="mx-auto h-8 w-8 text-primary" />
+                    <h3 className="mt-3 font-display text-lg font-bold">No views recorded yet</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      This report updates when visitors open a photo or video.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    <div className="rounded-xl border border-border bg-background/40 p-4 lg:col-span-2">
+                      <h3 className="text-sm font-bold">Most-viewed gallery items</h3>
+                      <p className="mt-0.5 text-xs text-muted-foreground">Top 10 by recorded opens</p>
+                      <ChartContainer
+                        config={{ views: { label: "Views", color: "var(--primary)" } }}
+                        className="mt-3 h-[22rem] w-full"
+                      >
+                        <BarChart data={mediaStats.ranked} layout="vertical" margin={{ left: 12, right: 20 }}>
+                          <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                          <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
+                          <YAxis
+                            type="category"
+                            dataKey="label"
+                            tickLine={false}
+                            axisLine={false}
+                            width={125}
+                            tickFormatter={(value: string) => value.length > 18 ? `${value.slice(0, 18)}…` : value}
+                          />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="viewCount" name="Views" radius={[0, 5, 5, 0]} fill="var(--color-views)" />
+                        </BarChart>
+                      </ChartContainer>
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-background/40 p-4">
+                      <h3 className="text-sm font-bold">Views by media type</h3>
+                      <p className="mt-0.5 text-xs text-muted-foreground">Photos compared with videos</p>
+                      <ChartContainer
+                        config={{
+                          Photos: { label: "Photos", color: "var(--primary)" },
+                          Videos: { label: "Videos", color: "var(--accent)" },
+                        }}
+                        className="mt-3 aspect-square max-h-56 w-full"
+                      >
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                          <Pie data={mediaStats.split} dataKey="value" nameKey="name" innerRadius="55%" outerRadius="85%" paddingAngle={3} strokeWidth={0}>
+                            {mediaStats.split.map((entry) => (
+                              <Cell key={entry.name} fill={`var(--color-${entry.name})`} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ChartContainer>
+                      <ul className="mt-3 space-y-2 text-sm">
+                        {mediaStats.split.map((entry) => (
+                          <li key={entry.name} className="flex items-center justify-between gap-3">
+                            <span className="flex items-center gap-2 font-medium">
+                              {entry.name === "Videos" ? <Film className="h-4 w-4 text-accent" /> : <Images className="h-4 w-4 text-primary" />}
+                              {entry.name}
+                            </span>
+                            <span className="tabnum font-bold text-primary">{entry.value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-xl border border-border bg-background/40 p-4">
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-bold">All gallery items</h3>
+                      <p className="mt-0.5 text-xs text-muted-foreground">Ranked by total views</p>
+                    </div>
+                    <span className="text-xs font-semibold text-muted-foreground">{mediaStats.items.length} items</span>
+                  </div>
+                  <div className="mt-3 overflow-x-auto">
+                    <table className="w-full min-w-[42rem] text-left text-sm">
+                      <thead className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        <tr>
+                          <th className="py-2 pr-3">Rank</th>
+                          <th className="py-2 pr-3">Gallery item</th>
+                          <th className="py-2 pr-3">Type</th>
+                          <th className="py-2 pr-3">Uploaded</th>
+                          <th className="py-2 text-right">Views</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mediaStats.items.map((item, index) => (
+                          <tr key={item.id} className="border-t border-border/60">
+                            <td className="tabnum py-3 pr-3 font-bold text-muted-foreground">{index + 1}</td>
+                            <td className="max-w-sm py-3 pr-3">
+                              <span className="block truncate font-semibold">{item.caption || "Untitled moment"}</span>
+                              {item.isPinned ? <span className="mt-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-primary">Featured</span> : null}
+                            </td>
+                            <td className="py-3 pr-3">
+                              <span className="inline-flex items-center gap-1.5 capitalize">
+                                {item.mediaType === "video" ? <Film className="h-4 w-4 text-accent" /> : <Images className="h-4 w-4 text-primary" />}
+                                {item.mediaType}
+                              </span>
+                            </td>
+                            <td className="whitespace-nowrap py-3 pr-3 text-muted-foreground">
+                              {new Date(item.createdAt).toLocaleDateString("sv-SE")}
+                            </td>
+                            <td className="tabnum py-3 text-right text-base font-bold text-primary">{item.viewCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="logs" className="mt-5">

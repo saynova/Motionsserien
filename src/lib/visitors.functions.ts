@@ -23,6 +23,15 @@ export type SubmitterDetail = {
   userAgent: string;
 };
 
+export type GalleryViewRow = {
+  id: string;
+  caption: string;
+  mediaType: "photo" | "video";
+  viewCount: number;
+  isPinned: boolean;
+  createdAt: string;
+};
+
 const VISIT_COLUMNS = "id, path, ip, device, os, browser, country, city, referrer, created_at";
 
 // --------------------------------------------------------------- public write
@@ -70,6 +79,30 @@ export const listVisits = createServerFn({ method: "POST" }).handler(
       .limit(400);
     if (error) throw new Error(error.message);
     return (data ?? []) as VisitRow[];
+  },
+);
+
+export const listGalleryViews = createServerFn({ method: "POST" }).handler(
+  async (): Promise<GalleryViewRow[]> => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+
+    const { data, error } = await adminClient()
+      .from("gallery_photos")
+      .select("id, caption, media_type, view_count, is_pinned, created_at")
+      .order("view_count", { ascending: false })
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      caption: row.caption,
+      mediaType: row.media_type === "video" ? "video" : "photo",
+      viewCount: row.view_count,
+      isPinned: row.is_pinned,
+      createdAt: row.created_at,
+    }));
   },
 );
 
