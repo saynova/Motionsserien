@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Camera, Eye, Home, Pin, PinOff, Play, Trash2, Trophy, Upload } from "lucide-react";
+import { Camera, Home, Pin, PinOff, Play, Trash2, Trophy, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -325,8 +325,6 @@ export function MemoriesAdmin() {
           Upload
         </Button>
 
-        <ViewStats photos={memories.data?.photos ?? []} />
-
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(memories.data?.photos ?? []).map((photo) => (
             <li
@@ -335,9 +333,6 @@ export function MemoriesAdmin() {
                 photo.is_pinned ? "border-amber-400 ring-1 ring-amber-400/40" : "border-border"
               }`}
             >
-              <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                <Eye className="h-3.5 w-3.5" /> {photo.view_count ?? 0} views
-              </p>
               {photo.image_url ? (
                 photo.media_type === "video" ? (
                   <div className="relative">
@@ -414,44 +409,6 @@ export function MemoriesAdmin() {
           ))}
         </ul>
       </section>
-    </div>
-  );
-}
-
-function ViewStats({ photos }: { photos: import("@/lib/memories.functions").GalleryPhoto[] }) {
-  if (photos.length === 0) return null;
-  const total = photos.reduce((n, p) => n + (p.view_count ?? 0), 0);
-  const videoViews = photos.filter((p) => p.media_type === "video").reduce((n, p) => n + (p.view_count ?? 0), 0);
-  const top = [...photos].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0)).slice(0, 5);
-  const max = Math.max(1, top[0]?.view_count ?? 0);
-  return (
-    <div className="mt-6 rounded-xl border border-border bg-card/60 p-4">
-      <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
-        <Eye className="h-4 w-4 text-primary" /> Views
-      </h3>
-      <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-lg bg-secondary p-3"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Total views</p></div>
-        <div className="rounded-lg bg-secondary p-3"><p className="text-2xl font-bold">{total - videoViews}</p><p className="text-xs text-muted-foreground">Photo views</p></div>
-        <div className="rounded-lg bg-secondary p-3"><p className="text-2xl font-bold">{videoViews}</p><p className="text-xs text-muted-foreground">Video views</p></div>
-      </div>
-      <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Most popular</p>
-      <ol className="mt-2 space-y-2">
-        {top.map((p, i) => (
-          <li key={p.id} className="flex items-center gap-3 text-sm">
-            <span className="w-4 font-bold">{i + 1}</span>
-            {p.media_type === "video" ? (
-              <span className="flex h-10 w-14 items-center justify-center rounded bg-secondary"><Play className="h-4 w-4" /></span>
-            ) : p.image_url ? (
-              <img src={p.image_url} alt="" className="h-10 w-14 rounded object-cover" />
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <p className="truncate">{p.caption || (p.media_type === "video" ? "Video" : "Photo")}</p>
-              <div className="mt-1 h-1.5 rounded bg-secondary"><div className="h-1.5 rounded bg-primary" style={{ width: `${((p.view_count ?? 0) / max) * 100}%` }} /></div>
-            </div>
-            <span className="font-semibold">{p.view_count ?? 0}</span>
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }
