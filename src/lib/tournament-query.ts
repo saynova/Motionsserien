@@ -10,7 +10,7 @@ import {
 } from "./registration.functions";
 import { listMessages } from "./messages.functions";
 import { listDivisionPlayers, listReminders, listTeamContacts } from "./reminders.functions";
-import { listSubmitterDetails, listVisits } from "./visitors.functions";
+import { listGalleryViews, listSubmitterDetails, listVisits } from "./visitors.functions";
 import { listTeamPayments } from "./payments.functions";
 import { getMemories } from "./memories.functions";
 
@@ -27,6 +27,11 @@ export const memoriesQueryOptions = queryOptions({
 export const visitsQueryOptions = queryOptions({
   queryKey: ["visits", "admin"],
   queryFn: () => listVisits(),
+});
+
+export const galleryViewsQueryOptions = queryOptions({
+  queryKey: ["gallery-views", "admin"],
+  queryFn: () => listGalleryViews(),
 });
 
 export const submitterDetailsQueryOptions = queryOptions({
