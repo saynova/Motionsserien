@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Lock, ShieldCheck, Smartphone, Trophy, Users } from "lucide-react";
 
 import { AccountRegistration } from "@/components/account-registration";
+import { RulesToPlay } from "@/components/rules-to-play";
 import { useEffect, useState } from "react";
 import { registeredTeamsQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
 
@@ -90,6 +91,9 @@ function RegisterPage() {
           </div>
         </div>
       </section>
+
+      {info.isOpen && <RulesToPlay />}
+
 
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,28rem)_1fr]">
