@@ -307,8 +307,8 @@ function StandingsPage() {
               ))}
             </select>
           </label>
-          <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
-          <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
+          <span className="standings-pill px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
+          <span className="standings-pill px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
         </div>
       </PageHeader>
 
@@ -321,9 +321,9 @@ function StandingsPage() {
           return (
             <section
               key={division}
-              className="glass-surface overflow-hidden rounded-lg border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="standings-card overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
             >
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-secondary/50 px-4 py-2.5">
+              <div className="standings-div-header flex flex-wrap items-baseline justify-between gap-2 border-b border-border px-4 py-2.5">
                 <h2 className="text-xl font-bold text-primary">
                   Division {division}
                 </h2>
