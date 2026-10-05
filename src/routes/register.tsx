@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Lock, ShieldCheck, Smartphone, Trophy, Users } from "lucide-react";
+import { BookOpen, ChevronDown, Lock, ShieldCheck, Smartphone, Trophy, Users } from "lucide-react";
 
 import { AccountRegistration } from "@/components/account-registration";
 import { RulesToPlay } from "@/components/rules-to-play";
@@ -49,6 +49,7 @@ function RegisterPage() {
   const filled = Math.min(teams.length, TOTAL_SPOTS);
   const pct = Math.round((filled / TOTAL_SPOTS) * 100);
   const left = TOTAL_SPOTS - filled;
+  const [showRules, setShowRules] = useState(false);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -88,11 +89,23 @@ function RegisterPage() {
             <p className="mt-2 text-xs text-muted-foreground">
               {left > 0 ? `${left} spots left · first come, first served` : "All spots filled — new teams join the waitlist"}
             </p>
+            {info.isOpen && (
+              <button
+                type="button"
+                onClick={() => setShowRules((v) => !v)}
+                aria-expanded={showRules}
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/15"
+              >
+                <BookOpen className="size-4" aria-hidden="true" />
+                {showRules ? "Hide rules to play" : "View rules to play"}
+                <ChevronDown className={`size-4 transition-transform ${showRules ? "rotate-180" : ""}`} aria-hidden="true" />
+              </button>
+            )}
           </div>
         </div>
       </section>
 
-      {info.isOpen && <RulesToPlay />}
+      {info.isOpen && showRules && <RulesToPlay />}
 
 
 
