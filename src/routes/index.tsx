@@ -272,15 +272,15 @@ function StandingsPage() {
         </div>
 
         <dl className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+          <div className="standings-pill flex items-center gap-3 px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5">
             <Users className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{teams.length}</dd><dt className="text-xs text-muted-foreground">Active teams</dt></div>
           </div>
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+          <div className="standings-pill flex items-center gap-3 px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5">
             <CalendarRange className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{currentWeek} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+          <div className="standings-pill flex items-center gap-3 px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5">
             <Layers3 className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{divisions.length}</dd><dt className="text-xs text-muted-foreground">Divisions</dt></div>
           </div>
@@ -298,7 +298,7 @@ function StandingsPage() {
               value={week}
               onChange={(e) => setWeek(Number(e.target.value))}
               aria-label="Select week"
-              className="cursor-pointer rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="standings-pill cursor-pointer px-3 py-1.5 font-semibold text-foreground transition-all duration-200 hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
               {availableWeeks.map((w) => (
                 <option key={w} value={w}>
