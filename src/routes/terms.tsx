@@ -68,13 +68,23 @@ function TermsPage() {
             Badmintonklubb. All players are expected to play fair and report scores honestly.
           </p>
           <p>
-            Matches are best of 3 sets to 21 points. If the teams split the first two sets, a
-            deciding third set is played to 11 points.
+            From the next tournament, matches are best of 3 sets to 15 points. At 15–15 the first
+            team to reach 16 wins the set. If the teams split the first two sets, a deciding third
+            set is played to 9 points; at 9–9 the first team to reach 10 wins the match.
           </p>
           <p>
-            Weekly division movement (promotion, staying, relegation) is calculated automatically
-            from approved results: match wins first, then total points, then set and point
-            difference.
+            Weekly division movement: 2 wins move up, 1 win stays, 0 wins move down. Ties are
+            decided by head-to-head, then set difference, point difference and total points. The
+            schedule is published once registration closes.
+          </p>
+          <p>
+            The General may adjust rankings and divisions when necessary, and may amend the rules
+            during the season; changes are announced on this website. The General's decisions are
+            final. See the full{" "}
+            <Link to="/register" hash="rules" className="font-semibold text-primary underline">
+              Rules to play
+            </Link>
+            .
           </p>
         </Section>
 
