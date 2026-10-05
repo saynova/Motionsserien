@@ -234,8 +234,8 @@ function StandingsPage() {
   const pendingCount = weekMatches.filter((m) => m.status === "pending").length;
 
   return (
-    <>
-      <section className="submit-score-hero relative mb-8 w-full overflow-hidden rounded-lg border border-primary/10 bg-card px-4 py-6 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
+    <div className="standings-ambient">
+      <section className="submit-score-hero standings-card relative mb-8 w-full overflow-hidden px-4 py-6 sm:px-8 sm:py-10 lg:px-10">
         <div className="absolute inset-0 -translate-x-full animate-submit-shimmer bg-gradient-to-r from-transparent via-primary/5 to-transparent" aria-hidden="true" />
         <div className="relative flex items-start gap-4 sm:items-center">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
