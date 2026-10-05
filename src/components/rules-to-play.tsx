@@ -158,7 +158,7 @@ export function RulesToPlay() {
               </thead>
               <tbody>
                 {t.s3rows.map(([a, b], i) => {
-                  const Icon = moveIcons[i];
+                  const Icon = moveIcons[i] ?? ArrowRight;
                   return (
                     <tr key={a} className="border-t border-border">
                       <td className="px-3 py-2 font-medium">{a}</td>
