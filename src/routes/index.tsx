@@ -234,8 +234,8 @@ function StandingsPage() {
   const pendingCount = weekMatches.filter((m) => m.status === "pending").length;
 
   return (
-    <>
-      <section className="submit-score-hero relative mb-8 w-full overflow-hidden rounded-lg border border-primary/10 bg-card px-4 py-6 shadow-xl shadow-primary/5 sm:px-8 sm:py-10 lg:px-10">
+    <div className="standings-ambient">
+      <section className="submit-score-hero standings-card relative mb-8 w-full overflow-hidden px-4 py-6 sm:px-8 sm:py-10 lg:px-10">
         <div className="absolute inset-0 -translate-x-full animate-submit-shimmer bg-gradient-to-r from-transparent via-primary/5 to-transparent" aria-hidden="true" />
         <div className="relative flex items-start gap-4 sm:items-center">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-14">
@@ -272,15 +272,15 @@ function StandingsPage() {
         </div>
 
         <dl className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+          <div className="standings-pill flex items-center gap-3 px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5">
             <Users className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{teams.length}</dd><dt className="text-xs text-muted-foreground">Active teams</dt></div>
           </div>
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+          <div className="standings-pill flex items-center gap-3 px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5">
             <CalendarRange className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{currentWeek} / {season.total_weeks}</dd><dt className="text-xs text-muted-foreground">Current round</dt></div>
           </div>
-          <div className="glass-surface flex items-center gap-3 rounded-lg border border-border px-4 py-3">
+          <div className="standings-pill flex items-center gap-3 px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5">
             <Layers3 className="size-5 text-primary" aria-hidden="true" />
             <div><dd className="tabnum text-lg font-bold">{divisions.length}</dd><dt className="text-xs text-muted-foreground">Divisions</dt></div>
           </div>
@@ -298,7 +298,7 @@ function StandingsPage() {
               value={week}
               onChange={(e) => setWeek(Number(e.target.value))}
               aria-label="Select week"
-              className="cursor-pointer rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="standings-pill cursor-pointer px-3 py-1.5 font-semibold text-foreground transition-all duration-200 hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
               {availableWeeks.map((w) => (
                 <option key={w} value={w}>
@@ -307,8 +307,8 @@ function StandingsPage() {
               ))}
             </select>
           </label>
-          <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
-          <span className="rounded-full border border-border bg-secondary px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
+          <span className="standings-pill px-3 py-1.5 font-semibold">{finalCount} of {weekMatches.length} results counted</span>
+          <span className="standings-pill px-3 py-1.5 font-semibold">{pendingCount} awaiting approval</span>
         </div>
       </PageHeader>
 
@@ -321,9 +321,9 @@ function StandingsPage() {
           return (
             <section
               key={division}
-              className="glass-surface overflow-hidden rounded-lg border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="standings-card overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
             >
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-secondary/50 px-4 py-2.5">
+              <div className="standings-div-header flex flex-wrap items-baseline justify-between gap-2 border-b border-border px-4 py-2.5">
                 <h2 className="text-xl font-bold text-primary">
                   Division {division}
                 </h2>
@@ -416,7 +416,7 @@ function StandingsPage() {
                   return (
                     <li
                       key={match.id}
-                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 text-xs sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 text-xs transition-colors duration-150 hover:bg-primary/5 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
                     >
                       <span className="tabnum text-muted-foreground">{match.start_time}</span>
                       <span className="min-w-0 break-words font-medium">
@@ -435,6 +435,6 @@ function StandingsPage() {
       </div>
       <TeamDetailsDialog data={data} teamId={detailTeamId} onClose={() => setDetailTeamId(null)} />
       <TermsNotice />
-    </>
+    </div>
   );
 }
