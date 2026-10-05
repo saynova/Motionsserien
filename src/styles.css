@@ -186,6 +186,47 @@
   }
 }
 
+/* Standings page — Lovable-inspired light ambient theme (scoped to the standings page only) */
+@utility standings-ambient {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2rem -1rem auto;
+    height: 34rem;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(38rem 20rem at 12% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%),
+      radial-gradient(30rem 18rem at 88% 6%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 70%),
+      radial-gradient(26rem 16rem at 50% 14%, color-mix(in oklab, var(--chart-4) 6%, transparent), transparent 70%);
+    filter: blur(6px);
+  }
+}
+
+@utility standings-card {
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in oklab, var(--border) 80%, var(--primary) 8%);
+  background: color-mix(in oklab, var(--card) 88%, white);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 1px 2px oklch(0.208 0.042 266 / 4%),
+    0 18px 44px -18px color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
+@utility standings-pill {
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--border));
+  background: linear-gradient(180deg, white, color-mix(in oklab, var(--secondary) 70%, white));
+  box-shadow: 0 1px 2px oklch(0.208 0.042 266 / 5%);
+}
+
+@utility standings-div-header {
+  background: linear-gradient(120deg, color-mix(in oklab, var(--primary) 9%, white), color-mix(in oklab, var(--accent) 7%, white));
+}
+
 @utility glass-surface {
   background: color-mix(in oklab, var(--card) 82%, transparent);
   backdrop-filter: blur(16px);
