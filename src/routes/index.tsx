@@ -416,7 +416,7 @@ function StandingsPage() {
                   return (
                     <li
                       key={match.id}
-                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 text-xs sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 text-xs transition-colors duration-150 hover:bg-primary/5 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:px-4"
                     >
                       <span className="tabnum text-muted-foreground">{match.start_time}</span>
                       <span className="min-w-0 break-words font-medium">
@@ -435,6 +435,6 @@ function StandingsPage() {
       </div>
       <TeamDetailsDialog data={data} teamId={detailTeamId} onClose={() => setDetailTeamId(null)} />
       <TermsNotice />
-    </>
+    </div>
   );
 }
