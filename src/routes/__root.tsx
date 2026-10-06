@@ -282,7 +282,7 @@ function SiteHeader() {
             ).map((item) => (
               <Link
                 key={item.to}
-                to={item.to}
+                to={item.to as "/"}
                 activeOptions={{ exact: item.to === "/" }}
                 className="rounded-md px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:px-2.5 sm:text-sm"
                 activeProps={{ className: "bg-primary/10 text-primary hover:bg-primary/15" }}
