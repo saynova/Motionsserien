@@ -423,7 +423,7 @@ function StandingsPage() {
                         {teamName(match.team_a_id)} <span className="text-muted-foreground">v</span>{" "}
                         {teamName(match.team_b_id)}
                       </span>
-                      <span className="col-span-2 min-w-0 sm:col-span-1"><ScoreText match={match} teamName={teamName} /></span>
+                      <span className="col-span-2 min-w-0 sm:col-span-1"><ScoreText match={match} teamName={teamName} hidePending /></span>
                       <span className="col-span-2 justify-self-start sm:col-span-1 sm:justify-self-end"><StatusPill match={match} /></span>
                     </li>
                   );

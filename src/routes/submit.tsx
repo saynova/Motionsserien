@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
-import { formatScore, formatWeekDate, validateScore } from "@/lib/tournament";
+import { formatWeekDate, validateScore } from "@/lib/tournament";
 import { tournamentQueryOptions } from "@/lib/tournament-query";
 import { submitScore } from "@/lib/tournament.functions";
 
@@ -246,7 +246,7 @@ function SubmitPage() {
                   <span>
                     Div {m.division} · {teamName(m.team_a_id)} v {teamName(m.team_b_id)}
                   </span>
-                  <span className="font-semibold text-foreground">{formatScore(m)}</span>
+                  <span className="font-semibold text-foreground">Score received</span>
                 </li>
               ))}
             </ul>
