@@ -98,7 +98,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     await consumeAuthSessionFromUrl();
   },
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(memoriesQueryOptions).catch(() => undefined);
+    const m = await context.queryClient.ensureQueryData(memoriesQueryOptions).catch(() => undefined);
+    return { homepage: m?.homepage ?? "standings" };
   },
   head: () => ({
     meta: [
@@ -263,7 +264,8 @@ function SiteHeader() {
   const brand = data ?? DEFAULT_BRANDING;
   const oneday = useQuery(onedayInfoQueryOptions).data;
   const onedayVisible = oneday?.visible === true;
-  const homepage = useQuery(memoriesQueryOptions).data?.homepage ?? "standings";
+  const loaded = Route.useLoaderData();
+  const homepage = useQuery(memoriesQueryOptions).data?.homepage ?? loaded?.homepage ?? "standings";
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto w-full max-w-[96rem] px-3 py-3 sm:px-5 lg:px-8">
