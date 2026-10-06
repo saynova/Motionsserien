@@ -56,15 +56,17 @@ export function StatusPill({ match }: { match: MatchRow }) {
 export function ScoreText({
   match,
   teamName,
+  hidePending,
 }: {
   match: MatchRow;
   teamName?: (id: string) => string;
+  hidePending?: boolean;
 }) {
   const winnerId = match.status === "final" ? matchWinnerId(match) : null;
   const showWinner = match.status === "final" && !!teamName;
   return (
     <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-      <span className="tabnum text-sm font-semibold">{formatScore(match)}</span>
+      <span className="tabnum text-sm font-semibold">{hidePending && match.status !== "final" ? "—" : formatScore(match)}</span>
       {showWinner ? (
         winnerId ? (
           <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-up/40 bg-up/10 px-2 py-0.5 text-[11px] font-semibold text-up">

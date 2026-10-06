@@ -246,7 +246,7 @@ function SubmitPage() {
                   <span>
                     Div {m.division} · {teamName(m.team_a_id)} v {teamName(m.team_b_id)}
                   </span>
-                  <span className="font-semibold text-foreground">{formatScore(m)}</span>
+                  <span className="font-semibold text-foreground">Score received</span>
                 </li>
               ))}
             </ul>
