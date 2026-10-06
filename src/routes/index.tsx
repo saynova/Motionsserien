@@ -144,12 +144,8 @@ function HomePage() {
     return (
       <>
         <WeeklyBanner />
-        <PageHeader
-          eyebrow="Photos"
-          title="Champions & Gallery"
-          description="Our Hall of Fame and the best moments from Monday nights in the Rackethall."
-        />
         <div className="mt-8">
+
           <MemoriesView />
         </div>
       </>
