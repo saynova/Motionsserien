@@ -23,6 +23,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as ShuttlesRouteImport } from './routes/shuttles'
+import { Route as StandingsRouteImport } from './routes/standings'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -105,6 +106,11 @@ const ShuttlesRoute = ShuttlesRouteImport.update({
   path: '/shuttles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StandingsRoute = StandingsRouteImport.update({
+  id: '/standings',
+  path: '/standings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubmitRoute = SubmitRouteImport.update({
   id: '/submit',
   path: '/submit',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
+  '/standings': typeof StandingsRoute
   '/submit': typeof SubmitRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
+  '/standings': typeof StandingsRoute
   '/submit': typeof SubmitRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
   '/shuttles': typeof ShuttlesRoute
+  '/standings': typeof StandingsRoute
   '/submit': typeof SubmitRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/schedule'
     | '/shuttles'
+    | '/standings'
     | '/submit'
     | '/terms'
     | '/account'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/schedule'
     | '/shuttles'
+    | '/standings'
     | '/submit'
     | '/terms'
     | '/account'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/schedule'
     | '/shuttles'
+    | '/standings'
     | '/submit'
     | '/terms'
     | '/_authenticated/account'
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScheduleRoute: typeof ScheduleRoute
   ShuttlesRoute: typeof ShuttlesRoute
+  StandingsRoute: typeof StandingsRoute
   SubmitRoute: typeof SubmitRoute
   TermsRoute: typeof TermsRoute
   ApiPublicCronAutoFinalizeRoute: typeof ApiPublicCronAutoFinalizeRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       path: '/shuttles'
       fullPath: '/shuttles'
       preLoaderRoute: typeof ShuttlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/standings': {
+      id: '/standings'
+      path: '/standings'
+      fullPath: '/standings'
+      preLoaderRoute: typeof StandingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/submit': {
@@ -580,6 +600,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ScheduleRoute: ScheduleRoute,
   ShuttlesRoute: ShuttlesRoute,
+  StandingsRoute: StandingsRoute,
   SubmitRoute: SubmitRoute,
   TermsRoute: TermsRoute,
   ApiPublicCronAutoFinalizeRoute: ApiPublicCronAutoFinalizeRoute,
