@@ -1,7 +1,7 @@
 import type React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, ChevronLeft, ChevronRight, Crown, Film, Image as ImageIcon, Play, Sparkles, Star, Trophy, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Crown, Download, Film, Image as ImageIcon, Play, Share2, Sparkles, Star, Trophy, X } from "lucide-react";
 
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import { recordGalleryView, type ChampionEntry, type GalleryPhoto } from "@/lib/memories.functions";
@@ -50,6 +50,9 @@ function PastChampion({ entry }: { entry: ChampionEntry }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
       <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
+        <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-background/20 bg-foreground/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-background backdrop-blur-md">
+          <Trophy className="h-3.5 w-3.5 text-[#f5c542]" /> Champions · {entry.year}
+        </span>
         {entry.image_url ? (
           <img
             src={entry.image_url}
@@ -227,6 +230,37 @@ function Lightbox({
           <span className="text-background/60">
             {index + 1} / {photos.length}
           </span>
+          {photo.image_url ? (
+            <span className="flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const url = photo.image_url!;
+                  try {
+                    if (navigator.share) await navigator.share({ title: photo.caption || "Motionsserien", url });
+                    else {
+                      await navigator.clipboard.writeText(url);
+                      alert("Link copied");
+                    }
+                  } catch {
+                    /* cancelled */
+                  }
+                }}
+                className="inline-flex items-center gap-1 rounded-full border border-background/30 bg-background/15 px-3 py-1 text-xs font-semibold backdrop-blur-md hover:bg-background/30"
+              >
+                <Share2 className="h-3.5 w-3.5" /> Share
+              </button>
+              <a
+                href={photo.image_url}
+                download
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-full border border-background/30 bg-background/15 px-3 py-1 text-xs font-semibold backdrop-blur-md hover:bg-background/30"
+              >
+                <Download className="h-3.5 w-3.5" /> Download
+              </a>
+            </span>
+          ) : null}
         </figcaption>
       </figure>
 
@@ -331,15 +365,16 @@ function MediaCard({
   onOpen: () => void;
   featured?: boolean;
 }) {
+  const [loaded, setLoaded] = useState(false);
   return (
     <button
       type="button"
       onClick={onOpen}
-      className={`group relative block overflow-hidden rounded-2xl border bg-card text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+      className={`group relative block w-full overflow-hidden rounded-xl border bg-card text-left shadow-sm transition-all duration-300 hover:scale-[1.03] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         featured ? "border-[#d4a017]/50 ring-1 ring-[#d4a017]/25" : "border-border"
       }`}
     >
-      <div className="aspect-[4/3] overflow-hidden bg-secondary">
+      <div className={`relative overflow-hidden bg-secondary ${loaded ? "" : "min-h-48 animate-pulse"}`}>
         {photo.image_url ? (
           photo.media_type === "video" ? (
             <video
@@ -347,14 +382,17 @@ function MediaCard({
               muted
               playsInline
               preload="metadata"
-              className="h-full w-full bg-black object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+              onLoadedData={() => setLoaded(true)}
+              className="block w-full bg-black object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
           ) : (
             <img
               src={photo.image_url}
               alt={photo.caption || "Match photo"}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+              onLoad={() => setLoaded(true)}
+              className={`block w-full transition-all duration-500 group-hover:scale-[1.04] ${loaded ? "opacity-100 blur-0" : "opacity-0 blur-md"}`}
               loading="lazy"
+              decoding="async"
             />
           )
         ) : null}
@@ -379,7 +417,7 @@ function MediaCard({
         </span>
       ) : null}
 
-      <span className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-gradient-to-t from-foreground/85 via-foreground/35 to-transparent px-3.5 pb-3 pt-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span className="pointer-events-none absolute inset-x-0 bottom-0 flex translate-y-3 flex-col gap-0.5 bg-gradient-to-t from-foreground/85 via-foreground/35 to-transparent px-3.5 pb-3 pt-10 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
         {photo.caption ? (
           <span className={`font-semibold text-background ${featured ? "text-base" : "text-sm"}`}>
             {photo.caption}
@@ -513,7 +551,7 @@ export function MemoriesView() {
                 Nothing matches this filter yet. Try another media type.
               </p>
             ) : (
-              <div className="mt-8 grid auto-rows-auto grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="mt-8 columns-2 gap-4 sm:columns-3 lg:columns-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
                 {pagedPhotos.map((photo, i) => (
                   <MediaCard
                     key={photo.id}
