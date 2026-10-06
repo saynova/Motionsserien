@@ -1,11 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Camera, Home, Pin, PinOff, Play, Trash2, Trophy, Upload } from "lucide-react";
+import { Camera, Pin, PinOff, Play, Trash2, Trophy, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -15,7 +14,6 @@ import {
   deleteGalleryPhoto,
   saveChampion,
   setGalleryPinned,
-  setSeasonFinished,
   updateGalleryPhoto,
 } from "@/lib/memories.functions";
 
@@ -92,7 +90,6 @@ export function MemoriesAdmin() {
   const updatePhoto = useServerFn(updateGalleryPhoto);
   const removePhoto = useServerFn(deleteGalleryPhoto);
   const pinPhoto = useServerFn(setGalleryPinned);
-  const setFinished = useServerFn(setSeasonFinished);
   const getSlots = useServerFn(createImageUploads);
 
   const [busy, setBusy] = useState(false);
@@ -123,35 +120,6 @@ export function MemoriesAdmin() {
 
   return (
     <div className="space-y-6">
-      <section className="glass-surface rounded-2xl border border-border p-5 sm:p-6">
-        <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
-          <Home className="h-5 w-5 text-primary" />
-          Homepage
-        </h2>
-        <div className="mt-3 flex items-center gap-3">
-          <Switch
-            checked={memories.data?.seasonFinished ?? false}
-            disabled={busy}
-            onCheckedChange={(checked) =>
-              run(
-                () => setFinished({ data: { finished: checked } }),
-                checked
-                  ? "Champions & Gallery is now the homepage."
-                  : "Current standings are back as the homepage.",
-              )
-            }
-            aria-label="Tournament finished"
-          />
-          <span className="text-sm">
-            Tournament finished — show Champions &amp; Gallery as the homepage
-          </span>
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          While this is on, visitors land on Champions &amp; Gallery; standings stay reachable from
-          the menu.
-        </p>
-      </section>
-
       <section className="glass-surface rounded-2xl border border-border p-5 sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
           <Trophy className="h-5 w-5 text-amber-500" />

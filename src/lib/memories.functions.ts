@@ -23,8 +23,12 @@ export type GalleryPhoto = {
   created_at: string;
 };
 
+export type Homepage = "standings" | "photos" | "schedule" | "register" | "one-day";
+export const HOMEPAGES: Homepage[] = ["standings", "photos", "schedule", "register", "one-day"];
+
 export type MemoriesData = {
   seasonFinished: boolean;
+  homepage: Homepage;
   champions: ChampionEntry[];
   photos: GalleryPhoto[];
 };
@@ -49,7 +53,7 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
     const [settings, champions, photos] = await Promise.all([
       client
         .from("site_support_settings")
-        .select("season_finished")
+        .select("season_finished, homepage")
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle(),
@@ -69,7 +73,8 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
     if (photos.error) throw new Error(photos.error.message);
 
     return {
-      seasonFinished: settings.data?.season_finished === true,
+      seasonFinished: settings.data?.homepage === "photos",
+      homepage: (HOMEPAGES as string[]).includes(settings.data?.homepage ?? "") ? (settings.data!.homepage as Homepage) : "standings",
       champions: (champions.data ?? []).map((c) => ({
         ...c,
         image_url: galleryUrl(c.image_path),
@@ -83,7 +88,7 @@ export const getMemories = createServerFn({ method: "GET" }).handler(
     } catch {
       // Backend hiccup (e.g. transient token/clock rejection): never blank the
       // homepage — fall back to the normal standings view with empty memories.
-      return { seasonFinished: false, champions: [], photos: [] };
+      return { seasonFinished: false, homepage: "standings", champions: [], photos: [] };
     }
   },
 );
@@ -372,5 +377,25 @@ export const recordGalleryView = createServerFn({ method: "POST" })
     if (readVisitorMeta().isBot) return { ok: true as const };
     const { adminClient } = await import("./tournament.server");
     await adminClient().rpc("increment_gallery_view" as never, { _id: data.id } as never);
+    return { ok: true as const };
+  });
+
+export const setHomepage = createServerFn({ method: "POST" })
+  .inputValidator((data: { homepage: Homepage }) => {
+    if (!HOMEPAGES.includes(data?.homepage)) throw new Error("Choose a valid homepage.");
+    return { homepage: data.homepage };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const client = adminClient();
+    const existing = await client.from("site_support_settings").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
+    if (existing.error) throw new Error(existing.error.message);
+    const payload = { homepage: data.homepage, season_finished: data.homepage === "photos" };
+    const result = existing.data
+      ? await client.from("site_support_settings").update(payload).eq("id", existing.data.id)
+      : await client.from("site_support_settings").insert(payload);
+    if (result.error) throw new Error(result.error.message);
     return { ok: true as const };
   });
