@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as OneDayRouteImport } from './routes/one-day'
+import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -72,6 +73,11 @@ const MemoriesRoute = MemoriesRouteImport.update({
 const OneDayRoute = OneDayRouteImport.update({
   id: '/one-day',
   path: '/one-day',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhotosRoute = PhotosRouteImport.update({
+  id: '/photos',
+  path: '/photos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgressRoute = ProgressRouteImport.update({
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/one-day': typeof OneDayRoute
+  '/photos': typeof PhotosRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/one-day': typeof OneDayRoute
+  '/photos': typeof PhotosRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/one-day': typeof OneDayRoute
+  '/photos': typeof PhotosRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
     | '/confirm'
     | '/memories'
     | '/one-day'
+    | '/photos'
     | '/progress'
     | '/register'
     | '/reset-password'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/confirm'
     | '/memories'
     | '/one-day'
+    | '/photos'
     | '/progress'
     | '/register'
     | '/reset-password'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/confirm'
     | '/memories'
     | '/one-day'
+    | '/photos'
     | '/progress'
     | '/register'
     | '/reset-password'
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   ConfirmRoute: typeof ConfirmRoute
   MemoriesRoute: typeof MemoriesRoute
   OneDayRoute: typeof OneDayRoute
+  PhotosRoute: typeof PhotosRoute
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -410,6 +423,13 @@ declare module '@tanstack/react-router' {
       path: '/one-day'
       fullPath: '/one-day'
       preLoaderRoute: typeof OneDayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/photos': {
+      id: '/photos'
+      path: '/photos'
+      fullPath: '/photos'
+      preLoaderRoute: typeof PhotosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/progress': {
@@ -554,6 +574,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfirmRoute: ConfirmRoute,
   MemoriesRoute: MemoriesRoute,
   OneDayRoute: OneDayRoute,
+  PhotosRoute: PhotosRoute,
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
