@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -72,14 +72,6 @@ function SubmitPage() {
     [matches, week, division],
   );
 
-  const awaitingMatches = useMemo(
-    () =>
-      matches
-        .filter((m) => m.week_no === week && m.status === "pending")
-        .filter((m) => (division === "" ? true : m.division === division))
-        .sort((a, b) => a.division - b.division || a.match_no - b.match_no),
-    [matches, week, division],
-  );
 
   const selected = openMatches.find((m) => m.id === matchId);
 
@@ -237,29 +229,6 @@ function SubmitPage() {
           </p>
         ) : null}
 
-        {awaitingMatches.length > 0 ? (
-          <div className="rounded border border-primary/25 bg-primary/5 p-3 text-sm">
-            <p className="font-semibold text-primary">Submitted — awaiting approval</p>
-            <ul className="mt-1 space-y-0.5 text-muted-foreground">
-              {awaitingMatches.map((m) => (
-                <li key={m.id} className="flex flex-wrap justify-between gap-x-3">
-                  <span>
-                    Div {m.division} · {teamName(m.team_a_id)} v {teamName(m.team_b_id)}
-                  </span>
-                  <span className="font-semibold text-foreground">Score received</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2">
-              This match score has been submitted and is awaiting approval. If you need to
-              make changes, please contact the General through{" "}
-              <Link to="/ask" className="font-semibold text-primary underline">
-                contact form
-              </Link>{" "}
-              from this website only.
-            </p>
-          </div>
-        ) : null}
 
         {selected ? (
           <div className="space-y-4 rounded border border-border bg-background/40 p-4">
