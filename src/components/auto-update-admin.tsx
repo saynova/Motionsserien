@@ -44,6 +44,9 @@ export function AutoUpdateAdmin() {
         time.
       </p>
 
+      <HomepageBlock />
+
+      <div className="mt-8">
       <StageBlock
         stage="approve"
         title="Automatic score approval"
@@ -58,6 +61,7 @@ export function AutoUpdateAdmin() {
         nextRun={settings.data?.approveNextRun ?? null}
         loaded={Boolean(settings.data)}
       />
+      </div>
 
       <div className="mt-8 border-t border-border pt-6">
         <StageBlock
@@ -76,8 +80,6 @@ export function AutoUpdateAdmin() {
           loaded={Boolean(settings.data)}
         />
       </div>
-
-      <HomepageBlock />
 
       <WeeklyWindowBlock />
 
@@ -531,7 +533,7 @@ function HomepageBlock() {
   }
 
   return (
-    <div className="mt-8 border-t border-border pt-6">
+    <div className="border-b border-border pb-8">
       <h3 className="text-lg font-bold tracking-tight">Homepage</h3>
       <p className="mt-1 text-sm text-muted-foreground">
         Choose what visitors see when they open motionsserien.se. Every page stays in the menu.
