@@ -72,14 +72,6 @@ function SubmitPage() {
     [matches, week, division],
   );
 
-  const awaitingMatches = useMemo(
-    () =>
-      matches
-        .filter((m) => m.week_no === week && m.status === "pending")
-        .filter((m) => (division === "" ? true : m.division === division))
-        .sort((a, b) => a.division - b.division || a.match_no - b.match_no),
-    [matches, week, division],
-  );
 
   const selected = openMatches.find((m) => m.id === matchId);
 
