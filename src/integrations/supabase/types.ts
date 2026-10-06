@@ -972,6 +972,7 @@ export type Database = {
         Row: {
           created_at: string
           donation_visible: boolean
+          homepage: string
           id: string
           qr_image_path: string | null
           season_finished: boolean
@@ -983,6 +984,7 @@ export type Database = {
         Insert: {
           created_at?: string
           donation_visible?: boolean
+          homepage?: string
           id?: string
           qr_image_path?: string | null
           season_finished?: boolean
@@ -994,6 +996,7 @@ export type Database = {
         Update: {
           created_at?: string
           donation_visible?: boolean
+          homepage?: string
           id?: string
           qr_image_path?: string | null
           season_finished?: boolean

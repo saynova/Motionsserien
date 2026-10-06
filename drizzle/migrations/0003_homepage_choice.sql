@@ -1,0 +1,2 @@
+ALTER TABLE public.site_support_settings ADD COLUMN IF NOT EXISTS homepage text NOT NULL DEFAULT 'standings' CHECK (homepage IN ('standings','photos','schedule','register','one-day'));
+UPDATE public.site_support_settings SET homepage = 'photos' WHERE season_finished = true;
