@@ -93,7 +93,7 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(tournamentQueryOptions),
       context.queryClient.ensureQueryData(memoriesQueryOptions),
     ]);
-    if (memories.homepage === "schedule") throw redirect({ to: "/schedule", search: {} });
+    if (memories.homepage === "schedule") throw redirect({ to: "/schedule", search: { week: undefined, court: undefined, division: undefined, team: undefined } });
     if (memories.homepage === "register") throw redirect({ to: "/register" });
     if (memories.homepage === "one-day") throw redirect({ to: "/one-day" });
   },
