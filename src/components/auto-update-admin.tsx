@@ -10,6 +10,8 @@ import {
   saveAutoUpdateSettings,
   saveReminderSettings,
 } from "@/lib/auto-update.functions";
+import { memoriesQueryOptions } from "@/lib/tournament-query";
+import { setHomepage, type Homepage } from "@/lib/memories.functions";
 import { getScoreUnlockSettings, saveScoreUnlock, saveWeeklyScoreWindow } from "@/lib/tournament.functions";
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
@@ -74,6 +76,8 @@ export function AutoUpdateAdmin() {
           loaded={Boolean(settings.data)}
         />
       </div>
+
+      <HomepageBlock />
 
       <WeeklyWindowBlock />
 
@@ -490,6 +494,64 @@ function WeeklyWindowBlock() {
       <button className={`${btn} mt-4`} disabled={busy} onClick={persist}>
         {busy ? "Saving…" : "Save"}
       </button>
+    </div>
+  );
+}
+
+const HOMEPAGE_CHOICES: { value: Homepage; label: string }[] = [
+  { value: "standings", label: "Standings" },
+  { value: "photos", label: "Photos (Champions & Gallery)" },
+  { value: "schedule", label: "Schedule" },
+  { value: "register", label: "Registration" },
+  { value: "one-day", label: "One-day tournament" },
+];
+
+function HomepageBlock() {
+  const queryClient = useQueryClient();
+  const memories = useQuery(memoriesQueryOptions);
+  const save = useServerFn(setHomepage);
+  const [value, setValue] = useState<Homepage>("standings");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (memories.data) setValue(memories.data.homepage);
+  }, [memories.data]);
+
+  async function persist() {
+    setBusy(true);
+    try {
+      await save({ data: { homepage: value } });
+      await queryClient.invalidateQueries({ queryKey: ["memories"] });
+      toast.success("Homepage saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save the homepage.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-8 border-t border-border pt-6">
+      <h3 className="text-lg font-bold tracking-tight">Homepage</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Choose what visitors see when they open motionsserien.se. Every page stays in the menu.
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <select
+          className={control}
+          value={value}
+          disabled={!memories.data || busy}
+          onChange={(e) => setValue(e.target.value as Homepage)}
+          aria-label="Homepage"
+        >
+          {HOMEPAGE_CHOICES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+        <button type="button" className={btn} disabled={!memories.data || busy} onClick={persist}>
+          {busy ? "Saving…" : "Save homepage"}
+        </button>
+      </div>
     </div>
   );
 }

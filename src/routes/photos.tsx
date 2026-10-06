@@ -1,0 +1,43 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+import { MemoriesView } from "@/components/memories-view";
+import { memoriesQueryOptions } from "@/lib/tournament-query";
+
+export const Route = createFileRoute("/photos")({
+  head: () => ({
+    meta: [
+      { title: "Photos — Motionsserien HT-26 Badminton" },
+      {
+        name: "description",
+        content:
+          "The Motionsserien badminton Hall of Fame with every season champion, plus match day photos and videos from the Monday ladder in Ludvika.",
+      },
+      {
+        name: "keywords",
+        content:
+          "Motionsserien champions, badminton hall of fame, badminton mästare, match photos, tournament gallery, season winners Ludvika, badminton bilder Ludvika",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Photos — Motionsserien HT-26" },
+      {
+        property: "og:description",
+        content:
+          "Season champions plus match day photos and videos from the Motionsserien badminton ladder.",
+      },
+      { property: "og:url", content: "https://www.motionsserien.se/photos" },
+    ],
+    links: [{ rel: "canonical", href: "https://www.motionsserien.se/photos" }],
+  }),
+
+  loader: ({ context }) => context.queryClient.ensureQueryData(memoriesQueryOptions),
+  component: MemoriesPage,
+});
+
+function MemoriesPage() {
+  return (
+    <div className="mt-4">
+      <MemoriesView />
+    </div>
+  );
+}

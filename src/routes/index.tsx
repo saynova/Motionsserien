@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { CalendarRange, Crown, Layers3, Lock, ScrollText, Send, Trophy, Users, X } from "lucide-react";
@@ -88,11 +88,15 @@ export const Route = createFileRoute("/")({
     ],
   }),
 
-  loader: ({ context }) =>
-    Promise.all([
+  loader: async ({ context }) => {
+    const [, memories] = await Promise.all([
       context.queryClient.ensureQueryData(tournamentQueryOptions),
       context.queryClient.ensureQueryData(memoriesQueryOptions),
-    ]),
+    ]);
+    if (memories.homepage === "schedule") throw redirect({ to: "/schedule", search: { week: undefined, court: undefined, division: undefined, team: undefined } });
+    if (memories.homepage === "register") throw redirect({ to: "/register" });
+    if (memories.homepage === "one-day") throw redirect({ to: "/one-day" });
+  },
   errorComponent: ({ error }) => <p role="alert">Could not load the standings: {error instanceof Error ? error.message : String(error)}</p>,
   notFoundComponent: () => <p>Standings were not found.</p>,
   component: HomePage,
