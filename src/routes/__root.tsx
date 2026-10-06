@@ -97,6 +97,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   beforeLoad: async () => {
     await consumeAuthSessionFromUrl();
   },
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(memoriesQueryOptions).catch(() => undefined);
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
