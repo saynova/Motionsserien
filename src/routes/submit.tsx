@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/tournament-ui";
-import { formatScore, formatWeekDate, validateScore } from "@/lib/tournament";
+import { formatWeekDate, validateScore } from "@/lib/tournament";
 import { tournamentQueryOptions } from "@/lib/tournament-query";
 import { submitScore } from "@/lib/tournament.functions";
 
