@@ -4,7 +4,7 @@ import "@/lib/auth-url-callback";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { brandingQueryOptions, DEFAULT_BRANDING } from "@/lib/branding.functions";
 import { onedayInfoQueryOptions } from "@/lib/oneday-query";
-import { registrationInfoQueryOptions } from "@/lib/tournament-query";
+import { memoriesQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
 import {
   Outlet,
   Link,
@@ -195,6 +195,26 @@ const NAV = [
   { to: "/admin", label: "Admin" },
 ] as const;
 
+type NavItem = { to: string; label: string };
+const HOMEPAGE_PATH: Record<string, string> = {
+  photos: "/photos",
+  schedule: "/schedule",
+  register: "/register",
+  "one-day": "/one-day",
+};
+const HOMEPAGE_LABEL: Record<string, string> = { photos: "Photos", schedule: "Schedule", register: "Register", "one-day": "One-day" };
+
+// When another page is the homepage, it takes the first slot (linking to "/")
+// and Standings follows it at /standings.
+function buildNav(items: NavItem[], homepage: string): NavItem[] {
+  const path = HOMEPAGE_PATH[homepage];
+  if (!path) return items;
+  const existing = items.find((i) => i.to === path);
+  const rest = items.filter((i) => i.to !== "/" && i.to !== path);
+  const first = path === "/photos" ? { to: "/", label: existing?.label ?? "Photos" } : { to: path, label: existing?.label ?? HOMEPAGE_LABEL[homepage] };
+  return [first, { to: "/standings", label: "Standings" }, ...rest];
+}
+
 function useBrandedTitle() {
   const { data } = useQuery(brandingQueryOptions());
   const name = data?.tournamentName ?? DEFAULT_BRANDING.tournamentName;
@@ -240,6 +260,7 @@ function SiteHeader() {
   const brand = data ?? DEFAULT_BRANDING;
   const oneday = useQuery(onedayInfoQueryOptions).data;
   const onedayVisible = oneday?.visible === true;
+  const homepage = useQuery(memoriesQueryOptions).data?.homepage ?? "standings";
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto w-full max-w-[96rem] px-3 py-3 sm:px-5 lg:px-8">
@@ -253,9 +274,11 @@ function SiteHeader() {
             ) : null}
           </Link>
           <nav className="col-span-2 row-start-2 flex min-w-0 flex-wrap items-center justify-center gap-1 lg:col-span-1 lg:col-start-2 lg:row-start-1">
-            {(onedayVisible
-              ? NAV.map((n) => (n.to === "/register" ? { to: "/one-day" as const, label: oneday?.menuLabel || "One-day" } : n))
-              : NAV
+            {buildNav(
+              onedayVisible
+                ? NAV.map((n) => (n.to === "/register" ? { to: "/one-day" as const, label: oneday?.menuLabel || "One-day" } : n))
+                : [...NAV],
+              homepage,
             ).map((item) => (
               <Link
                 key={item.to}
