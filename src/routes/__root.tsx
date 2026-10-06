@@ -202,7 +202,7 @@ const HOMEPAGE_PATH: Record<string, string> = {
   register: "/register",
   "one-day": "/one-day",
 };
-const HOMEPAGE_LABEL: Record<string, string> = { photos: "Photos", schedule: "Schedule", register: "Register", "one-day": "One-day" };
+const HOMEPAGE_LABEL: Partial<Record<string, string>> = { photos: "Photos", schedule: "Schedule", register: "Register", "one-day": "One-day" };
 
 // When another page is the homepage, it takes the first slot (linking to "/")
 // and Standings follows it at /standings.
@@ -211,7 +211,7 @@ function buildNav(items: NavItem[], homepage: string): NavItem[] {
   if (!path) return items;
   const existing = items.find((i) => i.to === path);
   const rest = items.filter((i) => i.to !== "/" && i.to !== path);
-  const first = path === "/photos" ? { to: "/", label: existing?.label ?? "Photos" } : { to: path, label: existing?.label ?? HOMEPAGE_LABEL[homepage] };
+  const first = path === "/photos" ? { to: "/", label: existing?.label ?? "Photos" } : { to: path, label: existing?.label ?? HOMEPAGE_LABEL[homepage] ?? "Home" };
   return [first, { to: "/standings", label: "Standings" }, ...rest];
 }
 
