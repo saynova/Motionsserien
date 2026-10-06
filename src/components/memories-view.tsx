@@ -8,7 +8,7 @@ import { recordGalleryView, type ChampionEntry, type GalleryPhoto } from "@/lib/
 
 function ChampionHero({ entry }: { entry: ChampionEntry }) {
   return (
-    <div className="relative mx-auto max-w-6xl pt-4">
+    <div className="relative mx-auto max-w-4xl pt-4">
       <article className="relative overflow-hidden rounded-3xl border border-primary/30 bg-card p-2 ring-1 ring-primary/10">
         <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-secondary">
           {entry.image_url ? (
