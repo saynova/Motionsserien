@@ -21,6 +21,7 @@ import {
   setRegistrationOpen,
   setRegistrationSignInRequired,
   setTournamentStart,
+  setRegistrationDeadline,
 
   setRegistrationStatus,
   setRegistrationPaid,
@@ -184,6 +185,8 @@ export function NextSeasonAdmin() {
   const [seasonName, setSeasonName] = useState("");
   const [seasonStart, setSeasonStart] = useState("");
   const [tournamentStart, setTournamentStartValue] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const saveDeadline = useServerFn(setRegistrationDeadline);
   const [entries, setEntries] = useState<SeedEntry[]>([]);
   const [seasonLoaded, setSeasonLoaded] = useState(false);
   const [boardLoaded, setBoardLoaded] = useState(false);
@@ -191,6 +194,7 @@ export function NextSeasonAdmin() {
   useEffect(() => {
     if (!seasonLoaded && info.data) {
       setTargetSeason(info.data.targetSeason);
+      setDeadline(info.data.registrationDeadline ?? "");
       setSeasonName(info.data.targetSeason);
       if (info.data.tournamentStartsAt) {
         const parts = new Intl.DateTimeFormat("sv-SE", {
@@ -400,6 +404,57 @@ export function NextSeasonAdmin() {
             Clear
           </Button>
         </div>
+      </div>
+
+      {/* registration deadline + Excel export */}
+      <div className="flex flex-wrap items-end gap-3 rounded border border-border bg-secondary/30 p-4">
+        <label className="space-y-1">
+          <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Registration deadline (Swedish time)
+          </span>
+          <input type="datetime-local" className={control} value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+        </label>
+        <Button
+          disabled={busy}
+          onClick={() =>
+            run(() => saveDeadline({ data: { deadline: deadline || null } }), deadline ? "Registration deadline saved." : "Registration deadline cleared.", [["registration-info"]])
+          }
+        >
+          Save deadline
+        </Button>
+        <Button
+          variant="outline"
+          className="ml-auto"
+          disabled={signedUp.length === 0}
+          onClick={async () => {
+            try {
+              const { downloadXlsx, stockholm } = await import("@/lib/xlsx-export");
+              const paid = signedUp.filter((r) => r.is_paid).length;
+              await downloadXlsx({
+                fileName: `motionsserien-teams-${new Date().toISOString().slice(0, 10)}.xlsx`,
+                sheetName: "Teams",
+                title: `Motionsserien ${info.data?.targetSeason ?? ""} - Team registrations`,
+                subtitle: `Exported ${stockholm(new Date().toISOString())} (Swedish time) · ${signedUp.length} teams · Paid ${paid} · Unpaid ${signedUp.length - paid}`,
+                columns: [
+                  { header: "#", width: 5 }, { header: "Team", width: 24 },
+                  { header: "Player 1", width: 22 }, { header: "Player 1 email", width: 30 }, { header: "Player 1 phone", width: 16 },
+                  { header: "Player 2", width: 22 }, { header: "Player 2 email", width: 30 }, { header: "Player 2 phone", width: 16 },
+                  { header: "Previous division", width: 11 }, { header: "Payment", width: 11 }, { header: "Swish reference", width: 18 },
+                  { header: "Status", width: 12 }, { header: "Registered", width: 17 },
+                ],
+                rows: signedUp.map((r, i) => [
+                  i + 1, r.team_name, r.player1_name, r.player1_email, r.phone, r.player2_name, r.player2_email, r.player2_phone,
+                  r.previous_division ?? "New", r.is_paid ? "Paid" : "Unpaid", r.swish_ref, r.status.charAt(0).toUpperCase() + r.status.slice(1), stockholm(r.created_at),
+                ]),
+                paymentCol: 9,
+              });
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Export failed");
+            }
+          }}
+        >
+          Download Excel (teams)
+        </Button>
       </div>
 
       {/* sign-in requirement */}

@@ -13,6 +13,7 @@ import {
   setOnedayPayment,
   updateOnedaySettings,
 } from "@/lib/oneday.functions";
+import type { OnedayRegistration } from "@/lib/oneday.functions";
 import { onedayRegistrationsAdminQueryOptions, onedaySettingsAdminQueryOptions } from "@/lib/oneday-query";
 
 const TABS = [

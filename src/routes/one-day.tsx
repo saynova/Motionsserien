@@ -1,3 +1,4 @@
+import { formatDeadline } from "@/lib/xlsx-export";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -75,6 +76,9 @@ function OneDayPage() {
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {info.eventDate ? (
             <InfoBlock icon={CalendarDays} label="Date" value={formatOnedayDate(info.eventDate)} />
+          ) : null}
+          {info.registrationDeadline ? (
+            <InfoBlock icon={CalendarDays} label="Registration deadline" value={formatDeadline(info.registrationDeadline)} />
           ) : null}
           {info.venue ? <InfoBlock icon={MapPin} label="Venue" value={info.venue} /> : null}
           <InfoBlock icon={Users} label="Approved teams" value={String(teams.length)} />
