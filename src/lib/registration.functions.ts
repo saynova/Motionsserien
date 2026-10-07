@@ -43,6 +43,7 @@ export type RegistrationInfo = {
   requireSignIn: boolean;
   targetSeason: string;
   tournamentStartsAt: string | null;
+  registrationDeadline: string | null;
   paymentDetails: string;
   seasonName: string;
 };
@@ -87,7 +88,7 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
     const [settings, season] = await Promise.all([
       supabase
         .from("registration_settings")
-        .select("is_open, target_season, require_sign_in, tournament_starts_at")
+        .select("is_open, target_season, require_sign_in, tournament_starts_at, registration_deadline")
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle(),
@@ -106,6 +107,7 @@ export const getRegistrationInfo = createServerFn({ method: "GET" }).handler(
       requireSignIn: settings.data?.require_sign_in !== false,
       targetSeason: settings.data?.target_season ?? "",
       tournamentStartsAt: settings.data?.tournament_starts_at ?? null,
+      registrationDeadline: settings.data?.registration_deadline ?? null,
       paymentDetails: season.data?.payment_details ?? "",
       seasonName: season.data?.name ?? "",
     };
@@ -444,6 +446,26 @@ export const setTournamentStart = createServerFn({ method: "POST" })
   });
 
 
+
+export const setRegistrationDeadline = createServerFn({ method: "POST" })
+  .inputValidator((data: { deadline: string | null }) => {
+    const v = data?.deadline ? String(data.deadline).trim() : null;
+    if (v && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v)) throw new Error("Choose a valid deadline.");
+    return { deadline: v };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const existing = await supabase.from("registration_settings").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
+    if (existing.error) throw new Error(existing.error.message);
+    const result = existing.data
+      ? await supabase.from("registration_settings").update({ registration_deadline: data.deadline }).eq("id", existing.data.id)
+      : await supabase.from("registration_settings").insert({ registration_deadline: data.deadline });
+    if (result.error) throw new Error(result.error.message);
+    return { ok: true as const };
+  });
 
 export const updateSeasonSettings = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string; paymentDetails: string }) => ({
