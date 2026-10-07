@@ -620,7 +620,7 @@ export type Database = {
           season_key: string
           status: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           availability?: string
@@ -634,7 +634,7 @@ export type Database = {
           season_key: string
           status?: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           availability?: string
@@ -648,7 +648,7 @@ export type Database = {
           season_key?: string
           status?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
