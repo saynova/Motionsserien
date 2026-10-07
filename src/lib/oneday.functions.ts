@@ -15,7 +15,7 @@ export type OnedayInfo = {
   full?: boolean;
 };
 
-export type OnedayPublicTeam = { id: string; team_name: string; player1_name: string; player2_name: string; level: "intermediate" | "advanced" };
+export type OnedayPublicTeam = { id: string; team_name: string; player1_name: string; player2_name: string; level: "intermediate" | "advanced"; category: "men" | "women" };
 
 export type OnedayRegistration = OnedayPublicTeam & {
   email: string;
@@ -87,7 +87,7 @@ export const getOnedayApprovedTeams = createServerFn({ method: "GET" }).handler(
     const supabase = await db();
     const { data, error } = await supabase
       .from("oneday_registrations")
-      .select("id, team_name, player1_name, player2_name, level")
+      .select("id, team_name, player1_name, player2_name, level, category")
       .eq("status", "approved")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
@@ -106,7 +106,8 @@ const registrationSchema = z.object({
     .min(6, "Enter a valid phone number")
     .max(25)
     .regex(/^[0-9+()\-\s]+$/, "Enter a valid phone number"),
-  level: z.enum(["intermediate", "advanced"], { errorMap: () => ({ message: "Choose your level" }) }),
+  category: z.enum(["men", "women"], { errorMap: () => ({ message: "Choose Men or Women" }) }),
+  level: z.enum(["intermediate", "advanced"]).optional(),
   paymentStatus: z.enum(["paid", "unpaid"], { errorMap: () => ({ message: "Choose your payment status" }) }),
   acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms" }) }),
 });
@@ -128,7 +129,8 @@ export const submitOnedayRegistration = createServerFn({ method: "POST" })
       player2_name: data.player2Name,
       email: data.email.toLowerCase(),
       phone: data.phone,
-      level: data.level,
+      category: data.category,
+      level: data.category === "women" ? "intermediate" : (data.level ?? "intermediate"),
       payment_status: data.paymentStatus,
     });
     if (error) {
