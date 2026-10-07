@@ -1,4 +1,7 @@
 # Roadmap
+- [ ] Add partner matching and editable team names in Registration & seeding
+- [ ] Require both matched players to confirm through private email invitations before approval
+- [ ] Include payment guidance and clear spam-folder reminders; verify confirmation flow
 - [x] Allow public partner requests with mandatory email while registration is open
 - [x] Arrange guest and signed-in player details in two columns; verify public form and smaller-screen layout
 - [x] Read notifications disappear from list when marked read
