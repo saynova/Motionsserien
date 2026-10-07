@@ -320,7 +320,7 @@ function Choice({
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
-  note: React.ReactNode;
+  note?: React.ReactNode;
 }) {
   return (
     <fieldset>
@@ -338,7 +338,7 @@ function Choice({
           </button>
         ))}
       </div>
-      <p className="mt-1.5 text-xs text-muted-foreground">{note}</p>
+      {note ? <p className="mt-1.5 text-xs text-muted-foreground">{note}</p> : null}
     </fieldset>
   );
 }
