@@ -9,6 +9,7 @@ export type ExportRow = {
   phone: string;
   status: string;
   level?: string;
+  category?: string;
   payment_status?: string;
   created_at: string;
 };
@@ -20,16 +21,13 @@ const fmt = (iso: string) =>
 
 const STATUS: Record<string, string> = { approved: "Approved", pending: "Pending", rejected: "Rejected" };
 const LEVEL = (v?: string) => (v === "advanced" ? "Advanced" : "Intermediate");
+const CAT = (r: ExportRow) => (r.category === "women" ? "Women" : `Men - ${LEVEL(r.level)}`);
 const PAY = (v?: string) => (v === "paid" ? "Paid" : "Unpaid");
 
 export function buildCsv(rows: ExportRow[]): string {
-  const head = ["#", "Registered (Stockholm)", "Team", "Player 1", "Player 2", "Email", "Phone", "Level", "Payment", "Status"];
-  const esc = (v: string) => {
-    const s = /^[=+\-@]/.test(v) ? `'${v}` : v; // block spreadsheet formula injection
-    return /[";\n,]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const lines = rows.map((r, i) =>
-    [String(i + 1), fmt(r.created_at), r.team_name, r.player1_name, r.player2_name, r.email, r.phone, LEVEL(r.level), PAY(r.payment_status), STATUS[r.status] ?? r.status]
+  const head = ["#", "Registered (Stockholm)", "Team", "Player 1", "Player 2", "Email", "Phone", "Category", "Payment", "Status"];
+...
+    [String(i + 1), fmt(r.created_at), r.team_name, r.player1_name, r.player2_name, r.email, r.phone, CAT(r), PAY(r.payment_status), STATUS[r.status] ?? r.status]
       .map(esc)
       .join(";"),
   );
@@ -49,7 +47,7 @@ export async function buildPdf(rows: ExportRow[], meta: ExportMeta): Promise<Uin
   const brand = rgb(0.29, 0.32, 0.85), dark = rgb(0.14, 0.15, 0.2), grey = rgb(0.42, 0.44, 0.48), band = rgb(0.965, 0.968, 0.985);
   const cols = [
     { label: "#", w: 22 }, { label: "TEAM", w: 120 }, { label: "PLAYER 1", w: 105 }, { label: "PLAYER 2", w: 105 },
-    { label: "EMAIL", w: 150 }, { label: "PHONE", w: 82 }, { label: "LEVEL", w: 70 }, { label: "PAYMENT", w: 54 }, { label: "REGISTERED", w: 62 },
+    { label: "EMAIL", w: 150 }, { label: "PHONE", w: 82 }, { label: "CATEGORY", w: 70 }, { label: "PAYMENT", w: 54 }, { label: "REGISTERED", w: 62 },
   ];
   const fit = (t: string, f: PDFFont, s: number, w: number) => {
     let v = safe(t);
@@ -101,7 +99,7 @@ export async function buildPdf(rows: ExportRow[], meta: ExportMeta): Promise<Uin
     list.forEach((r, i) => {
       if (y - 18 < 40) { page = doc.addPage([W, H]); header(false); drawHead(); }
       if (i % 2 === 1) page.drawRectangle({ x: M, y: y - 18, width: W - 2 * M, height: 18, color: rgb(0.985, 0.986, 0.995) });
-      const vals = [String(i + 1), r.team_name, r.player1_name, r.player2_name, r.email, r.phone, LEVEL(r.level), PAY(r.payment_status), fmt(r.created_at)];
+      const vals = [String(i + 1), r.team_name, r.player1_name, r.player2_name, r.email, r.phone, CAT(r), PAY(r.payment_status), fmt(r.created_at)];
       let x = M + 6;
       vals.forEach((v, ci) => {
         const f = ci === 1 ? bold : font;

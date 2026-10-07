@@ -241,7 +241,9 @@ function RegistrationsTab() {
                     <div>{r.email}</div>
                     <div className="text-muted-foreground">{r.phone}</div>
                   </td>
-                  <td className="px-3 py-2 capitalize">{r.level}</td>
+                  <td className="px-3 py-2 capitalize">
+                    {r.category === "women" ? "Women" : `Men · ${r.level}`}
+                  </td>
                   <td className="px-3 py-2">
                     <button
                       type="button"
