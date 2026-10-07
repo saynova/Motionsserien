@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitGuestPartnerRequest } from "@/lib/registration.functions";
 import { DIVISION_COUNT } from "@/lib/tournament";
@@ -13,9 +14,14 @@ export function GuestPartnerRequest() {
   const submit = useServerFn(submitGuestPartnerRequest);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
-  if (done) return <div className="space-y-2 border border-border bg-card p-5 rounded-lg" role="status">
-    <h2 className="text-lg font-bold">Your request has been received</h2>
-    <p className="text-sm text-muted-foreground">The admin will review your request and contact you by email about finding a partner.</p>
+  if (done) return <div className="space-y-3 rounded-lg border border-up/40 bg-up/10 p-5 text-sm" role="status">
+    <div className="flex items-start gap-3">
+      <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-up" aria-hidden="true" />
+      <div className="min-w-0 space-y-1">
+        <h2 className="text-lg font-bold">Thanks — your request has been received</h2>
+        <p className="text-muted-foreground">The admin will review your request and contact you by email about finding a partner.</p>
+      </div>
+    </div>
     <RegistrationEmailReminder />
   </div>;
   return <form className="space-y-4 rounded-lg border border-border bg-card p-5" onSubmit={async (event) => {
@@ -47,7 +53,6 @@ export function GuestPartnerRequest() {
     <div className="hidden" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
     <p className="text-xs text-muted-foreground">Your details are private. The admin will contact you at the email address above.</p>
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" required className="mt-1 accent-primary" /><span>I have read and accept the <Link to="/terms" className="text-primary underline">Terms &amp; Conditions</Link>.</span></label>
-    <RegistrationEmailReminder />
     <Button type="submit" disabled={busy} className="w-full">{busy ? "Sending…" : "Send request"}</Button>
   </form>;
 }

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CheckCircle2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount, registerMyTeam, requestPartner } from "@/lib/account.functions";
@@ -94,13 +95,18 @@ function GuestRegistration() {
 
   if (done) {
     return (
-      <div className="space-y-2 rounded-lg border border-border bg-card p-5 text-sm">
-        <h2 className="text-lg font-bold">Thanks — your team is registered</h2>
-        <p>The admin reviews every entry. Once approved, your team appears under Approved teams.</p>
+      <div className="space-y-3 rounded-lg border border-up/40 bg-up/10 p-5 text-sm" role="status">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-up" aria-hidden="true" />
+          <div className="min-w-0 space-y-1">
+            <h2 className="text-lg font-bold">Thanks — your team is registered</h2>
+            <p>The admin reviews every entry. Once approved, your team appears under Approved teams.</p>
+            <p className="text-muted-foreground">
+              Create an account later with the same email and your team, scores and receipts will be linked automatically.
+            </p>
+          </div>
+        </div>
         <RegistrationEmailReminder />
-        <p className="text-muted-foreground">
-          Create an account later with the same email and your team, scores and receipts will be linked automatically.
-        </p>
       </div>
     );
   }
@@ -209,7 +215,6 @@ function GuestRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <RegistrationEmailReminder />
       <Button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
       </Button>
@@ -252,17 +257,22 @@ function SignedInRegistration() {
 
   if (current || activePartner) {
     return (
-      <div className="space-y-2 rounded-lg border border-border bg-card p-5 text-sm">
-        <h2 className="text-lg font-bold">You're registered</h2>
-        {current ? (
-          <p>
-            Team <strong>{current.teamName}</strong> ({current.player1Name}
-            {current.player2Name ? ` & ${current.player2Name}` : ""}).
-          </p>
-        ) : (
-          <p>Your "Find a partner" request is on the list.</p>
-        )}
-        <Link to="/account" className="font-semibold text-primary underline">See status on My account</Link>
+      <div className="space-y-3 rounded-lg border border-up/40 bg-up/10 p-5 text-sm" role="status">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-up" aria-hidden="true" />
+          <div className="min-w-0 space-y-1">
+            <h2 className="text-lg font-bold">Thanks — your registration has been received</h2>
+            {current ? (
+              <p>
+                Team <strong>{current.teamName}</strong> ({current.player1Name}
+                {current.player2Name ? ` & ${current.player2Name}` : ""}). The admin reviews every entry; once approved, your team appears under Approved teams.
+              </p>
+            ) : (
+              <p>Your "Find a partner" request has been received. The admin will review it and contact you by email.</p>
+            )}
+            <p><Link to="/account" className="font-semibold text-primary underline">See status on My account</Link></p>
+          </div>
+        </div>
         <RegistrationEmailReminder />
       </div>
     );
@@ -412,7 +422,6 @@ function SignedInRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <RegistrationEmailReminder />
       <Button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </Button>

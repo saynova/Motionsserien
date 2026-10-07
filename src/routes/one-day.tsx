@@ -226,13 +226,17 @@ function RegistrationForm() {
 
   if (done) {
     return (
-      <div className="rounded-xl border border-up/40 bg-up/10 p-6">
-        <CheckCircle2 className="size-7 text-up" aria-hidden="true" />
-        <h2 className="mt-2 font-display text-xl font-bold">Thanks — you're registered!</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your registration is waiting for approval. Your team will appear in the list once it's approved.
-        </p>
-        <div className="mt-4"><RegistrationEmailReminder /></div>
+      <div className="space-y-3 rounded-xl border border-up/40 bg-up/10 p-6 text-sm" role="status">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-up" aria-hidden="true" />
+          <div className="min-w-0 space-y-1">
+            <h2 className="font-display text-xl font-bold">Thanks — you're registered!</h2>
+            <p className="text-muted-foreground">
+              Your registration is waiting for approval. Your team will appear in the list once it's approved.
+            </p>
+          </div>
+        </div>
+        <RegistrationEmailReminder />
       </div>
     );
   }
@@ -306,7 +310,6 @@ function RegistrationForm() {
         </span>
       </label>
       {error ? <p className="text-sm font-medium text-destructive" role="alert">{error}</p> : null}
-      <RegistrationEmailReminder />
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? "Sending…" : "Submit registration"}
       </Button>
