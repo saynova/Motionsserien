@@ -29,6 +29,8 @@ import {
   type RegistrationStatus,
 } from "@/lib/registration.functions";
 import { Button } from "@/components/ui/button";
+import { PartnerRequestsAdmin } from "@/components/account-admin";
+import { MatchedTeamAdminControls } from "@/components/matched-team-admin-controls";
 
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
@@ -494,6 +496,8 @@ export function NextSeasonAdmin() {
       ) : null}
 
 
+      <PartnerRequestsAdmin seasonKey={info.data?.targetSeason} />
+
       {/* registrations table */}
       <div className="overflow-x-auto rounded border border-border">
         <table className="w-full text-sm">
@@ -519,6 +523,7 @@ export function NextSeasonAdmin() {
                 <tr key={reg.id} className="border-b border-border/60 last:border-0">
                   <td className="px-3 py-2 font-semibold">
                     {reg.team_name}
+                    <MatchedTeamAdminControls registration={reg} onRenamed={(oldName, newName) => setEntries((list) => list.map((entry) => entry.teamName === oldName ? { ...entry, teamName: newName } : entry))} />
                   </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">
                     {reg.player1_name} · {reg.player1_email}{reg.phone ? ` · ${reg.phone}` : ""}
@@ -549,6 +554,7 @@ export function NextSeasonAdmin() {
                   </td>
                   <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wide">
                     {STATUS_LABEL[reg.status] ?? reg.status}
+                    {reg.requires_player_confirmation ? <span className="mt-1 block text-xs normal-case tracking-normal text-muted-foreground">{reg.player1_confirmed_at && reg.player2_confirmed_at ? "Both players confirmed" : "Awaiting player confirmation"}</span> : null}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap justify-end gap-1.5">
@@ -556,7 +562,7 @@ export function NextSeasonAdmin() {
                         <button
                           key={s}
                           className={btnGhost}
-                          disabled={busy || reg.status === s}
+                           disabled={busy || reg.status === s || (s === "accepted" && reg.requires_player_confirmation && (!reg.player1_confirmed_at || !reg.player2_confirmed_at))}
                           onClick={() =>
                             run(
                               () => setStatus({ data: { id: reg.id, status: s } }),

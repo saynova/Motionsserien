@@ -695,17 +695,23 @@ export type Database = {
       }
       registrations: {
         Row: {
+          confirmation_expires_at: string | null
           created_at: string
           id: string
           is_paid: boolean
           late_cancel_ack: boolean
           phone: string
+          player1_confirmation_hash: string | null
+          player1_confirmed_at: string | null
           player1_email: string
           player1_name: string
+          player2_confirmation_hash: string | null
+          player2_confirmed_at: string | null
           player2_email: string
           player2_name: string
           player2_phone: string
           previous_division: number | null
+          requires_player_confirmation: boolean
           status: string
           swish_ref: string
           target_season: string
@@ -714,17 +720,23 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          confirmation_expires_at?: string | null
           created_at?: string
           id?: string
           is_paid?: boolean
           late_cancel_ack?: boolean
           phone?: string
+          player1_confirmation_hash?: string | null
+          player1_confirmed_at?: string | null
           player1_email: string
           player1_name: string
+          player2_confirmation_hash?: string | null
+          player2_confirmed_at?: string | null
           player2_email?: string
           player2_name?: string
           player2_phone?: string
           previous_division?: number | null
+          requires_player_confirmation?: boolean
           status?: string
           swish_ref?: string
           target_season?: string
@@ -733,17 +745,23 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          confirmation_expires_at?: string | null
           created_at?: string
           id?: string
           is_paid?: boolean
           late_cancel_ack?: boolean
           phone?: string
+          player1_confirmation_hash?: string | null
+          player1_confirmed_at?: string | null
           player1_email?: string
           player1_name?: string
+          player2_confirmation_hash?: string | null
+          player2_confirmed_at?: string | null
           player2_email?: string
           player2_name?: string
           player2_phone?: string
           previous_division?: number | null
+          requires_player_confirmation?: boolean
           status?: string
           swish_ref?: string
           target_season?: string
@@ -1270,7 +1288,22 @@ export type Database = {
         }
         Returns: string
       }
+      confirm_matched_player: { Args: { _hash: string }; Returns: Json }
+      create_matched_team: {
+        Args: {
+          _first_id: string
+          _hash1: string
+          _hash2: string
+          _second_id: string
+          _team_name: string
+        }
+        Returns: string
+      }
       increment_gallery_view: { Args: { _id: string }; Returns: undefined }
+      rename_registered_team: {
+        Args: { _id: string; _name: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

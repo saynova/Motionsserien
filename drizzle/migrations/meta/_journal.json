@@ -50,6 +50,20 @@
       "when": 1791366771642,
       "tag": "0006_allow_guest_partner_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791367305065,
+      "tag": "0007_matched_team_confirmation",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791367335493,
+      "tag": "0008_correct_registered_team_rename",
+      "breakpoints": true
     }
   ]
 }

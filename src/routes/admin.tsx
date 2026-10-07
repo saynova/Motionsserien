@@ -135,6 +135,8 @@ export const Route = createFileRoute("/admin")({
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Admin — Motionsserien HT-26" },
       { property: "og:description", content: "Approve scores and roll the ladder forward." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   loader: ({ context }) =>
@@ -153,7 +155,7 @@ const btnGhost =
   "rounded border border-border bg-secondary px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors hover:bg-secondary/70";
 
 function AdminPage() {
-  const status = useQuery(adminStatusQueryOptions);
+  const status = useSuspenseQuery(adminStatusQueryOptions);
   if (!status.data) {
     return <div className="flex min-h-dvh items-center justify-center text-sm text-muted-foreground">Loading…</div>;
   }

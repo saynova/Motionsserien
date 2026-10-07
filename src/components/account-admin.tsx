@@ -29,7 +29,7 @@ const STATUS: Record<string, string> = {
   withdrawn: "Withdrawn",
 };
 
-export function PartnerRequestsAdmin() {
+export function PartnerRequestsAdmin({ seasonKey }: { seasonKey?: string | undefined }) {
   const qc = useQueryClient();
   const list = useServerFn(listPartnerRequests);
   const setStatus = useServerFn(setPartnerRequestStatus);
@@ -38,46 +38,59 @@ export function PartnerRequestsAdmin() {
   const [picked, setPicked] = useState<string[]>([]);
   const [teamName, setTeamName] = useState("");
   const [show, setShow] = useState<"open" | "all">("open");
+  const [busy, setBusy] = useState(false);
 
-  const rows = data.filter((r) => show === "all" || r.status === "pending" || r.status === "approved");
-  const refresh = () => qc.invalidateQueries({ queryKey: ["admin-partner-requests"] });
+  const rows = data.filter((r) => (!seasonKey || r.season_key === seasonKey) && (show === "all" || r.status === "pending" || r.status === "approved"));
+  const refresh = () => Promise.all([
+    qc.invalidateQueries({ queryKey: ["admin-partner-requests"] }),
+    qc.invalidateQueries({ queryKey: ["registrations", "admin"] }),
+    qc.invalidateQueries({ queryKey: ["registration-info"] }),
+    qc.invalidateQueries({ queryKey: ["my-account"] }),
+  ]);
 
   async function act(fn: () => Promise<unknown>, ok: string) {
+    setBusy(true);
     try {
       await fn();
       toast.success(ok);
       await refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed.");
+    } finally {
+      setBusy(false);
     }
   }
 
-  const pickedRows = picked.map((id) => data.find((r) => r.id === id)).filter(Boolean);
+  const pickedRows = picked.map((id) => rows.find((r) => r.id === id)).filter((r) => r !== undefined);
+  const first = pickedRows[0];
+  const second = pickedRows[1];
 
   return (
     <div className="space-y-4">
-      <div className={card}>
-        <h2 className="text-lg font-bold">Find a partner</h2>
+      <div className="border-b border-border pb-4">
+        <h2 className="text-lg font-bold">Match players into a team</h2>
         <p className="text-sm text-muted-foreground">
-          Solo players who asked for a partner. Approve them, then tick two approved players and pair them into a team. The team then waits for approval under Registration &amp; seeding.
+          Partner requests
         </p>
-        {pickedRows.length === 2 ? (
+        {first && second ? (
           <div className="mt-3 flex flex-wrap items-end gap-2 rounded border border-primary/20 bg-primary/5 p-3">
             <div className="text-sm">
-              Pair <strong>{pickedRows[0]!.name}</strong> + <strong>{pickedRows[1]!.name}</strong>
+              Pair <strong>{first.name}</strong> + <strong>{second.name}</strong>
             </div>
-            <input className="rounded border border-input bg-card px-2 py-1.5 text-sm" placeholder="Team name" value={teamName} onChange={(e) => setTeamName(e.target.value)} />
+            <input aria-label="New matched team name" maxLength={60} className="rounded border border-input bg-card px-2 py-1.5 text-sm" placeholder="Team name" value={teamName} onChange={(e) => setTeamName(e.target.value)} />
             <Button
               size="sm"
+              disabled={busy || teamName.trim().length < 2 || first.season_key !== second.season_key}
               onClick={() =>
                 act(async () => {
-                  await pair({ data: { firstId: picked[0]!, secondId: picked[1]!, teamName } });
+                   const result = await pair({ data: { firstId: first.id, secondId: second.id, teamName } });
+                   if (!result.emailsSent) toast.warning("Team created, but an invitation could not be sent. Resend it from the registration list.");
                   setPicked([]);
                   setTeamName("");
-                }, "Paired. Both players were emailed.")
+                 }, "Team created — awaiting both players’ confirmation.")
               }
             >
-              Pair up
+              Create team
             </Button>
           </div>
         ) : null}
@@ -96,10 +109,12 @@ export function PartnerRequestsAdmin() {
                 <div className="font-semibold">{r.name}</div>
                 <div className="text-xs text-muted-foreground">{r.email} · {r.season_key}</div>
               </div>
-              {r.status === "approved" ? (
+               {r.status === "approved" || r.status === "pending" ? (
                 <label className="flex items-center gap-1 text-xs">
                   <input
                     type="checkbox"
+                     aria-label={`Select ${r.name}`}
+                     disabled={busy}
                     checked={picked.includes(r.id)}
                     onChange={(e) =>
                       setPicked((p) => (e.target.checked ? [...p, r.id].slice(-2) : p.filter((x) => x !== r.id)))

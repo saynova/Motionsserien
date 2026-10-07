@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Users, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
 import { submitOnedayRegistration } from "@/lib/oneday.functions";
 import { formatOnedayDate, onedayInfoQueryOptions, onedayTeamsQueryOptions } from "@/lib/oneday-query";
 import { formatDeadline } from "@/lib/xlsx-export";
@@ -232,6 +233,7 @@ function RegistrationForm() {
         <p className="mt-1 text-sm text-muted-foreground">
           Your registration is waiting for approval. Your team will appear in the list once it's approved.
         </p>
+        <div className="mt-4"><RegistrationEmailReminder /></div>
       </div>
     );
   }
@@ -305,6 +307,7 @@ function RegistrationForm() {
         </span>
       </label>
       {error ? <p className="text-sm font-medium text-destructive" role="alert">{error}</p> : null}
+      <RegistrationEmailReminder />
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? "Sending…" : "Submit registration"}
       </Button>

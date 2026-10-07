@@ -23,3 +23,5 @@
 - The main tournament countdown is sourced from registration_settings.tournament_starts_at and interpreted in Europe/Stockholm — keeps the public timer aligned with the admin-entered Swedish start time.
 - Gallery view analytics reuse gallery_photos.view_count through an admin-only server query in the Visitors dashboard — keeps media reporting private without duplicating tracking data.
 - Guest partner requests use the existing private partner_requests table with a nullable account owner and a validated public submission function; pairing creates account links only for account owners — supports guests without exposing contacts or inventing accounts.
+- Matched teams are created atomically through a service-role-only database function; per-player hashed invitation secrets authorize explicit POST confirmation and a database trigger prevents acceptance until both confirmations exist — prevents racing pairings, premature approval and email-scanner confirmation.
+- Team-name edits use an admin-gated transactional function that updates registration, seeding and matching season teams together — keeps published names consistent without renaming historical receipts.

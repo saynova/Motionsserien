@@ -8,6 +8,7 @@ import { template as playerNotice } from './player-notice'
 import { template as adminLoginCode } from './admin-login-code'
 import { template as weeklyBackup } from './weekly-backup'
 import { template as registrationStatus } from './registration-status'
+import { template as teamMatchInvitation } from './team-match-invitation'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -35,4 +36,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'admin-login-code': adminLoginCode,
   'weekly-backup': weeklyBackup,
   'registration-status': registrationStatus,
+  'team-match-invitation': teamMatchInvitation,
 }

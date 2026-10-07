@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
 async function gate() {
   const { requireAdmin } = await import("./admin-session.server");
@@ -57,69 +58,46 @@ export const setPartnerRequestStatus = createServerFn({ method: "POST" })
   });
 
 export const pairPartners = createServerFn({ method: "POST" })
-  .inputValidator((d: { firstId: string; secondId: string; teamName: string }) => {
-    const teamName = String(d?.teamName ?? "").trim();
-    if (teamName.length < 2 || teamName.length > 60) throw new Error("Team name must be 2–60 characters.");
-    if (!d?.firstId || !d?.secondId || d.firstId === d.secondId) throw new Error("Pick two different players.");
-    return { firstId: String(d.firstId), secondId: String(d.secondId), teamName };
-  })
+  .inputValidator(z.object({ firstId: z.string().uuid(), secondId: z.string().uuid(), teamName: z.string().trim().min(2).max(60) }).refine((d) => d.firstId !== d.secondId, "Pick two different players."))
   .handler(async ({ data }) => {
     const db = await gate();
-    const rows = await db
-      .from("partner_requests")
-      .select("id, season_key, user_id, name, email, previous_division, status")
-      .in("id", [data.firstId, data.secondId]);
-    if (rows.error) throw new Error(rows.error.message);
-    const [a, b] = [data.firstId, data.secondId].map((id) => rows.data?.find((r) => r.id === id));
-    if (!a || !b) throw new Error("Player not found.");
-    if (a.status !== "approved" || b.status !== "approved") throw new Error("Both players must be approved first.");
-    if (a.season_key !== b.season_key) throw new Error("Players are in different tournaments.");
-    const key = a.season_key;
+    const { newConfirmationToken, hashConfirmationToken, sendMatchedPlayerInvitation } = await import("./team-confirmation.server");
+    const firstToken = newConfirmationToken();
+    const secondToken = newConfirmationToken();
+    const result = await db.rpc("create_matched_team", { _first_id: data.firstId, _second_id: data.secondId, _team_name: data.teamName, _hash1: await hashConfirmationToken(firstToken), _hash2: await hashConfirmationToken(secondToken) });
+    if (result.error) throw new Error(result.error.message);
+    const firstSent = await sendMatchedPlayerInvitation(db, result.data, 1, firstToken);
+    const secondSent = await sendMatchedPlayerInvitation(db, result.data, 2, secondToken);
+    const { closeRegistrationIfFull } = await import("./season-setup.server");
+    const row = await db.from("registrations").select("target_season").eq("id", result.data).single();
+    if (row.data) await closeRegistrationIfFull(db, row.data.target_season);
+    return { ok: true as const, emailsSent: firstSent && secondSent };
+  });
 
-    const dup = await db.from("registrations").select("id").eq("target_season", key).ilike("team_name", data.teamName).maybeSingle();
-    if (dup.data) throw new Error("That team name is already used in this tournament.");
+export const resendMatchedPlayerInvitation = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ id: z.string().uuid(), playerNo: z.union([z.literal(1), z.literal(2)]) }))
+  .handler(async ({ data }) => {
+    const db = await gate();
+    const row = await db.from("registrations").select("requires_player_confirmation, player1_confirmed_at, player2_confirmed_at, status").eq("id", data.id).single();
+    if (row.error || !row.data.requires_player_confirmation || row.data.status === "rejected") throw new Error("This team has no active confirmation invitation.");
+    if (data.playerNo === 1 ? row.data.player1_confirmed_at : row.data.player2_confirmed_at) throw new Error("This player has already confirmed.");
+    const { newConfirmationToken, hashConfirmationToken, sendMatchedPlayerInvitation } = await import("./team-confirmation.server");
+    const token = newConfirmationToken();
+    const hash = await hashConfirmationToken(token);
+    const update = await db.from("registrations").update({
+      ...(data.playerNo === 1 ? { player1_confirmation_hash: hash } : { player2_confirmation_hash: hash }),
+      confirmation_expires_at: new Date(Date.now() + 14 * 86400000).toISOString(),
+    }).eq("id", data.id);
+    if (update.error) throw new Error("Unable to renew invitation.");
+    return { sent: await sendMatchedPlayerInvitation(db, data.id, data.playerNo, token) };
+  });
 
-    const divs = [a.previous_division, b.previous_division].filter((x): x is number => x !== null);
-    const reg = await db
-      .from("registrations")
-      .insert({
-        target_season: key,
-        team_name: data.teamName,
-        player1_name: a.name,
-        player1_email: a.email,
-        player2_name: b.name,
-        player2_email: b.email,
-        phone: "",
-        previous_division: divs.length ? Math.min(...divs) : null,
-        status: "pending",
-        user_id: a.user_id,
-      })
-      .select("id")
-      .single();
-    if (reg.error) throw new Error(reg.error.message);
-    const accountLinks = [a, b].flatMap((player, index) => player.user_id
-      ? [{ season_key: key, registration_id: reg.data.id, user_id: player.user_id, player_no: index + 1 }]
-      : []);
-    const links = accountLinks.length ? await db.from("account_links").insert(accountLinks) : null;
-    if (links?.error) {
-      await db.from("registrations").delete().eq("id", reg.data.id);
-      throw new Error("One of these players is already on a team.");
-    }
-    await db.from("partner_requests").update({ status: "paired", registration_id: reg.data.id }).in("id", [a.id, b.id]);
-
-    const { notifyPlayer } = await import("./account.server");
-    for (const [me, other] of [
-      [a, b],
-      [b, a],
-    ] as const) {
-      await notifyPlayer(
-        me.email,
-        `You have a partner: ${other.name}`,
-        `Good news! You have been paired with ${other.name} in the team "${data.teamName}" for ${key}.\nThe team will be confirmed once the admin approves the registration.`,
-        `Goda nyheter! Du har parats ihop med ${other.name} i laget "${data.teamName}" för ${key}.\nLaget bekräftas när administratören har godkänt anmälan.`,
-        `paired-${me.id}`,
-      );
-    }
+export const renameRegisteredTeam = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ id: z.string().uuid(), teamName: z.string().trim().min(2).max(60) }))
+  .handler(async ({ data }) => {
+    const db = await gate();
+    const result = await db.rpc("rename_registered_team", { _id: data.id, _name: data.teamName });
+    if (result.error) throw new Error(result.error.message);
     return { ok: true as const };
   });
 

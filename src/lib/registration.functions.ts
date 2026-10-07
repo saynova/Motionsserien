@@ -27,6 +27,9 @@ export type Registration = {
   player2_phone: string;
   swish_ref: string;
   is_paid: boolean;
+  requires_player_confirmation: boolean;
+  player1_confirmed_at: string | null;
+  player2_confirmed_at: string | null;
   previous_division: number | null;
   status: string;
   created_at: string;
@@ -51,7 +54,7 @@ export type RegistrationInfo = {
 
 
 const REG_COLUMNS =
-  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, swish_ref, is_paid, previous_division, status, created_at";
+  "id, target_season, team_name, player1_name, player1_email, player2_name, player2_email, phone, player2_phone, swish_ref, is_paid, previous_division, status, created_at, requires_player_confirmation, player1_confirmed_at, player2_confirmed_at";
 const SEED_COLUMNS = "id, target_season, team_name, division, position";
 
 function cleanText(value: unknown, min: number, max: number, label: string): string {
@@ -332,7 +335,10 @@ export const setRegistrationStatus = createServerFn({ method: "POST" })
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
     const db = adminClient();
-    const { data: prev } = await db.from("registrations").select("status").eq("id", data.id).maybeSingle();
+    const previous = await db.from("registrations").select("status, requires_player_confirmation, player1_confirmed_at, player2_confirmed_at").eq("id", data.id).single();
+    if (previous.error) throw new Error("Registration not found.");
+    const prev = previous.data;
+    if (data.status === "accepted" && prev.requires_player_confirmation && (!prev.player1_confirmed_at || !prev.player2_confirmed_at)) throw new Error("Both players must confirm the team before it can be accepted.");
     const { data: reg, error } = await db
       .from("registrations")
       .update({ status: data.status })
@@ -677,12 +683,13 @@ export const lockRegistrationAndAssign = createServerFn({ method: "POST" }).hand
 
   const regs = await supabase
     .from("registrations")
-    .select("id, status")
+    .select("id, status, requires_player_confirmation, player1_confirmed_at, player2_confirmed_at")
     .eq("target_season", targetSeason)
     .in("status", ["pending", "accepted", "waitlisted"])
     .order("created_at", { ascending: true });
   if (regs.error) throw new Error(regs.error.message);
-  const rows = regs.data ?? [];
+  // Unconfirmed matched teams cannot enter automatic acceptance/seeding.
+  const rows = (regs.data ?? []).filter((r) => !r.requires_player_confirmation || (r.player1_confirmed_at && r.player2_confirmed_at));
 
   const toAccept = rows.slice(0, MAX_TEAMS).filter((r) => r.status !== "accepted");
   const toWaitlist = rows.slice(MAX_TEAMS).filter((r) => r.status !== "waitlisted");
