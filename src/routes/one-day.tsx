@@ -148,7 +148,7 @@ function OneDayPage() {
                     <p className="flex items-center gap-2 font-semibold">
                       <span className="truncate">{team.team_name}</span>
                       <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                        {team.level === "advanced" ? "Advanced" : "Intermediate"}
+                        {team.category === "women" ? "Women" : team.level === "advanced" ? "Men · Advanced" : "Men · Intermediate"}
                       </span>
                     </p>
                     <p className="truncate text-sm text-muted-foreground">
@@ -184,6 +184,7 @@ function RegistrationForm() {
   const submit = useServerFn(submitOnedayRegistration);
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ teamName: "", player1Name: "", player2Name: "", email: "", phone: "" });
+  const [category, setCategory] = useState<"" | "men" | "women">("");
   const [level, setLevel] = useState<"" | "intermediate" | "advanced">("");
   const [payment, setPayment] = useState<"" | "paid" | "unpaid">("");
   const [terms, setTerms] = useState(false);
@@ -197,12 +198,13 @@ function RegistrationForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!level) return setError("Please choose your level.");
+    if (!category) return setError("Please choose Men or Women.");
+    if (category === "men" && !level) return setError("Please choose your level.");
     if (!payment) return setError("Please choose your payment status.");
     if (!terms) return setError("Please accept the Terms & Conditions.");
     setBusy(true);
     try {
-      await submit({ data: { ...form, level, paymentStatus: payment, acceptTerms: true } });
+      await submit({ data: { ...form, category, level: category === "men" ? level : undefined, paymentStatus: payment, acceptTerms: true } });
       setDone(true);
       void queryClient.invalidateQueries({ queryKey: ["oneday"] });
     } catch (err) {
@@ -256,15 +258,26 @@ function RegistrationForm() {
         </div>
       </div>
       <Choice
-        label="Level"
-        value={level}
-        onChange={(v) => setLevel(v as "intermediate" | "advanced")}
+        label="Category"
+        value={category}
+        onChange={(v) => setCategory(v as "men" | "women")}
         options={[
-          { value: "intermediate", label: "Intermediate" },
-          { value: "advanced", label: "Advanced" },
+          { value: "men", label: "Men" },
+          { value: "women", label: "Women" },
         ]}
-        note="The organiser may change your level based on demand."
       />
+      {category === "men" ? (
+        <Choice
+          label="Level"
+          value={level}
+          onChange={(v) => setLevel(v as "intermediate" | "advanced")}
+          options={[
+            { value: "intermediate", label: "Intermediate" },
+            { value: "advanced", label: "Advanced" },
+          ]}
+          note="The organiser may change your level based on demand."
+        />
+      ) : null}
       <Choice
         label="Payment"
         value={payment}
