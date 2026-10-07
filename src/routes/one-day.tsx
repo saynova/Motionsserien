@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { CalendarDays, CheckCircle2, MapPin, Trophy, Users, Wallet } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Users, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { submitOnedayRegistration } from "@/lib/oneday.functions";
 import { formatOnedayDate, onedayInfoQueryOptions, onedayTeamsQueryOptions } from "@/lib/oneday-query";
+import { formatDeadline } from "@/lib/xlsx-export";
 
 export const Route = createFileRoute("/one-day")({
   head: () => ({
@@ -77,6 +78,9 @@ function OneDayPage() {
             <InfoBlock icon={CalendarDays} label="Date" value={formatOnedayDate(info.eventDate)} />
           ) : null}
           {info.venue ? <InfoBlock icon={MapPin} label="Venue" value={info.venue} /> : null}
+          {info.registrationDeadline ? (
+            <InfoBlock icon={Clock} label="Registration deadline" value={formatDeadline(info.registrationDeadline)} />
+          ) : null}
           <InfoBlock icon={Users} label="Approved teams" value={String(teams.length)} />
         </div>
 
