@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Users, Wallet } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
@@ -82,7 +82,6 @@ function OneDayPage() {
           {info.registrationDeadline ? (
             <InfoBlock icon={Clock} label="Registration deadline" value={formatDeadline(info.registrationDeadline)} />
           ) : null}
-          <InfoBlock icon={Users} label="Approved teams" value={String(teams.length)} />
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-4">
