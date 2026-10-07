@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { submitGuestPartnerRequest } from "@/lib/registration.functions";
 import { DIVISION_COUNT } from "@/lib/tournament";
+import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
 
 const field = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
@@ -15,6 +16,7 @@ export function GuestPartnerRequest() {
   if (done) return <div className="space-y-2 border border-border bg-card p-5 rounded-lg" role="status">
     <h2 className="text-lg font-bold">Your request has been received</h2>
     <p className="text-sm text-muted-foreground">The admin will review your request and contact you by email about finding a partner.</p>
+    <RegistrationEmailReminder />
   </div>;
   return <form className="space-y-4 rounded-lg border border-border bg-card p-5" onSubmit={async (event) => {
     event.preventDefault();
@@ -45,6 +47,7 @@ export function GuestPartnerRequest() {
     <div className="hidden" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
     <p className="text-xs text-muted-foreground">Your details are private. The admin will contact you at the email address above.</p>
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" required className="mt-1 accent-primary" /><span>I have read and accept the <Link to="/terms" className="text-primary underline">Terms &amp; Conditions</Link>.</span></label>
+    <RegistrationEmailReminder />
     <Button type="submit" disabled={busy} className="w-full">{busy ? "Sending…" : "Send request"}</Button>
   </form>;
 }

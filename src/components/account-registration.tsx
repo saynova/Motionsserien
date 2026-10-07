@@ -12,6 +12,7 @@ import { DIVISION_COUNT } from "@/lib/tournament";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { GuestPartnerRequest } from "@/components/guest-partner-request";
+import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
 
 function FormSkeleton() {
   return (
@@ -96,6 +97,7 @@ function GuestRegistration() {
       <div className="space-y-2 rounded-lg border border-border bg-card p-5 text-sm">
         <h2 className="text-lg font-bold">Thanks — your team is registered</h2>
         <p>The admin reviews every entry. Once approved, your team appears under Approved teams.</p>
+        <RegistrationEmailReminder />
         <p className="text-muted-foreground">
           Create an account later with the same email and your team, scores and receipts will be linked automatically.
         </p>
@@ -207,6 +209,7 @@ function GuestRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
+      <RegistrationEmailReminder />
       <Button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
       </Button>
@@ -260,6 +263,7 @@ function SignedInRegistration() {
           <p>Your "Find a partner" request is on the list.</p>
         )}
         <Link to="/account" className="font-semibold text-primary underline">See status on My account</Link>
+        <RegistrationEmailReminder />
       </div>
     );
   }
@@ -408,6 +412,7 @@ function SignedInRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
+      <RegistrationEmailReminder />
       <Button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
       </Button>
