@@ -67,6 +67,11 @@ function RegisterPage() {
               Team <span className="text-primary">registration</span>
             </h1>
             <SimpleCountdown startsAt={info.tournamentStartsAt} />
+            {info.registrationDeadline ? (
+              <p className="mt-2 text-sm font-semibold text-primary">
+                Registration deadline: {formatDeadline(info.registrationDeadline)}
+              </p>
+            ) : null}
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {info.requireSignIn === false
                 ? "Register your team with both players, or sign in to manage it from your account. An admin reviews every entry."
