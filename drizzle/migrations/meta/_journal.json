@@ -43,6 +43,13 @@
       "when": 1791364901755,
       "tag": "0005_registration_deadline",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791366771642,
+      "tag": "0006_allow_guest_partner_requests",
+      "breakpoints": true
     }
   ]
 }

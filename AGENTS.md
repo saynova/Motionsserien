@@ -22,3 +22,4 @@
 - One-day tournaments live in separate oneday_* tables, src/lib/oneday.functions.ts and one admin section — keeps them from touching the weekly series.
 - The main tournament countdown is sourced from registration_settings.tournament_starts_at and interpreted in Europe/Stockholm — keeps the public timer aligned with the admin-entered Swedish start time.
 - Gallery view analytics reuse gallery_photos.view_count through an admin-only server query in the Visitors dashboard — keeps media reporting private without duplicating tracking data.
+- Guest partner requests use the existing private partner_requests table with a nullable account owner and a validated public submission function; pairing creates account links only for account owners — supports guests without exposing contacts or inventing accounts.
