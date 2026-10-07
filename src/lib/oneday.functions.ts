@@ -198,7 +198,7 @@ export const listOnedayRegistrations = createServerFn({ method: "GET" }).handler
     const supabase = await admin();
     const { data, error } = await supabase
       .from("oneday_registrations")
-      .select("id, team_name, player1_name, player2_name, email, phone, status, level, payment_status, seen_by_admin, created_at")
+      .select("id, team_name, player1_name, player2_name, email, phone, status, level, category, payment_status, seen_by_admin, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as OnedayRegistration[];
@@ -261,7 +261,7 @@ async function exportData() {
   const s = await readSettings();
   const { data, error } = await supabase
     .from("oneday_registrations")
-    .select("team_name, player1_name, player2_name, email, phone, status, level, payment_status, created_at")
+    .select("team_name, player1_name, player2_name, email, phone, status, level, category, payment_status, created_at")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
   return { rows: data ?? [], meta: { name: s?.name ?? "", eventDate: s?.event_date ?? "", venue: s?.venue ?? "" } };
