@@ -9,6 +9,7 @@ interface Props {
   siteUrl?: string;
   signature?: string;
   footer?: string;
+  oneDay?: boolean;
 }
 
 const lines = (v: string) => v.split(/\n/).map((l) => l.trim()).filter(Boolean);
@@ -20,6 +21,7 @@ const Email = ({
   siteUrl = "https://www.motionsserien.se",
   signature = "Best Regards\nThe General\nMd Rabiul Islam",
   footer = "Motionsserien · Ludvika Badmintonklubb",
+  oneDay = false,
 }: Props) => {
   const ok = status === "approved";
   const contactUrl = `${siteUrl}/ask`;
@@ -37,7 +39,11 @@ const Email = ({
               <>
                 <Text style={strong}>Congratulations!</Text>
                 <Text style={text}>Your registration for {tournamentName} has been successfully approved, and your spot is now confirmed.</Text>
-                <Text style={text}>Please visit the website for further schedule updates and important information: <Link href={siteUrl} style={link}>{siteUrl}</Link></Text>
+                {oneDay ? (
+                  <Text style={text}>You will get an email regarding the schedule and other information very soon.</Text>
+                ) : (
+                  <Text style={text}>Please visit the website for further schedule updates and important information: <Link href={siteUrl} style={link}>{siteUrl}</Link></Text>
+                )}
               </>
             ) : (
               <>
@@ -54,7 +60,11 @@ const Email = ({
               <>
                 <Text style={strong}>Grattis!</Text>
                 <Text style={text}>Er anmälan till {tournamentName} har godkänts och er plats är nu bekräftad.</Text>
-                <Text style={text}>Besök webbplatsen för kommande spelschema och viktig information: <Link href={siteUrl} style={link}>{siteUrl}</Link></Text>
+                {oneDay ? (
+                  <Text style={text}>Ni kommer snart att få ett mejl med spelschema och annan information.</Text>
+                ) : (
+                  <Text style={text}>Besök webbplatsen för kommande spelschema och viktig information: <Link href={siteUrl} style={link}>{siteUrl}</Link></Text>
+                )}
               </>
             ) : (
               <>

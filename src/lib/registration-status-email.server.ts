@@ -9,6 +9,7 @@ export async function sendRegistrationStatusEmails(opts: {
   teamName: string;
   emails: string[];
   key: string;
+  oneDay?: boolean;
 }) {
   const { sendTemplateEmail } = await import("./email-templates/send-email");
   const { getEmailSettings } = await import("./email-settings.server");
@@ -22,6 +23,7 @@ export async function sendRegistrationStatusEmails(opts: {
           tournamentName: opts.tournamentName,
           teamName: opts.teamName,
           siteUrl: "https://www.motionsserien.se",
+          oneDay: opts.oneDay ?? false,
           ...(settings ? { signature: settings.signature, footer: settings.footer } : {}),
         },
         idempotencyKey: `reg-status-${opts.key}-${opts.status}-${to}-${Date.now()}`,
