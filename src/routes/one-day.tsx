@@ -77,9 +77,6 @@ function OneDayPage() {
           {info.eventDate ? (
             <InfoBlock icon={CalendarDays} label="Date" value={formatOnedayDate(info.eventDate)} />
           ) : null}
-          {info.registrationDeadline ? (
-            <InfoBlock icon={CalendarDays} label="Registration deadline" value={formatDeadline(info.registrationDeadline)} />
-          ) : null}
           {info.venue ? <InfoBlock icon={MapPin} label="Venue" value={info.venue} /> : null}
           <InfoBlock icon={Users} label="Approved teams" value={String(teams.length)} />
         </div>
