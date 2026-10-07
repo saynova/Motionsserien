@@ -12,6 +12,7 @@ export type OnedayInfo = {
   menuLabel: string;
   maxApproved: number | null;
   maxTotal: number | null;
+  registrationDeadline: string;
   full?: boolean;
 };
 
@@ -52,7 +53,7 @@ async function readSettings() {
   const supabase = await db();
   const { data, error } = await supabase
     .from("oneday_settings")
-    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label, max_approved_teams, max_total_registrations")
+    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label, max_approved_teams, max_total_registrations, registration_deadline")
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -70,6 +71,7 @@ export const getOnedayInfo = createServerFn({ method: "GET" }).handler(async ():
     full,
     maxApproved: s?.max_approved_teams ?? null,
     maxTotal: s?.max_total_registrations ?? null,
+    registrationDeadline: s?.registration_deadline ?? "",
     visible: s?.visible ?? false,
     isOpen: (s?.visible ?? false) && (s?.is_open ?? false) && !full,
     name: s?.name ?? "One-day badminton tournament",
@@ -155,6 +157,7 @@ export const getOnedaySettingsAdmin = createServerFn({ method: "GET" }).handler(
     menuLabel: s?.menu_label || "One-day",
     maxApproved: s?.max_approved_teams ?? null,
     maxTotal: s?.max_total_registrations ?? null,
+    registrationDeadline: s?.registration_deadline ?? "",
   };
 });
 
@@ -168,6 +171,7 @@ const settingsSchema = z.object({
   menuLabel: z.string().trim().min(1, "Enter a menu name").max(24),
   maxApproved: z.number().int().min(1).max(1000).nullable(),
   maxTotal: z.number().int().min(1).max(1000).nullable(),
+  registrationDeadline: z.string().trim().max(40).default(""),
 });
 
 export const updateOnedaySettings = createServerFn({ method: "POST" })
@@ -185,6 +189,7 @@ export const updateOnedaySettings = createServerFn({ method: "POST" })
       menu_label: data.menuLabel,
       max_approved_teams: data.maxApproved,
       max_total_registrations: data.maxTotal,
+      registration_deadline: data.registrationDeadline || null,
     };
     const result = existing
       ? await supabase.from("oneday_settings").update(payload).eq("id", existing.id)

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   deleteOnedayRegistration,
-  exportOnedayCsv,
   exportOnedayPdf,
   markOnedaySeen,
   setOnedayStatus,
@@ -56,7 +55,7 @@ function SettingsTab() {
   const { data } = useQuery(onedaySettingsAdminQueryOptions);
   const save = useServerFn(updateOnedaySettings);
   const qc = useQueryClient();
-  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day", maxApproved: null as number | null, maxTotal: null as number | null });
+  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day", maxApproved: null as number | null, maxTotal: null as number | null, registrationDeadline: "" });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (data) setForm(data);
@@ -117,6 +116,10 @@ function SettingsTab() {
           <input type="datetime-local" className={field} value={form.eventDate} onChange={(e) => setForm((f) => ({ ...f, eventDate: e.target.value }))} />
         </div>
         <div>
+          <label className={labelCls}>Registration deadline (Swedish time, shown publicly)</label>
+          <input type="datetime-local" className={field} value={form.registrationDeadline} onChange={(e) => setForm((f) => ({ ...f, registrationDeadline: e.target.value }))} />
+        </div>
+        <div>
           <label className={labelCls}>Venue</label>
           <input className={field} maxLength={160} value={form.venue} onChange={(e) => setForm((f) => ({ ...f, venue: e.target.value }))} />
         </div>
@@ -138,7 +141,7 @@ function RegistrationsTab() {
   const remove = useServerFn(deleteOnedayRegistration);
   const markSeen = useServerFn(markOnedaySeen);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
-  const csvFn = useServerFn(exportOnedayCsv);
+  const { data: settings } = useQuery(onedaySettingsAdminQueryOptions);
   const pdfFn = useServerFn(exportOnedayPdf);
   const stamp = new Date().toISOString().slice(0, 10);
   function save(blob: Blob, name: string) {
@@ -151,8 +154,21 @@ function RegistrationsTab() {
   }
   async function downloadCsv() {
     try {
-      const { csv } = await csvFn();
-      save(new Blob([csv], { type: "text/csv;charset=utf-8" }), `one-day-registrations-${stamp}.csv`);
+      const { downloadXlsx, stockholm } = await import("@/lib/xlsx-export");
+      const lvl = (r: OnedayRegistration) => (r.category === "women" ? "Women" : `Men - ${r.level === "advanced" ? "Advanced" : "Intermediate"}`);
+      await downloadXlsx({
+        fileName: `one-day-teams-${stamp}.xlsx`,
+        sheetName: "Teams",
+        title: settings?.name ? `${settings.name} - Team registrations` : "One-day tournament - Team registrations",
+        subtitle: `Exported ${stockholm(new Date().toISOString())} (Swedish time) · ${data.length} teams · Paid ${paidCount} · Unpaid ${data.length - paidCount}`,
+        columns: [
+          { header: "#", width: 5 }, { header: "Team", width: 24 }, { header: "Player 1", width: 22 }, { header: "Player 2", width: 22 },
+          { header: "Email", width: 30 }, { header: "Phone", width: 16 }, { header: "Category / Level", width: 20 },
+          { header: "Payment", width: 11 }, { header: "Status", width: 12 }, { header: "Registered", width: 17 },
+        ],
+        rows: data.map((r, i) => [i + 1, r.team_name, r.player1_name, r.player2_name, r.email, r.phone, lvl(r), r.payment_status === "paid" ? "Paid" : "Unpaid", r.status.charAt(0).toUpperCase() + r.status.slice(1), stockholm(r.created_at)]),
+        paymentCol: 7,
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Export failed");
     }
