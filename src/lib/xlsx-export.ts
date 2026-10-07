@@ -83,6 +83,11 @@ export const stockholm = (iso: string) =>
 export function formatDeadline(v: string | null | undefined) {
   if (!v) return "";
   const [d, t] = v.split("T");
-  const date = new Date(`${d}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+  const parsed = new Date(`${d}T12:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return "";
+  // Explicit parts keep browser and server ICU punctuation identical for SSR.
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const date = `${weekdays[parsed.getUTCDay()]}, ${parsed.getUTCDate()} ${months[parsed.getUTCMonth()]} ${parsed.getUTCFullYear()}`;
   return t ? `${date}, ${t}` : date;
 }
