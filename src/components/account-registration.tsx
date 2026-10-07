@@ -216,6 +216,7 @@ function SignedInRegistration() {
 
   const [mode, setMode] = useState<"team" | "partner">("team");
   const [name, setName] = useState("");
+  const [partnerEmail, setPartnerEmail] = useState("");
   const [teamName, setTeamName] = useState("");
   const [phone, setPhone] = useState("");
   const [p2Name, setP2Name] = useState("");
@@ -280,7 +281,7 @@ function SignedInRegistration() {
         if (mode === "team")
           void run(() => doRegister({ data: { teamName, playerName: name, phone, player2Name: p2Name, player2Email: p2Email, player2Phone: p2Phone, swishRef, payLater, lateCancelAck: true, previousDivision: division } }), "Team registered. The admin will review it and you will appear under Approved teams once approved.");
         else
-          void run(() => doPartner({ data: { name, previousDivision: division, availability, note } }), "Request sent. The admin will review it.");
+          void run(() => doPartner({ data: { name, email: partnerEmail || account.data?.email || "", previousDivision: division, availability, note } }), "Request sent. The admin will review it.");
       }}
     >
       <div className="grid grid-cols-2 gap-1 rounded bg-secondary p-1 text-xs font-semibold">
@@ -356,6 +357,17 @@ function SignedInRegistration() {
 
       {mode === "partner" ? (
         <>
+          <div>
+            <label className={label}>Email address (so we can contact you)</label>
+            <input
+              className={field}
+              type="email"
+              autoComplete="email"
+              value={partnerEmail || account.data?.email || ""}
+              onChange={(e) => setPartnerEmail(e.target.value)}
+              required
+            />
+          </div>
           <div>
             <label className={label}>Your level (previous division)</label>
             <DivisionSelect value={division} onChange={setDivision} />
