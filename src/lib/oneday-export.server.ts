@@ -26,7 +26,11 @@ const PAY = (v?: string) => (v === "paid" ? "Paid" : "Unpaid");
 
 export function buildCsv(rows: ExportRow[]): string {
   const head = ["#", "Registered (Stockholm)", "Team", "Player 1", "Player 2", "Email", "Phone", "Category", "Payment", "Status"];
-...
+  const esc = (v: string) => {
+    const s = /^[=+\-@]/.test(v) ? `'${v}` : v; // block spreadsheet formula injection
+    return /[";\n,]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = rows.map((r, i) =>
     [String(i + 1), fmt(r.created_at), r.team_name, r.player1_name, r.player2_name, r.email, r.phone, CAT(r), PAY(r.payment_status), STATUS[r.status] ?? r.status]
       .map(esc)
       .join(";"),
