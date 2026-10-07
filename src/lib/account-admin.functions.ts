@@ -57,6 +57,19 @@ export const setPartnerRequestStatus = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const deletePartnerRequest = createServerFn({ method: "POST" })
+  .inputValidator((d: { id: string }) => ({ id: String(d?.id ?? "") }))
+  .handler(async ({ data }) => {
+    const db = await gate();
+    const row = await db.from("partner_requests").select("status").eq("id", data.id).maybeSingle();
+    if (row.error) throw new Error(row.error.message);
+    if (!row.data) throw new Error("This request has already been removed.");
+    const { error } = await db.from("partner_requests").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+
 export const pairPartners = createServerFn({ method: "POST" })
   .inputValidator(z.object({ firstId: z.string().uuid(), secondId: z.string().uuid(), teamName: z.string().trim().min(2).max(60) }).refine((d) => d.firstId !== d.secondId, "Pick two different players."))
   .handler(async ({ data }) => {
