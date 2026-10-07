@@ -29,7 +29,7 @@ const STATUS: Record<string, string> = {
   withdrawn: "Withdrawn",
 };
 
-export function PartnerRequestsAdmin({ seasonKey }: { seasonKey?: string }) {
+export function PartnerRequestsAdmin({ seasonKey }: { seasonKey?: string | undefined }) {
   const qc = useQueryClient();
   const list = useServerFn(listPartnerRequests);
   const setStatus = useServerFn(setPartnerRequestStatus);
