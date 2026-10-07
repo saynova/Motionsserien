@@ -57,6 +57,13 @@
       "when": 1791367305065,
       "tag": "0007_matched_team_confirmation",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791367335493,
+      "tag": "0008_correct_registered_team_rename",
+      "breakpoints": true
     }
   ]
 }
