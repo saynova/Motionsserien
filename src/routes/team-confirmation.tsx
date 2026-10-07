@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
@@ -22,14 +22,16 @@ function TeamConfirmationPage() {
   const fetchInvitation = useServerFn(getMatchedTeamInvitation);
   const confirm = useServerFn(confirmMatchedTeam);
   const [token, setToken] = useState("");
+  const capturedToken = useRef("");
   const [invitation, setInvitation] = useState<Awaited<ReturnType<typeof getMatchedTeamInvitation>> | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    const secret = window.location.hash.slice(1);
+    const secret = capturedToken.current || window.location.hash.slice(1);
+    capturedToken.current = secret;
     // Remove the bearer secret immediately; it stays in this page's memory only.
-    window.history.replaceState(null, "", window.location.pathname);
+    window.history.replaceState(window.history.state, "", window.location.pathname);
     if (!/^[a-f0-9]{64}$/.test(secret)) { setError("Please open your private team invitation from your email."); setLoading(false); return; }
     setToken(secret);
     let cancelled = false;
