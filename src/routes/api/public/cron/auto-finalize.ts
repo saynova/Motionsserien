@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
+import { inCronWindow } from "@/lib/cron-windows";
 
 async function hasValidDatabaseToken(request: Request): Promise<boolean> {
   const match = /^Bearer ([^\s,]+)$/.exec(request.headers.get("authorization") ?? "");
@@ -23,9 +24,12 @@ export const Route = createFileRoute("/api/public/cron/auto-finalize")({
         const unauthorized = await authenticateCronRequest(request);
         if (unauthorized && !(await hasValidDatabaseToken(request))) return unauthorized;
 
+        const body = (await request.json().catch(() => ({}))) as { stage?: string };
+        const stage = body.stage === "schedule" ? "schedule" : "approve";
+        if (!inCronWindow(stage)) return Response.json({ ok: true, ran: false, reason: "Outside check window." });
         try {
           const { autoFinalizeDueWeek } = await import("@/lib/auto-finalize.server");
-          const result = await autoFinalizeDueWeek();
+          const result = await autoFinalizeDueWeek(false, stage);
           return Response.json({ ok: true, ...result });
         } catch (error) {
           console.error("Automatic week finalise failed", error);

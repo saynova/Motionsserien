@@ -59,7 +59,10 @@ type Result = {
   scheduleGenerated?: boolean;
 };
 
-export async function autoFinalizeDueWeek(force = false): Promise<Result> {
+export async function autoFinalizeDueWeek(
+  force = false,
+  stage: "approve" | "schedule" | "both" = "both",
+): Promise<Result> {
   const { adminClient } = await import("./tournament.server");
   const admin = adminClient();
 
@@ -90,13 +93,15 @@ export async function autoFinalizeDueWeek(force = false): Promise<Result> {
   const approveDeadline = `${addDays(matchMonday, season.auto_approve_offset_days ?? 2)} ${
     season.auto_approve_time ?? "10:00"
   }`;
-  const approveDue = force || (approveEnabled && now >= approveDeadline);
+  const approveDue =
+    stage !== "schedule" && (force || (approveEnabled && now >= approveDeadline));
 
   const scheduleEnabled = season.auto_finalize_enabled !== false;
   const scheduleDeadline = `${addDays(matchMonday, season.auto_finalize_offset_days ?? 7)} ${
     season.auto_finalize_time ?? "11:00"
   }`;
-  const scheduleDue = force || (scheduleEnabled && now >= scheduleDeadline);
+  const scheduleDue =
+    stage !== "approve" && (force || (scheduleEnabled && now >= scheduleDeadline));
 
   if (!approveDue && !scheduleDue) {
     if (!approveEnabled && !scheduleEnabled) {

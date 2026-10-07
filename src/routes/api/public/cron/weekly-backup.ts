@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
+import { inCronWindow } from "@/lib/cron-windows";
 
 async function hasValidDatabaseToken(request: Request): Promise<boolean> {
   const match = /^Bearer ([^\s,]+)$/.exec(request.headers.get("authorization") ?? "");
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/api/public/cron/weekly-backup")({
         const unauthorized = await authenticateCronRequest(request);
         if (unauthorized && !(await hasValidDatabaseToken(request))) return unauthorized;
 
+        if (!inCronWindow("backup")) return Response.json({ ok: true, ran: false, reason: "Outside check window." });
         try {
           const { sendWeeklyBackup } = await import("@/lib/weekly-backup.server");
           const result = await sendWeeklyBackup();
