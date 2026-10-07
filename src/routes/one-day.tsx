@@ -7,6 +7,7 @@ import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Users, Wallet } from
 import { Button } from "@/components/ui/button";
 import { submitOnedayRegistration } from "@/lib/oneday.functions";
 import { formatOnedayDate, onedayInfoQueryOptions, onedayTeamsQueryOptions } from "@/lib/oneday-query";
+import { formatDeadline } from "@/lib/xlsx-export";
 
 export const Route = createFileRoute("/one-day")({
   head: () => ({
