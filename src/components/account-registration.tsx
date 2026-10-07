@@ -10,6 +10,8 @@ import { submitRegistration } from "@/lib/registration.functions";
 import { registrationInfoQueryOptions } from "@/lib/tournament-query";
 import { DIVISION_COUNT } from "@/lib/tournament";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { GuestPartnerRequest } from "@/components/guest-partner-request";
 
 function FormSkeleton() {
   return (
@@ -55,21 +57,22 @@ export function AccountRegistration() {
   const signed = useSignedIn();
   const info = useQuery(registrationInfoQueryOptions);
   if (signed === "loading" || info.isLoading) return <FormSkeleton />;
-  if (signed === "out") {
-    if (info.data?.requireSignIn === false) return <GuestRegistration />;
-    return (
-      <div className="space-y-3 rounded-lg border border-border bg-card p-5">
-        <h2 className="text-lg font-bold">Sign in to register</h2>
-        <p className="text-sm text-muted-foreground">
-          You need a player account to register a team or to ask us to find you a partner. The same account works for scores and receipts in every future tournament.
-        </p>
-        <Link to="/auth" className="inline-block rounded bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
-          Sign in or create account
-        </Link>
-      </div>
-    );
-  }
+  if (signed === "out") return <GuestRegistrationOptions requireSignIn={info.data?.requireSignIn !== false} />;
   return <SignedInRegistration />;
+}
+
+function GuestRegistrationOptions({ requireSignIn }: { requireSignIn: boolean }) {
+  const [mode, setMode] = useState<"team" | "partner">("team");
+  return <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-1 rounded-md bg-secondary p-1" role="tablist" aria-label="Registration type">
+      {(["team", "partner"] as const).map((id) => <Button key={id} type="button" role="tab" aria-selected={mode === id} variant={mode === id ? "outline" : "ghost"} className="min-w-0 whitespace-normal text-xs sm:text-sm" onClick={() => setMode(id)}>{id === "team" ? "Register a team" : "Find me a partner"}</Button>)}
+    </div>
+    {mode === "partner" ? <GuestPartnerRequest /> : requireSignIn ? <div className="space-y-3 rounded-lg border border-border bg-card p-5">
+      <h2 className="text-lg font-bold">Sign in to register your team</h2>
+      <p className="text-sm text-muted-foreground">A player account is required for team registration. You can request a partner without an account.</p>
+      <Button asChild><Link to="/auth">Sign in or create account</Link></Button>
+    </div> : <GuestRegistration />}
+  </div>;
 }
 
 function GuestRegistration() {
@@ -142,6 +145,8 @@ function GuestRegistration() {
         <label className={label}>Team name</label>
         <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
       </div>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <fieldset className="min-w-0 space-y-4"><legend className="mb-3 text-sm font-bold text-primary">Player 1</legend>
       <div>
         <label className={label}>Player 1 name</label>
         <input className={field} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -154,6 +159,8 @@ function GuestRegistration() {
         <label className={label}>Player 1 phone number</label>
         <input className={field} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       </div>
+        </fieldset>
+        <fieldset className="min-w-0 space-y-4"><legend className="mb-3 text-sm font-bold text-primary">Player 2</legend>
       <div>
         <label className={label}>Player 2 name</label>
         <input className={field} autoComplete="off" value={p2Name} onChange={(e) => setP2Name(e.target.value)} required />
@@ -165,6 +172,8 @@ function GuestRegistration() {
       <div>
         <label className={label}>Player 2 phone number</label>
         <input className={field} type="tel" autoComplete="off" value={p2Phone} onChange={(e) => setP2Phone(e.target.value)} required />
+      </div>
+        </fieldset>
       </div>
       <div>
         <label className={label}>Division last session (1–10) or New Team</label>
@@ -198,9 +207,9 @@ function GuestRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
+      <Button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : "Register team"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -286,9 +295,9 @@ function SignedInRegistration() {
     >
       <div className="grid grid-cols-2 gap-1 rounded bg-secondary p-1 text-xs font-semibold">
         {tabs.map(([id, text]) => (
-          <button key={id} type="button" onClick={() => setMode(id)} className={`rounded px-2 py-1.5 ${mode === id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+          <Button key={id} type="button" onClick={() => setMode(id)} className={`rounded px-2 py-1.5 ${mode === id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
             {text}
-          </button>
+          </Button>
         ))}
       </div>
       <p className="text-xs text-muted-foreground">Signed in as {account.data?.email}. This email is used for your registration.</p>
@@ -298,17 +307,24 @@ function SignedInRegistration() {
           <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
         </div>
       ) : null}
+      {mode === "partner" ? <div><label className={label}>Your name</label><input className={field} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required /></div> : null}
+
+      {mode === "team" ? (
+        <>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <fieldset className="min-w-0 space-y-4"><legend className="mb-3 text-sm font-bold text-primary">Player 1</legend>
       <div>
         <label className={label}>{mode === "team" ? "Player 1 name (you)" : "Your name"}</label>
         <input className={field} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required />
       </div>
 
-      {mode === "team" ? (
-        <>
+              <div><label className={label}>Player 1 email</label><input className={field} type="email" value={account.data?.email ?? ""} readOnly /></div>
           <div>
             <label className={label}>Player 1 phone number</label>
             <input className={field} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
           </div>
+            </fieldset>
+            <fieldset className="min-w-0 space-y-4"><legend className="mb-3 text-sm font-bold text-primary">Player 2</legend>
           <div>
             <label className={label}>Player 2 name</label>
             <input className={field} autoComplete="off" value={p2Name} onChange={(e) => setP2Name(e.target.value)} required />
@@ -320,6 +336,8 @@ function SignedInRegistration() {
           <div>
             <label className={label}>Player 2 phone number</label>
             <input className={field} type="tel" autoComplete="off" value={p2Phone} onChange={(e) => setP2Phone(e.target.value)} required />
+          </div>
+            </fieldset>
           </div>
           <div>
             <label className={label}>Division last session (1–10) or New Team</label>
@@ -390,9 +408,9 @@ function SignedInRegistration() {
           I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
-      <button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
+      <Button type="submit" disabled={busy || !accepted} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:translate-y-0 disabled:opacity-40">
         {busy ? "Sending…" : mode === "team" ? "Register team" : "Send request"}
-      </button>
+      </Button>
     </form>
   );
 }
