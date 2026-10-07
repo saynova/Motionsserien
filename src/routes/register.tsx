@@ -1,4 +1,3 @@
-import { formatDeadline } from "@/lib/xlsx-export";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronDown, Lock, ShieldCheck, Smartphone, Trophy, Users } from "lucide-react";
