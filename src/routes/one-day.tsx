@@ -82,7 +82,6 @@ function OneDayPage() {
           {info.registrationDeadline ? (
             <InfoBlock icon={Clock} label="Registration deadline" value={formatDeadline(info.registrationDeadline)} />
           ) : null}
-          <InfoBlock icon={Users} label="Approved teams" value={String(teams.length)} />
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-4">
