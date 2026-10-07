@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Users, Wallet } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
