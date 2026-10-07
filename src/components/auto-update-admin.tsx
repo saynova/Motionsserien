@@ -46,6 +46,8 @@ export function AutoUpdateAdmin() {
 
       <HomepageBlock />
 
+      <CheckTimetable />
+
       <div className="mt-8">
       <StageBlock
         stage="approve"
@@ -554,6 +556,34 @@ function HomepageBlock() {
           {busy ? "Saving…" : "Save homepage"}
         </button>
       </div>
+    </div>
+  );
+}
+
+const TIMETABLE = [
+  ["Score approval", "Every day at 10:00 (except Wednesday)"],
+  ["Score approval — Wednesday", "Every 10 minutes from 10:00 to 11:00"],
+  ["Next week's schedule", "Sunday, every hour"],
+  ["Missing-score reminder", "Tuesday, every hour"],
+  ["Weekly backup", "Wednesday, every hour"],
+];
+
+function CheckTimetable() {
+  return (
+    <div className="mt-8 rounded-lg border border-border bg-muted/40 p-5">
+      <h3 className="text-sm font-bold uppercase tracking-wide">When the system checks</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Swedish time. Your settings below decide what happens; the system only looks during these
+        windows. A time set outside its window runs at the next window.
+      </p>
+      <ul className="mt-3 divide-y divide-border text-sm">
+        {TIMETABLE.map(([name, when]) => (
+          <li key={name} className="flex flex-wrap justify-between gap-2 py-2">
+            <span className="font-semibold">{name}</span>
+            <span className="text-muted-foreground">{when}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
