@@ -683,12 +683,13 @@ export const lockRegistrationAndAssign = createServerFn({ method: "POST" }).hand
 
   const regs = await supabase
     .from("registrations")
-    .select("id, status")
+    .select("id, status, requires_player_confirmation, player1_confirmed_at, player2_confirmed_at")
     .eq("target_season", targetSeason)
     .in("status", ["pending", "accepted", "waitlisted"])
     .order("created_at", { ascending: true });
   if (regs.error) throw new Error(regs.error.message);
-  const rows = regs.data ?? [];
+  // Unconfirmed matched teams cannot enter automatic acceptance/seeding.
+  const rows = (regs.data ?? []).filter((r) => !r.requires_player_confirmation || (r.player1_confirmed_at && r.player2_confirmed_at));
 
   const toAccept = rows.slice(0, MAX_TEAMS).filter((r) => r.status !== "accepted");
   const toWaitlist = rows.slice(MAX_TEAMS).filter((r) => r.status !== "waitlisted");
