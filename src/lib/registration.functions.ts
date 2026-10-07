@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
 import { suggestSeedBoard, type SeedCandidate, type SeedEntry } from "./seeding";
 import {
@@ -171,6 +172,39 @@ export const getRegisteredTeams = createServerFn({ method: "GET" }).handler(
     });
   },
 );
+
+export const submitGuestPartnerRequest = createServerFn({ method: "POST" })
+  .inputValidator(z.object({
+    name: z.string().trim().min(2).max(60),
+    email: z.string().trim().email().max(120).transform((v) => v.toLowerCase()),
+    previousDivision: z.union([z.string(), z.number(), z.null()]).transform(cleanDivision),
+    availability: z.string().trim().max(200),
+    note: z.string().trim().max(500),
+    accepted: z.literal(true),
+    website: z.string().max(200).default(""),
+  }))
+  .handler(async ({ data }) => {
+    if (data.website) return { ok: true as const };
+    const { adminClient } = await import("./tournament.server");
+    const db = adminClient();
+    const settings = await db.from("registration_settings")
+      .select("is_open, target_season").order("created_at", { ascending: true }).limit(1).maybeSingle();
+    if (settings.error) throw new Error("Unable to check registration. Please try again.");
+    if (!settings.data?.is_open) throw new Error("Registration is closed right now.");
+    const key = settings.data.target_season;
+    // Do not reveal or overwrite another player's existing request.
+    const existing = await db.from("partner_requests").select("id")
+      .eq("season_key", key).eq("email", data.email).limit(1);
+    if (existing.error) throw new Error("Unable to send your request. Please try again.");
+    if (existing.data?.length) return { ok: true as const };
+    const result = await db.from("partner_requests").insert({
+      season_key: key, user_id: null, name: data.name, email: data.email,
+      previous_division: data.previousDivision, availability: data.availability,
+      note: data.note, status: "pending",
+    });
+    if (result.error && result.error.code !== "23505") throw new Error("Unable to send your request. Please try again.");
+    return { ok: true as const };
+  });
 
 export const submitRegistration = createServerFn({ method: "POST" })
   .inputValidator(

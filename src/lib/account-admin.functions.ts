@@ -97,11 +97,11 @@ export const pairPartners = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (reg.error) throw new Error(reg.error.message);
-    const links = await db.from("account_links").insert([
-      { season_key: key, registration_id: reg.data.id, user_id: a.user_id, player_no: 1 },
-      { season_key: key, registration_id: reg.data.id, user_id: b.user_id, player_no: 2 },
-    ]);
-    if (links.error) {
+    const accountLinks = [a, b].flatMap((player, index) => player.user_id
+      ? [{ season_key: key, registration_id: reg.data.id, user_id: player.user_id, player_no: index + 1 }]
+      : []);
+    const links = accountLinks.length ? await db.from("account_links").insert(accountLinks) : null;
+    if (links?.error) {
       await db.from("registrations").delete().eq("id", reg.data.id);
       throw new Error("One of these players is already on a team.");
     }
