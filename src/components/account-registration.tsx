@@ -216,6 +216,7 @@ function SignedInRegistration() {
 
   const [mode, setMode] = useState<"team" | "partner">("team");
   const [name, setName] = useState("");
+  const [partnerEmail, setPartnerEmail] = useState("");
   const [teamName, setTeamName] = useState("");
   const [phone, setPhone] = useState("");
   const [p2Name, setP2Name] = useState("");

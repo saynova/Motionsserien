@@ -532,8 +532,9 @@ export const joinTeam = createServerFn({ method: "POST" })
 export const requestPartner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (d: { name: string; previousDivision: string | number | null; availability: string; note: string }) => ({
+    (d: { name: string; email: string; previousDivision: string | number | null; availability: string; note: string }) => ({
       name: text(d?.name, 2, 60, "Your name"),
+      email: text(d?.email, 5, 120, "Email address").toLowerCase(),
       previousDivision: division(d?.previousDivision),
       availability: String(d?.availability ?? "").trim().slice(0, 200),
       note: String(d?.note ?? "").trim().slice(0, 500),
@@ -543,7 +544,9 @@ export const requestPartner = createServerFn({ method: "POST" })
     const { adminClient } = await import("./tournament.server");
     const { currentRegistrationKey } = await import("./account.server");
     const db = adminClient();
-    const email = await userEmail(context.userId);
+    const accountEmail = await userEmail(context.userId);
+    const email = data.email || accountEmail;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Please enter a valid email address.");
     const { key, isOpen } = await currentRegistrationKey();
     if (!isOpen) throw new Error("Registration is closed right now.");
     const link = await db.from("account_links").select("id").eq("user_id", context.userId).eq("season_key", key).maybeSingle();
