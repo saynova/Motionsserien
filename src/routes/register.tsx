@@ -6,6 +6,7 @@ import { AccountRegistration } from "@/components/account-registration";
 import { RulesToPlay } from "@/components/rules-to-play";
 import { useEffect, useState } from "react";
 import { registeredTeamsQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
+import { formatDeadline } from "@/lib/xlsx-export";
 
 const TOTAL_SPOTS = 30;
 
