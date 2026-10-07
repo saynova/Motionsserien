@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import {
   adminReceiptFile,
+  deletePartnerRequest,
   listPartnerRequests,
   listReceipts,
   pairPartners,
