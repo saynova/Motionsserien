@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { PdfViewerDialog, type PdfDoc } from "@/components/pdf-viewer-dialog";
 import {
   adminReceiptFile,
+  deletePartnerRequest,
   listPartnerRequests,
   listReceipts,
   pairPartners,
@@ -34,6 +35,7 @@ export function PartnerRequestsAdmin({ seasonKey }: { seasonKey?: string | undef
   const list = useServerFn(listPartnerRequests);
   const setStatus = useServerFn(setPartnerRequestStatus);
   const pair = useServerFn(pairPartners);
+  const removeRequest = useServerFn(deletePartnerRequest);
   const { data = [], isLoading } = useQuery({ queryKey: ["admin-partner-requests"], queryFn: () => list() });
   const [picked, setPicked] = useState<string[]>([]);
   const [teamName, setTeamName] = useState("");
@@ -137,6 +139,24 @@ export function PartnerRequestsAdmin({ seasonKey }: { seasonKey?: string | undef
                 ) : null}
               </div>
             ) : null}
+            <div className="mt-3 border-t border-border pt-3">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                disabled={busy}
+                onClick={() => {
+                  const message =
+                    r.status === "paired"
+                      ? `Delete ${r.name}'s partner request? The matched team stays, but this request record and its details are removed.`
+                      : `Delete ${r.name}'s partner request? The name, email and note are removed for good.`;
+                  if (!confirm(message)) return;
+                  void act(() => removeRequest({ data: { id: r.id } }), "Request deleted.");
+                }}
+              >
+                Delete request
+              </Button>
+            </div>
           </div>
         ))}
       </div>
