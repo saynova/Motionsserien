@@ -221,7 +221,7 @@ function RegistrationsTab() {
                 <th className="px-3 py-2">Team</th>
                 <th className="px-3 py-2">Players</th>
                 <th className="px-3 py-2">Contact</th>
-                <th className="px-3 py-2">Level</th>
+                <th className="px-3 py-2">Category</th>
                 <th className="px-3 py-2">Payment</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2 text-right">Actions</th>
@@ -241,7 +241,9 @@ function RegistrationsTab() {
                     <div>{r.email}</div>
                     <div className="text-muted-foreground">{r.phone}</div>
                   </td>
-                  <td className="px-3 py-2 capitalize">{r.level}</td>
+                  <td className="px-3 py-2 capitalize">
+                    {r.category === "women" ? "Women" : `Men · ${r.level}`}
+                  </td>
                   <td className="px-3 py-2">
                     <button
                       type="button"

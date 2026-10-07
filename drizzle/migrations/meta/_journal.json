@@ -29,6 +29,13 @@
       "when": 1791281254889,
       "tag": "0003_homepage_choice",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791364355818,
+      "tag": "0004_oneday_category",
+      "breakpoints": true
     }
   ]
 }
