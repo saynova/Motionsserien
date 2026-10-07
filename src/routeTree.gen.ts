@@ -25,6 +25,7 @@ import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as ShuttlesRouteImport } from './routes/shuttles'
 import { Route as StandingsRouteImport } from './routes/standings'
 import { Route as SubmitRouteImport } from './routes/submit'
+import { Route as TeamConfirmationRouteImport } from './routes/team-confirmation'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicCronAutoFinalizeRouteImport } from './routes/api/public/cron/auto-finalize'
@@ -116,6 +117,11 @@ const SubmitRoute = SubmitRouteImport.update({
   path: '/submit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamConfirmationRoute = TeamConfirmationRouteImport.update({
+  id: '/team-confirmation',
+  path: '/team-confirmation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/shuttles': typeof ShuttlesRoute
   '/standings': typeof StandingsRoute
   '/submit': typeof SubmitRoute
+  '/team-confirmation': typeof TeamConfirmationRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/shuttles': typeof ShuttlesRoute
   '/standings': typeof StandingsRoute
   '/submit': typeof SubmitRoute
+  '/team-confirmation': typeof TeamConfirmationRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/shuttles': typeof ShuttlesRoute
   '/standings': typeof StandingsRoute
   '/submit': typeof SubmitRoute
+  '/team-confirmation': typeof TeamConfirmationRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/public/cron/auto-finalize': typeof ApiPublicCronAutoFinalizeRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/shuttles'
     | '/standings'
     | '/submit'
+    | '/team-confirmation'
     | '/terms'
     | '/account'
     | '/api/public/cron/auto-finalize'
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/shuttles'
     | '/standings'
     | '/submit'
+    | '/team-confirmation'
     | '/terms'
     | '/account'
     | '/api/public/cron/auto-finalize'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/shuttles'
     | '/standings'
     | '/submit'
+    | '/team-confirmation'
     | '/terms'
     | '/_authenticated/account'
     | '/api/public/cron/auto-finalize'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   ShuttlesRoute: typeof ShuttlesRoute
   StandingsRoute: typeof StandingsRoute
   SubmitRoute: typeof SubmitRoute
+  TeamConfirmationRoute: typeof TeamConfirmationRoute
   TermsRoute: typeof TermsRoute
   ApiPublicCronAutoFinalizeRoute: typeof ApiPublicCronAutoFinalizeRoute
   ApiPublicCronScoreRemindersRoute: typeof ApiPublicCronScoreRemindersRoute
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team-confirmation': {
+      id: '/team-confirmation'
+      path: '/team-confirmation'
+      fullPath: '/team-confirmation'
+      preLoaderRoute: typeof TeamConfirmationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -602,6 +622,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShuttlesRoute: ShuttlesRoute,
   StandingsRoute: StandingsRoute,
   SubmitRoute: SubmitRoute,
+  TeamConfirmationRoute: TeamConfirmationRoute,
   TermsRoute: TermsRoute,
   ApiPublicCronAutoFinalizeRoute: ApiPublicCronAutoFinalizeRoute,
   ApiPublicCronScoreRemindersRoute: ApiPublicCronScoreRemindersRoute,
