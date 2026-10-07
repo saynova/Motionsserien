@@ -570,6 +570,7 @@ export type Database = {
           menu_label: string
           name: string
           payment_details: string
+          registration_deadline: string | null
           updated_at: string
           venue: string
           visible: boolean
@@ -584,6 +585,7 @@ export type Database = {
           menu_label?: string
           name?: string
           payment_details?: string
+          registration_deadline?: string | null
           updated_at?: string
           venue?: string
           visible?: boolean
@@ -598,6 +600,7 @@ export type Database = {
           menu_label?: string
           name?: string
           payment_details?: string
+          registration_deadline?: string | null
           updated_at?: string
           venue?: string
           visible?: boolean
@@ -662,6 +665,7 @@ export type Database = {
           created_at: string
           id: string
           is_open: boolean
+          registration_deadline: string | null
           require_sign_in: boolean
           target_season: string
           tournament_starts_at: string | null
@@ -671,6 +675,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_open?: boolean
+          registration_deadline?: string | null
           require_sign_in?: boolean
           target_season?: string
           tournament_starts_at?: string | null
@@ -680,6 +685,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_open?: boolean
+          registration_deadline?: string | null
           require_sign_in?: boolean
           target_season?: string
           tournament_starts_at?: string | null
