@@ -56,11 +56,11 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SportsEvent",
-          name: "Motionsserien HT-26 Badminton Ladder",
+          name: "Motionsserien",
           sport: "Badminton",
           url: "https://www.motionsserien.se/",
           description:
-            "Weekly Monday badminton ladder with 30 teams across 10 divisions, with promotion and relegation each week.",
+            "Live division standings for the Motionsserien badminton tournament, featuring promotion and relegation across all 10 divisions, organized by Hitachi IF and Ludvika Badminton Club. For inquiries, contact the General: Md Rabiul Islam",
           startDate: "2026-09-07T19:00:00+02:00",
           endDate: "2026-11-09T22:00:00+01:00",
           eventStatus: "https://schema.org/EventScheduled",
