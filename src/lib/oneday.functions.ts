@@ -240,6 +240,7 @@ export const setOnedayStatus = createServerFn({ method: "POST" })
         teamName: reg.team_name,
         emails: [reg.email],
         key: `oneday-${data.id}`,
+        oneDay: true,
       });
     }
     return { ok: true as const };
