@@ -372,7 +372,11 @@ function PublicLayout() {
           <SponsorBanner />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
-          <ContactBar showCancellationNotice={hydrated && isRegistrationPage && registrationInfo.data?.isOpen === true} />
+          {pathname !== "/ask" ? (
+            <ContactBar
+              showCancellationNotice={hydrated && isRegistrationPage && registrationInfo.data?.isOpen === true}
+            />
+          ) : null}
         </main>
         <footer className="mx-auto w-full max-w-[96rem] space-y-2 px-3 pb-8 text-xs leading-relaxed text-muted-foreground sm:px-5 lg:px-8">
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
