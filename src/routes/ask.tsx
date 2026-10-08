@@ -6,14 +6,12 @@ import {
   CheckCircle2,
   ImagePlus,
   ListChecks,
-  Mail,
   MessageCircleQuestion,
   MessagesSquare,
   MoreHorizontal,
   Send,
   ShieldCheck,
   ThumbsUp,
-  Timer,
   UserRound,
   X,
 } from "lucide-react";
@@ -70,8 +68,6 @@ const control =
   "w-full rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm font-medium text-foreground placeholder:font-normal placeholder:text-muted-foreground transition-colors focus:border-primary/50";
 const labelCls =
   "block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground";
-const stepCls =
-  "flex items-start gap-3 rounded-xl border border-border bg-secondary/40 px-3.5 py-3";
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
@@ -247,50 +243,13 @@ function AskPage() {
               </span>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Tournament General
+                  The General
                 </p>
                 <p className="font-display text-lg font-bold leading-tight text-foreground">
                   Md Rabiul Islam
                 </p>
               </div>
             </div>
-            <div className="mt-4 space-y-2.5 border-t border-border pt-4">
-              <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                <Timer className="size-3.5 text-primary" aria-hidden="true" />
-                Replies usually within a day
-              </p>
-              <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                <Mail className="size-3.5 text-primary" aria-hidden="true" />
-                Answered by email, never publicly
-              </p>
-              <p className="flex items-start gap-2 text-xs font-semibold text-foreground">
-                <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-up" aria-hidden="true" />
-                <span>
-                  Your email is only used to reply to you — it is never shown anywhere
-                  on the site.
-                </span>
-              </p>
-            </div>
-          </section>
-
-          <section className="contact-panel p-5">
-            <p className={labelCls}>How it works</p>
-            <ol className="mt-3 space-y-2.5">
-              {[
-                "Pick a topic and write your message",
-                "The General reads it in the private inbox",
-                "You get a reply at the email you entered",
-              ].map((step, i) => (
-                <li key={step} className={stepCls}>
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                  <span className="text-xs font-medium leading-snug text-foreground">
-                    {step}
-                  </span>
-                </li>
-              ))}
-            </ol>
           </section>
         </aside>
 
