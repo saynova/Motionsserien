@@ -248,6 +248,21 @@ function AskPage() {
                 Md Rabiul Islam
               </p>
             </div>
+            <div className="mt-2 w-full border-t border-border pt-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                Organized by
+              </p>
+              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
+                {["Hitachi IF", "Ludvika Badminton Club"].map((club) => (
+                  <span
+                    key={club}
+                    className="rounded-full border border-border bg-secondary/50 px-3 py-1 text-[11px] font-semibold text-foreground"
+                  >
+                    {club}
+                  </span>
+                ))}
+              </div>
+            </div>
           </section>
         </aside>
 
