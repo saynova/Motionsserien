@@ -2,16 +2,29 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ImagePlus, MessageSquare, X } from "lucide-react";
+import {
+  CheckCircle2,
+  ImagePlus,
+  ListChecks,
+  Mail,
+  MessageCircleQuestion,
+  MessagesSquare,
+  MoreHorizontal,
+  Send,
+  ShieldCheck,
+  ThumbsUp,
+  Timer,
+  UserRound,
+  X,
+} from "lucide-react";
 
-import { PageHeader } from "@/components/tournament-ui";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createMessageAttachmentUpload,
   sendMessage,
   type MessageTopic,
 } from "@/lib/messages.functions";
-
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
@@ -42,18 +55,23 @@ export const Route = createFileRoute("/ask")({
   component: AskPage,
 });
 
-const TOPICS: { value: MessageTopic; label: string }[] = [
-  { value: "question", label: "Question" },
-  { value: "feedback", label: "Feedback" },
-  { value: "scoring", label: "Scoring issue" },
-  { value: "other", label: "Other" },
+const TOPICS: {
+  value: MessageTopic;
+  label: string;
+  Icon: typeof MessageCircleQuestion;
+}[] = [
+  { value: "question", label: "Question", Icon: MessageCircleQuestion },
+  { value: "feedback", label: "Feedback", Icon: ThumbsUp },
+  { value: "scoring", label: "Scoring issue", Icon: ListChecks },
+  { value: "other", label: "Other", Icon: MoreHorizontal },
 ];
 
 const control =
-  "rounded border border-input bg-card px-3 py-2 text-sm font-medium text-foreground";
-const label = "block text-xs font-semibold uppercase tracking-widest text-muted-foreground";
-const btn =
-  "rounded bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40";
+  "w-full rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm font-medium text-foreground placeholder:font-normal placeholder:text-muted-foreground transition-colors focus:border-primary/50";
+const labelCls =
+  "block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground";
+const stepCls =
+  "flex items-start gap-3 rounded-xl border border-border bg-secondary/40 px-3.5 py-3";
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
@@ -81,6 +99,14 @@ async function preparePhoto(file: File): Promise<Blob> {
     ),
   );
 }
+
+const EMPTY_FORM = {
+  topic: "question" as MessageTopic,
+  email: "",
+  name: "",
+  teamName: "",
+  body: "",
+};
 
 function AskPage() {
   const submit = useServerFn(sendMessage);
@@ -124,6 +150,16 @@ function AskPage() {
     if (fileInput.current) fileInput.current.value = "";
   }
 
+  function resetForm() {
+    setTopic(EMPTY_FORM.topic);
+    setEmail(EMPTY_FORM.email);
+    setName(EMPTY_FORM.name);
+    setTeamName(EMPTY_FORM.teamName);
+    setBody(EMPTY_FORM.body);
+    clearPhoto();
+    setSent(false);
+  }
+
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -148,145 +184,262 @@ function AskPage() {
     }
   }
 
-
   if (sent) {
     return (
-      <div className="mx-auto max-w-xl rounded-lg border border-border bg-card p-8 text-center">
-        <MessageSquare className="mx-auto size-10 text-primary" aria-hidden="true" />
-        <h2 className="mt-4 text-2xl font-bold uppercase tracking-wide">Thank you</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your message has been sent to the General. Replies will come to {email || "your email"}.
-        </p>
+      <div className="contact-ambient mx-auto max-w-xl py-10">
+        <div className="contact-panel p-10 text-center">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-full border border-up/30 bg-up/10">
+            <CheckCircle2 className="size-8 text-up" aria-hidden="true" />
+          </span>
+          <h2 className="mt-5 font-display text-3xl font-bold tracking-tight text-foreground">
+            Thank you
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Your message is on its way to the General.
+            {email ? (
+              <>
+                {" "}
+                A reply will come to{" "}
+                <span className="font-semibold text-foreground">{email}</span>.
+              </>
+            ) : null}
+          </p>
+          <p className="mt-4 rounded-lg border border-border bg-secondary/50 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+            Please check your junk/spam folder to make sure you receive any further
+            emails from motionsserien.se
+          </p>
+          <button
+            type="button"
+            onClick={resetForm}
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <MessagesSquare className="size-4" aria-hidden="true" />
+            Send another message
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Contact"
-        title="Ask the General"
-        description="Questions, feedback or a scoring issue? Send it here and Md Rabiul Islam will get back to you."
-      />
-      <form
-        onSubmit={onSubmit}
-        className="mx-auto max-w-xl space-y-4 rounded-lg border border-border bg-card p-6"
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1">
-            <span className={label}>Topic</span>
-            <select
-              className={`${control} w-full`}
-              value={topic}
-              onChange={(e) => setTopic(e.target.value as MessageTopic)}
-            >
-              {TOPICS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
+    <div className="contact-ambient">
+      <header className="mb-8">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+          <MessagesSquare className="size-3.5" aria-hidden="true" />
+          Contact
+        </span>
+        <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          Ask the General
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Questions, feedback or a scoring issue? Send it here and Md Rabiul Islam will
+          get back to you.
+        </p>
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
+        {/* Sidebar — who you are writing to */}
+        <aside className="space-y-4">
+          <section className="contact-panel p-5">
+            <div className="flex items-center gap-3">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
+                <UserRound className="size-6 text-primary" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Tournament General
+                </p>
+                <p className="font-display text-lg font-bold leading-tight text-foreground">
+                  Md Rabiul Islam
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 space-y-2.5 border-t border-border pt-4">
+              <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                <Timer className="size-3.5 text-primary" aria-hidden="true" />
+                Replies usually within a day
+              </p>
+              <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                <Mail className="size-3.5 text-primary" aria-hidden="true" />
+                Answered by email, never publicly
+              </p>
+              <p className="flex items-start gap-2 text-xs font-semibold text-foreground">
+                <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-up" aria-hidden="true" />
+                <span>
+                  Your email is only used to reply to you — it is never shown anywhere
+                  on the site.
+                </span>
+              </p>
+            </div>
+          </section>
+
+          <section className="contact-panel p-5">
+            <p className={labelCls}>How it works</p>
+            <ol className="mt-3 space-y-2.5">
+              {[
+                "Pick a topic and write your message",
+                "The General reads it in the private inbox",
+                "You get a reply at the email you entered",
+              ].map((step, i) => (
+                <li key={step} className={stepCls}>
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <span className="text-xs font-medium leading-snug text-foreground">
+                    {step}
+                  </span>
+                </li>
               ))}
-            </select>
-          </label>
-          <label className="block space-y-1">
-            <span className={label}>Email *</span>
-            <input
-              type="email"
-              required
-              className={`${control} w-full`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
-          </label>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1">
-            <span className={label}>Name</span>
+            </ol>
+          </section>
+        </aside>
+
+        {/* Form */}
+        <form onSubmit={onSubmit} className="contact-panel space-y-6 p-5 sm:p-7">
+          <div className="space-y-2.5">
+            <span className={labelCls}>Topic</span>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {TOPICS.map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={topic === value}
+                  onClick={() => setTopic(value)}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors",
+                    topic === value
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+                  )}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block space-y-1.5">
+              <span className={labelCls}>Email *</span>
+              <input
+                type="email"
+                required
+                className={control}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </label>
+            <label className="block space-y-1.5">
+              <span className={labelCls}>Team name</span>
+              <input
+                type="text"
+                name="team"
+                className={control}
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="Optional"
+              />
+            </label>
+          </div>
+
+          <label className="block space-y-1.5">
+            <span className={labelCls}>Your name</span>
             <input
               type="text"
               name="name"
-              className={`${control} w-full`}
+              className={control}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Optional"
             />
           </label>
-          <label className="block space-y-1">
-            <span className={label}>Team name</span>
-            <input
-              type="text"
-              name="team"
-              className={`${control} w-full`}
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              placeholder="Optional"
+
+          <label className="block space-y-1.5">
+            <span className={labelCls}>Message *</span>
+            <textarea
+              required
+              minLength={5}
+              maxLength={2000}
+              rows={6}
+              className={cn(control, "resize-y leading-relaxed")}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Write your question or feedback here…"
             />
+            <span className="block text-right text-xs font-medium text-muted-foreground">
+              {body.length}/2000
+            </span>
           </label>
-        </div>
-        <label className="block space-y-1">
-          <span className={label}>Message *</span>
-          <textarea
-            required
-            minLength={5}
-            maxLength={2000}
-            rows={5}
-            className={`${control} w-full resize-y`}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Write your question or feedback here…"
-          />
-          <span className="text-right text-xs text-muted-foreground">{body.length}/2000</span>
-        </label>
 
-        <div className="space-y-2">
-          <span className={label}>Photo (optional)</span>
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => choosePhoto(e.target.files?.[0])}
-          />
-          {preview ? (
-            <div className="flex items-start gap-3">
-              <img
-                src={preview}
-                alt="Photo you are attaching"
-                className="size-24 rounded border border-border object-cover"
-              />
-              <div className="space-y-1 text-xs text-muted-foreground">
-                <p className="max-w-[16rem] truncate font-semibold text-foreground">
-                  {photo?.name}
-                </p>
-                <button
-                  type="button"
-                  onClick={clearPhoto}
-                  className="inline-flex items-center gap-1 rounded border border-border bg-secondary px-2 py-1 font-semibold uppercase tracking-wide transition-colors hover:bg-secondary/70"
-                >
-                  <X className="size-3" aria-hidden="true" />
-                  Remove
-                </button>
+          <div className="space-y-2.5">
+            <span className={labelCls}>Photo (optional)</span>
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => choosePhoto(e.target.files?.[0])}
+            />
+            {preview ? (
+              <div className="flex items-start gap-4 rounded-lg border border-border bg-secondary/40 p-3.5">
+                <img
+                  src={preview}
+                  alt="Photo you are attaching"
+                  className="size-24 rounded-lg border border-border object-cover"
+                />
+                <div className="space-y-1.5 text-xs text-muted-foreground">
+                  <p className="max-w-[16rem] truncate font-semibold text-foreground">
+                    {photo?.name}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={clearPhoto}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1.5 font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-secondary"
+                  >
+                    <X className="size-3" aria-hidden="true" />
+                    Remove
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileInput.current?.click()}
-              className="inline-flex items-center gap-2 rounded border border-dashed border-input bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/50"
-            >
-              <ImagePlus className="size-4 text-primary" aria-hidden="true" />
-              Add a photo
-            </button>
-          )}
-          <p className="text-xs text-muted-foreground">
-            One picture, JPEG, PNG or WebP, up to 10 MB. Only the General can see it.
-          </p>
-        </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="flex w-full items-center gap-3 rounded-lg border border-dashed border-input bg-secondary/30 px-4 py-4 text-left transition-colors hover:border-primary/40 hover:bg-secondary/60"
+              >
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <ImagePlus className="size-5 text-primary" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block text-sm font-bold text-foreground">
+                    Add a photo
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    One picture, JPEG, PNG or WebP, up to 10 MB. Only the General can see it.
+                  </span>
+                </span>
+              </button>
+            )}
+          </div>
 
-        <button type="submit" className={btn} disabled={busy}>
-          {busy ? "Sending…" : "Send message"}
-        </button>
-      </form>
-    </>
+          <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="size-4 shrink-0 text-up" aria-hidden="true" />
+              Private message — only the General can read it.
+            </p>
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              <Send className="size-4" aria-hidden="true" />
+              {busy ? "Sending…" : "Send message"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
