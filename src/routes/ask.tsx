@@ -219,7 +219,7 @@ function AskPage() {
 
   return (
     <div className="contact-ambient">
-      <header className="mb-8">
+      <header className="mx-auto mb-8 w-full max-w-3xl">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
           <MessagesSquare className="size-3.5" aria-hidden="true" />
           Contact
