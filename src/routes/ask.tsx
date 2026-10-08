@@ -235,20 +235,18 @@ function AskPage() {
 
       <div className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
         {/* Sidebar — who you are writing to */}
-        <aside className="space-y-4">
-          <section className="contact-panel p-5">
-            <div className="flex items-center gap-3">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
-                <UserRound className="size-6 text-primary" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  The General
-                </p>
-                <p className="font-display text-lg font-bold leading-tight text-foreground">
-                  Md Rabiul Islam
-                </p>
-              </div>
+        <aside className="flex">
+          <section className="contact-panel flex w-full flex-col items-center justify-center gap-4 p-8 text-center">
+            <span className="flex size-16 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
+              <UserRound className="size-8 text-primary" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                The General
+              </p>
+              <p className="mt-1 font-display text-xl font-bold leading-tight text-foreground">
+                Md Rabiul Islam
+              </p>
             </div>
           </section>
         </aside>
