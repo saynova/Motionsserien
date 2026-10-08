@@ -233,41 +233,22 @@ function AskPage() {
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
-        {/* Sidebar — who you are writing to */}
-        <aside className="flex">
-          <section className="contact-panel flex w-full flex-col items-center justify-center gap-4 p-8 text-center">
-            <span className="flex size-16 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
-              <UserRound className="size-8 text-primary" aria-hidden="true" />
+      <div className="mx-auto w-full max-w-3xl">
+        <form onSubmit={onSubmit} className="contact-panel space-y-6 p-5 sm:p-7">
+          <div className="flex items-center gap-3 border-b border-border pb-5">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
+              <UserRound className="size-5 text-primary" aria-hidden="true" />
             </span>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 The General
               </p>
-              <p className="mt-1 font-display text-xl font-bold leading-tight text-foreground">
+              <p className="font-display text-base font-bold leading-tight text-foreground">
                 Md Rabiul Islam
               </p>
             </div>
-            <div className="mt-2 w-full border-t border-border pt-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Organized by
-              </p>
-              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
-                {["Hitachi IF", "Ludvika Badminton Club"].map((club) => (
-                  <span
-                    key={club}
-                    className="rounded-full border border-border bg-secondary/50 px-3 py-1 text-[11px] font-semibold text-foreground"
-                  >
-                    {club}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </section>
-        </aside>
+          </div>
 
-        {/* Form */}
-        <form onSubmit={onSubmit} className="contact-panel space-y-6 p-5 sm:p-7">
           <div className="space-y-2.5">
             <span className={labelCls}>Topic</span>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
