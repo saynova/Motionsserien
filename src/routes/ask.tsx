@@ -6,14 +6,12 @@ import {
   CheckCircle2,
   ImagePlus,
   ListChecks,
-  Mail,
   MessageCircleQuestion,
   MessagesSquare,
   MoreHorizontal,
   Send,
   ShieldCheck,
   ThumbsUp,
-  Timer,
   UserRound,
   X,
 } from "lucide-react";
@@ -70,8 +68,6 @@ const control =
   "w-full rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm font-medium text-foreground placeholder:font-normal placeholder:text-muted-foreground transition-colors focus:border-primary/50";
 const labelCls =
   "block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground";
-const stepCls =
-  "flex items-start gap-3 rounded-xl border border-border bg-secondary/40 px-3.5 py-3";
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
@@ -223,7 +219,7 @@ function AskPage() {
 
   return (
     <div className="contact-ambient">
-      <header className="mb-8">
+      <header className="mx-auto mb-8 w-full max-w-3xl">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
           <MessagesSquare className="size-3.5" aria-hidden="true" />
           Contact
@@ -237,65 +233,22 @@ function AskPage() {
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
-        {/* Sidebar — who you are writing to */}
-        <aside className="space-y-4">
-          <section className="contact-panel p-5">
-            <div className="flex items-center gap-3">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
-                <UserRound className="size-6 text-primary" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Tournament General
-                </p>
-                <p className="font-display text-lg font-bold leading-tight text-foreground">
-                  Md Rabiul Islam
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 space-y-2.5 border-t border-border pt-4">
-              <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                <Timer className="size-3.5 text-primary" aria-hidden="true" />
-                Replies usually within a day
-              </p>
-              <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                <Mail className="size-3.5 text-primary" aria-hidden="true" />
-                Answered by email, never publicly
-              </p>
-              <p className="flex items-start gap-2 text-xs font-semibold text-foreground">
-                <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-up" aria-hidden="true" />
-                <span>
-                  Your email is only used to reply to you — it is never shown anywhere
-                  on the site.
-                </span>
-              </p>
-            </div>
-          </section>
-
-          <section className="contact-panel p-5">
-            <p className={labelCls}>How it works</p>
-            <ol className="mt-3 space-y-2.5">
-              {[
-                "Pick a topic and write your message",
-                "The General reads it in the private inbox",
-                "You get a reply at the email you entered",
-              ].map((step, i) => (
-                <li key={step} className={stepCls}>
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                  <span className="text-xs font-medium leading-snug text-foreground">
-                    {step}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </section>
-        </aside>
-
-        {/* Form */}
+      <div className="mx-auto w-full max-w-3xl">
         <form onSubmit={onSubmit} className="contact-panel space-y-6 p-5 sm:p-7">
+          <div className="flex items-center gap-3 border-b border-border pb-5">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
+              <UserRound className="size-5 text-primary" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                The General
+              </p>
+              <p className="font-display text-base font-bold leading-tight text-foreground">
+                Md Rabiul Islam
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2.5">
             <span className={labelCls}>Topic</span>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
