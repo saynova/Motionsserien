@@ -1002,7 +1002,9 @@ export type Database = {
           homepage: string
           id: string
           qr_image_path: string | null
+          registration_price: number
           season_finished: boolean
+          shuttle_price: number
           sponsor_details: string
           sponsor_label: string
           sponsor_visible: boolean
@@ -1014,7 +1016,9 @@ export type Database = {
           homepage?: string
           id?: string
           qr_image_path?: string | null
+          registration_price?: number
           season_finished?: boolean
+          shuttle_price?: number
           sponsor_details?: string
           sponsor_label?: string
           sponsor_visible?: boolean
@@ -1026,7 +1030,9 @@ export type Database = {
           homepage?: string
           id?: string
           qr_image_path?: string | null
+          registration_price?: number
           season_finished?: boolean
+          shuttle_price?: number
           sponsor_details?: string
           sponsor_label?: string
           sponsor_visible?: boolean

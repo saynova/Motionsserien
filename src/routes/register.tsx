@@ -7,6 +7,7 @@ import { RulesToPlay } from "@/components/rules-to-play";
 import { useEffect, useState } from "react";
 import { registeredTeamsQueryOptions, registrationInfoQueryOptions } from "@/lib/tournament-query";
 import { formatDeadline } from "@/lib/xlsx-export";
+import { sitePricesQueryOptions } from "@/lib/prices.functions";
 
 const TOTAL_SPOTS = 30;
 
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/register")({
     Promise.all([
       context.queryClient.ensureQueryData(registrationInfoQueryOptions),
       context.queryClient.ensureQueryData(registeredTeamsQueryOptions),
+      context.queryClient.ensureQueryData(sitePricesQueryOptions),
     ]),
   component: RegisterPage,
 });
@@ -47,6 +49,7 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const info = useSuspenseQuery(registrationInfoQueryOptions).data;
   const teams = useSuspenseQuery(registeredTeamsQueryOptions).data;
+  const prices = useSuspenseQuery(sitePricesQueryOptions).data;
   const filled = Math.min(teams.length, TOTAL_SPOTS);
   const pct = Math.round((filled / TOTAL_SPOTS) * 100);
   const left = TOTAL_SPOTS - filled;
@@ -140,7 +143,7 @@ function RegisterPage() {
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-card p-3">
                     <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">Fee</dt>
-                    <dd className="font-display text-xl font-bold">800 kr</dd>
+                    <dd className="font-display text-xl font-bold">{prices.registrationPrice} kr</dd>
                     <dd className="text-xs text-muted-foreground">per team</dd>
                   </div>
                   <div className="rounded-lg bg-card p-3">

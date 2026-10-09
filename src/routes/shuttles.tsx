@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Package, ShieldCheck, Smartphone, Truck } from "lucide-react";
 import { shuttleOrdersQueryOptions } from "@/lib/tournament-query";
 import { submitShuttleOrder } from "@/lib/extras.functions";
+import { sitePricesQueryOptions } from "@/lib/prices.functions";
 
 export const Route = createFileRoute("/shuttles")({
   head: () => ({
@@ -34,7 +35,11 @@ export const Route = createFileRoute("/shuttles")({
     links: [{ rel: "canonical", href: "https://www.motionsserien.se/shuttles" }],
   }),
 
-  loader: ({ context }) => context.queryClient.ensureQueryData(shuttleOrdersQueryOptions),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(shuttleOrdersQueryOptions),
+      context.queryClient.ensureQueryData(sitePricesQueryOptions),
+    ]),
   component: ShuttlesPage,
 });
 
@@ -42,6 +47,7 @@ const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font
 
 function ShuttlesPage() {
   const { data } = useSuspenseQuery(shuttleOrdersQueryOptions);
+  const prices = useSuspenseQuery(sitePricesQueryOptions).data;
   const queryClient = useQueryClient();
   const send = useServerFn(submitShuttleOrder);
 
@@ -146,7 +152,7 @@ function ShuttlesPage() {
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg bg-card p-3">
                 <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">Price</dt>
-                <dd className="font-display text-xl font-bold">135 kr</dd>
+                <dd className="font-display text-xl font-bold">{prices.shuttlePrice} kr</dd>
                 <dd className="text-xs text-muted-foreground">per box</dd>
               </div>
               <div className="rounded-lg bg-card p-3">

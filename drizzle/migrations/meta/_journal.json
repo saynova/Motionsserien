@@ -64,6 +64,13 @@
       "when": 1791367335493,
       "tag": "0008_correct_registered_team_rename",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791559049074,
+      "tag": "0009_add_site_prices",
+      "breakpoints": true
     }
   ]
 }
