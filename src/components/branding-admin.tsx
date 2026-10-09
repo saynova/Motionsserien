@@ -71,21 +71,6 @@ export function BrandingAdmin() {
           </span>
         </label>
       </div>
-      <div className="rounded-xl border border-border p-4">
-        <label className="flex items-start gap-3">
-          <Switch
-            checked={form.showMissingBanner}
-            onCheckedChange={(v) => setForm({ ...form, showMissingBanner: v })}
-          />
-          <span>
-            <span className="block text-sm font-semibold">Show the &quot;Missing scores&quot; box on the standings page</span>
-            <span className="block text-xs text-muted-foreground">
-              The red box lists matches with no score yet, between Tuesday and Thursday morning.
-              Turn it off to hide it from everyone.
-            </span>
-          </span>
-        </label>
-      </div>
       <div className="rounded-xl border border-dashed border-border p-4">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Header preview</p>
         <p className="mt-1 font-display text-2xl font-bold">
