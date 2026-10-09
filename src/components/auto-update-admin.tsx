@@ -227,7 +227,7 @@ function StageBlock({
   const save = useServerFn(saveAutoUpdateSettings);
 
   const [enabled, setEnabled] = useState(initialEnabled);
-  const [offsetDays, setOffsetDays] = useState(initialOffset);
+  const [offsetDays, setOffsetDays] = useState(stage === "schedule" ? 6 : initialOffset);
   const [time, setTime] = useState(initialTime);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -279,12 +279,15 @@ function StageBlock({
             disabled={!enabled}
             onChange={(event) => setOffsetDays(Number(event.target.value))}
           >
-            {DAY_CHOICES.map((choice) => (
+            {(stage === "schedule" ? DAY_CHOICES.filter((c) => c.value === 6) : DAY_CHOICES).map((choice) => (
               <option key={choice.value} value={choice.value}>
                 {choice.label}
               </option>
             ))}
           </select>
+          {stage === "schedule" && (
+            <span className="block text-xs text-muted-foreground">Next week's schedule is always made on Sunday, before Monday's games.</span>
+          )}
         </label>
         <label className="space-y-1">
           <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
