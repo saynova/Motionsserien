@@ -12,6 +12,7 @@ import {
 } from "@/lib/auto-update.functions";
 import { memoriesQueryOptions } from "@/lib/tournament-query";
 import { setHomepage, type Homepage } from "@/lib/memories.functions";
+import { setSitePrices, sitePricesQueryOptions } from "@/lib/prices.functions";
 import { getScoreUnlockSettings, saveScoreUnlock, saveWeeklyScoreWindow } from "@/lib/tournament.functions";
 
 const control = "rounded border border-input bg-card px-3 py-2 text-sm font-medium";
@@ -554,6 +555,57 @@ function HomepageBlock() {
         </select>
         <button type="button" className={btn} disabled={!memories.data || busy} onClick={persist}>
           {busy ? "Saving…" : "Save homepage"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PricesBlock() {
+  const queryClient = useQueryClient();
+  const prices = useQuery(sitePricesQueryOptions);
+  const save = useServerFn(setSitePrices);
+  const [shuttle, setShuttle] = useState("");
+  const [reg, setReg] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (prices.data) {
+      setShuttle(String(prices.data.shuttlePrice));
+      setReg(String(prices.data.registrationPrice));
+    }
+  }, [prices.data]);
+
+  async function persist() {
+    setBusy(true);
+    try {
+      await save({ data: { shuttlePrice: Number(shuttle), registrationPrice: Number(reg) } });
+      await queryClient.invalidateQueries({ queryKey: ["site-prices"] });
+      toast.success("Prices saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save the prices.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="border-b border-border pb-8 pt-8">
+      <h3 className="text-lg font-bold tracking-tight">Prices</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Shown in the "Pay with Swish" boxes on the Shuttles and Registration pages.
+      </p>
+      <div className="mt-3 flex flex-wrap items-end gap-3">
+        <label className="text-sm font-medium">
+          <span className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Shuttle box (kr)</span>
+          <input type="number" min={0} step={1} className={`${control} w-36`} value={shuttle} disabled={!prices.data || busy} onChange={(e) => setShuttle(e.target.value)} />
+        </label>
+        <label className="text-sm font-medium">
+          <span className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Registration per team (kr)</span>
+          <input type="number" min={0} step={1} className={`${control} w-36`} value={reg} disabled={!prices.data || busy} onChange={(e) => setReg(e.target.value)} />
+        </label>
+        <button type="button" className={btn} disabled={!prices.data || busy} onClick={persist}>
+          {busy ? "Saving…" : "Save prices"}
         </button>
       </div>
     </div>
