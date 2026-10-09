@@ -1,0 +1,1 @@
+ALTER TABLE public.site_support_settings ADD COLUMN IF NOT EXISTS shuttle_price integer NOT NULL DEFAULT 135, ADD COLUMN IF NOT EXISTS registration_price integer NOT NULL DEFAULT 800;
