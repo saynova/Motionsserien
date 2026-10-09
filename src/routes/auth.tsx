@@ -58,6 +58,7 @@ function AuthPage() {
     setMode(next);
     setSent(null);
     setVerifying(false);
+    setVerifyType("signup");
     setCode("");
   }
 
@@ -89,6 +90,7 @@ function AuthPage() {
           );
         }
         if (error) throw error;
+        setVerifyType("signup");
         setVerifying(true);
         toast.success("We've emailed you a verification code.");
       } else {

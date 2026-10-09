@@ -54,6 +54,12 @@ function RegisterPage() {
   const pct = Math.round((filled / TOTAL_SPOTS) * 100);
   const left = TOTAL_SPOTS - filled;
   const [showRules, setShowRules] = useState(false);
+  useEffect(() => {
+    if (window.location.hash === "#rules") {
+      setShowRules(true);
+      setTimeout(() => document.getElementById("rules")?.scrollIntoView({ behavior: "smooth" }), 50);
+    }
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -98,7 +104,7 @@ function RegisterPage() {
             <p className="mt-2 text-xs text-muted-foreground">
               {left > 0 ? `${left} spots left · first come, first served` : "All spots filled — new teams join the waitlist"}
             </p>
-            {info.isOpen && (
+            {(
               <button
                 type="button"
                 onClick={() => setShowRules((v) => !v)}
@@ -114,7 +120,7 @@ function RegisterPage() {
         </div>
       </section>
 
-      {info.isOpen && showRules && <RulesToPlay />}
+      {showRules && <RulesToPlay />}
 
 
 
