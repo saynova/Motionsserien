@@ -46,6 +46,7 @@ export function AutoUpdateAdmin() {
       </p>
 
       <HomepageBlock />
+      <PricesBlock />
 
       <CheckTimetable />
 
