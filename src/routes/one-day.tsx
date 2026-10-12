@@ -208,8 +208,8 @@ function RegistrationForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const bad = [["Player 1", form.email], ["Player 2", form.player2Email]].find(
-      ([, v]) => !v.trim().toLowerCase().endsWith(ONEDAY_EMAIL_DOMAIN),
+    const bad = ([["Player 1", form.email], ["Player 2", form.player2Email]] as const).find(
+      ([, v]) => !(v ?? "").trim().toLowerCase().endsWith(ONEDAY_EMAIL_DOMAIN),
     );
     if (bad) return setError(`${bad[0]} must use a Hitachi Energy work email ending in ${ONEDAY_EMAIL_DOMAIN}.`);
     if (!category) return setError("Please choose Men or Women.");
