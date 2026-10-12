@@ -521,7 +521,9 @@ export type Database = {
           payment_status: string
           phone: string
           player1_name: string
+          player2_email: string
           player2_name: string
+          player2_phone: string
           seen_by_admin: boolean
           status: string
           team_name: string
@@ -536,7 +538,9 @@ export type Database = {
           payment_status?: string
           phone: string
           player1_name: string
+          player2_email?: string
           player2_name: string
+          player2_phone?: string
           seen_by_admin?: boolean
           status?: string
           team_name: string
@@ -551,7 +555,9 @@ export type Database = {
           payment_status?: string
           phone?: string
           player1_name?: string
+          player2_email?: string
           player2_name?: string
+          player2_phone?: string
           seen_by_admin?: boolean
           status?: string
           team_name?: string
@@ -562,6 +568,7 @@ export type Database = {
       oneday_settings: {
         Row: {
           created_at: string
+          eligibility_notice: string
           event_date: string
           id: string
           is_open: boolean
@@ -577,6 +584,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          eligibility_notice?: string
           event_date?: string
           id?: string
           is_open?: boolean
@@ -592,6 +600,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          eligibility_notice?: string
           event_date?: string
           id?: string
           is_open?: boolean
