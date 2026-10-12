@@ -1,0 +1,2 @@
+ALTER TABLE public.oneday_registrations ADD COLUMN player2_email text NOT NULL DEFAULT '', ADD COLUMN player2_phone text NOT NULL DEFAULT '';
+ALTER TABLE public.oneday_settings ADD COLUMN eligibility_notice text NOT NULL DEFAULT 'Only for Hitachi Energy Employees.';

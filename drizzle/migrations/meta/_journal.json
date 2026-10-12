@@ -71,6 +71,13 @@
       "when": 1791559049074,
       "tag": "0009_add_site_prices",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791811380499,
+      "tag": "0010_oneday_player2_contact_notice",
+      "breakpoints": true
     }
   ]
 }

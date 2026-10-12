@@ -2,11 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Wallet } from "lucide-react";
+import { BadgeCheck, CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
-import { submitOnedayRegistration } from "@/lib/oneday.functions";
+import { ONEDAY_EMAIL_DOMAIN, submitOnedayRegistration } from "@/lib/oneday.functions";
 import { formatOnedayDate, onedayInfoQueryOptions, onedayTeamsQueryOptions } from "@/lib/oneday-query";
 import { formatDeadline } from "@/lib/xlsx-export";
 
@@ -70,6 +70,12 @@ function OneDayPage() {
 
   return (
     <div className="space-y-8">
+      {info.eligibilityNotice ? (
+        <div role="note" className="flex items-center justify-center gap-3 rounded-2xl border-2 border-primary bg-primary/10 px-5 py-4 text-center">
+          <BadgeCheck className="size-6 shrink-0 text-primary" aria-hidden="true" />
+          <p className="font-display text-lg font-bold text-primary sm:text-xl">{info.eligibilityNotice}</p>
+        </div>
+      ) : null}
       <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/15 via-card to-accent/10 p-6 sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">One-day tournament</p>
         <h1 className="mt-2 max-w-3xl font-display text-3xl font-bold leading-tight sm:text-5xl">{info.name}</h1>
@@ -187,7 +193,7 @@ const labelCls = "mb-1 block text-xs font-semibold uppercase tracking-widest tex
 function RegistrationForm() {
   const submit = useServerFn(submitOnedayRegistration);
   const queryClient = useQueryClient();
-  const [form, setForm] = useState({ teamName: "", player1Name: "", player2Name: "", email: "", phone: "" });
+  const [form, setForm] = useState({ teamName: "", player1Name: "", player2Name: "", email: "", phone: "", player2Email: "", player2Phone: "" });
   const [category, setCategory] = useState<"" | "men" | "women">("");
   const [level, setLevel] = useState<"" | "intermediate" | "advanced">("");
   const [payment, setPayment] = useState<"" | "paid" | "unpaid">("");
@@ -202,6 +208,10 @@ function RegistrationForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const bad = ([["Player 1", form.email], ["Player 2", form.player2Email]] as const).find(
+      ([, v]) => !(v ?? "").trim().toLowerCase().endsWith(ONEDAY_EMAIL_DOMAIN),
+    );
+    if (bad) return setError(`${bad[0]} must use a Hitachi Energy work email ending in ${ONEDAY_EMAIL_DOMAIN}.`);
     if (!category) return setError("Please choose Men or Women.");
     if (category === "men" && !level) return setError("Please choose your level.");
     if (!payment) return setError("Please choose your payment status.");
@@ -258,12 +268,23 @@ function RegistrationForm() {
           <input id="od-p2" className={field} required maxLength={80} value={form.player2Name} onChange={set("player2Name")} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="od-email">Email</label>
-          <input id="od-email" type="email" autoComplete="email" className={field} required maxLength={255} value={form.email} onChange={set("email")} />
+          <label className={labelCls} htmlFor="od-email">Player 1 email</label>
+          <input id="od-email" type="email" autoComplete="email" placeholder="name@hitachienergy.com" className={field} required maxLength={255} value={form.email} onChange={set("email")} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="od-phone">Phone</label>
+          <label className={labelCls} htmlFor="od-email2">Player 2 email</label>
+          <input id="od-email2" type="email" placeholder="name@hitachienergy.com" className={field} required maxLength={255} value={form.player2Email} onChange={set("player2Email")} />
+        </div>
+        <p className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-medium text-primary sm:col-span-2">
+          Only @hitachienergy.com email addresses are accepted. Both players must use their Hitachi Energy work email addresses to register.
+        </p>
+        <div>
+          <label className={labelCls} htmlFor="od-phone">Player 1 phone</label>
           <input id="od-phone" type="tel" autoComplete="tel" className={field} required maxLength={25} value={form.phone} onChange={set("phone")} />
+        </div>
+        <div>
+          <label className={labelCls} htmlFor="od-phone2">Player 2 phone</label>
+          <input id="od-phone2" type="tel" className={field} required maxLength={25} value={form.player2Phone} onChange={set("player2Phone")} />
         </div>
       </div>
       <Choice
