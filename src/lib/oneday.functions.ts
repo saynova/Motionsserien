@@ -13,6 +13,7 @@ export type OnedayInfo = {
   maxApproved: number | null;
   maxTotal: number | null;
   registrationDeadline: string;
+  eligibilityNotice: string;
   full?: boolean;
 };
 
@@ -21,6 +22,8 @@ export type OnedayPublicTeam = { id: string; team_name: string; player1_name: st
 export type OnedayRegistration = OnedayPublicTeam & {
   email: string;
   phone: string;
+  player2_email: string;
+  player2_phone: string;
   status: "pending" | "approved" | "rejected";
   payment_status: "paid" | "unpaid";
   seen_by_admin: boolean;
@@ -53,7 +56,7 @@ async function readSettings() {
   const supabase = await db();
   const { data, error } = await supabase
     .from("oneday_settings")
-    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label, max_approved_teams, max_total_registrations, registration_deadline")
+    .select("id, visible, is_open, name, event_date, venue, payment_details, menu_label, max_approved_teams, max_total_registrations, registration_deadline, eligibility_notice")
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -72,6 +75,7 @@ export const getOnedayInfo = createServerFn({ method: "GET" }).handler(async ():
     maxApproved: s?.max_approved_teams ?? null,
     maxTotal: s?.max_total_registrations ?? null,
     registrationDeadline: s?.registration_deadline ?? "",
+    eligibilityNotice: s?.eligibility_notice ?? "",
     visible: s?.visible ?? false,
     isOpen: (s?.visible ?? false) && (s?.is_open ?? false) && !full,
     name: s?.name ?? "One-day badminton tournament",
@@ -97,17 +101,34 @@ export const getOnedayApprovedTeams = createServerFn({ method: "GET" }).handler(
   },
 );
 
+export const ONEDAY_EMAIL_DOMAIN = "@hitachienergy.com";
+function hitachiEmail(who: string) {
+  return z
+    .string()
+    .trim()
+    .email(`Enter a valid email for ${who}`)
+    .max(255)
+    .refine((v) => v.toLowerCase().endsWith(ONEDAY_EMAIL_DOMAIN), {
+      message: `${who} must use a Hitachi Energy work email ending in ${ONEDAY_EMAIL_DOMAIN}`,
+    });
+}
+function phoneField(who: string) {
+  return z
+    .string()
+    .trim()
+    .min(6, `Enter a valid phone number for ${who}`)
+    .max(25)
+    .regex(/^[0-9+()\-\s]+$/, `Enter a valid phone number for ${who}`);
+}
+
 const registrationSchema = z.object({
   teamName: z.string().trim().min(2, "Team name is too short").max(60),
   player1Name: z.string().trim().min(2, "Enter Player 1's name").max(80),
   player2Name: z.string().trim().min(2, "Enter Player 2's name").max(80),
-  email: z.string().trim().email("Enter a valid email").max(255),
-  phone: z
-    .string()
-    .trim()
-    .min(6, "Enter a valid phone number")
-    .max(25)
-    .regex(/^[0-9+()\-\s]+$/, "Enter a valid phone number"),
+  email: hitachiEmail("Player 1"),
+  phone: phoneField("Player 1"),
+  player2Email: hitachiEmail("Player 2"),
+  player2Phone: phoneField("Player 2"),
   category: z.enum(["men", "women"], { errorMap: () => ({ message: "Choose Men or Women" }) }),
   level: z.enum(["intermediate", "advanced"]).optional(),
   paymentStatus: z.enum(["paid", "unpaid"], { errorMap: () => ({ message: "Choose your payment status" }) }),
@@ -131,6 +152,8 @@ export const submitOnedayRegistration = createServerFn({ method: "POST" })
       player2_name: data.player2Name,
       email: data.email.toLowerCase(),
       phone: data.phone,
+      player2_email: data.player2Email.toLowerCase(),
+      player2_phone: data.player2Phone,
       category: data.category,
       level: data.category === "women" ? "intermediate" : (data.level ?? "intermediate"),
       payment_status: data.paymentStatus,
@@ -158,6 +181,7 @@ export const getOnedaySettingsAdmin = createServerFn({ method: "GET" }).handler(
     maxApproved: s?.max_approved_teams ?? null,
     maxTotal: s?.max_total_registrations ?? null,
     registrationDeadline: s?.registration_deadline ?? "",
+    eligibilityNotice: s?.eligibility_notice ?? "",
   };
 });
 
@@ -172,6 +196,7 @@ const settingsSchema = z.object({
   maxApproved: z.number().int().min(1).max(1000).nullable(),
   maxTotal: z.number().int().min(1).max(1000).nullable(),
   registrationDeadline: z.string().trim().max(40).default(""),
+  eligibilityNotice: z.string().trim().max(200).default(""),
 });
 
 export const updateOnedaySettings = createServerFn({ method: "POST" })
@@ -190,6 +215,7 @@ export const updateOnedaySettings = createServerFn({ method: "POST" })
       max_approved_teams: data.maxApproved,
       max_total_registrations: data.maxTotal,
       registration_deadline: data.registrationDeadline || null,
+      eligibility_notice: data.eligibilityNotice,
     };
     const result = existing
       ? await supabase.from("oneday_settings").update(payload).eq("id", existing.id)
@@ -203,7 +229,7 @@ export const listOnedayRegistrations = createServerFn({ method: "GET" }).handler
     const supabase = await admin();
     const { data, error } = await supabase
       .from("oneday_registrations")
-      .select("id, team_name, player1_name, player2_name, email, phone, status, level, category, payment_status, seen_by_admin, created_at")
+      .select("id, team_name, player1_name, player2_name, email, phone, player2_email, player2_phone, status, level, category, payment_status, seen_by_admin, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as OnedayRegistration[];
@@ -227,7 +253,7 @@ export const setOnedayStatus = createServerFn({ method: "POST" })
       .from("oneday_registrations")
       .update({ status: data.status, seen_by_admin: true })
       .eq("id", data.id)
-      .select("team_name, email")
+      .select("team_name, email, player2_email")
       .single();
     if (error) throw new Error(error.message);
     if (data.status !== "pending" && prev?.status !== data.status) {
@@ -238,7 +264,7 @@ export const setOnedayStatus = createServerFn({ method: "POST" })
         status: data.status,
         tournamentName: settings?.name || "One-day badminton tournament",
         teamName: reg.team_name,
-        emails: [reg.email],
+        emails: [reg.email, reg.player2_email].filter((e, i, a) => e && a.indexOf(e) === i),
         key: `oneday-${data.id}`,
         oneDay: true,
       });
@@ -267,10 +293,15 @@ async function exportData() {
   const s = await readSettings();
   const { data, error } = await supabase
     .from("oneday_registrations")
-    .select("team_name, player1_name, player2_name, email, phone, status, level, category, payment_status, created_at")
+    .select("team_name, player1_name, player2_name, email, phone, player2_email, player2_phone, status, level, category, payment_status, created_at")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
-  return { rows: data ?? [], meta: { name: s?.name ?? "", eventDate: s?.event_date ?? "", venue: s?.venue ?? "" } };
+  const rows = (data ?? []).map(({ player2_email, player2_phone, ...r }) => ({
+    ...r,
+    email: [r.email, player2_email].filter(Boolean).join(" / "),
+    phone: [r.phone, player2_phone].filter(Boolean).join(" / "),
+  }));
+  return { rows, meta: { name: s?.name ?? "", eventDate: s?.event_date ?? "", venue: s?.venue ?? "" } };
 }
 
 export const exportOnedayCsv = createServerFn({ method: "POST" }).handler(async () => {

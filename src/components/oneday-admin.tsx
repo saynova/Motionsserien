@@ -56,7 +56,7 @@ function SettingsTab() {
   const { data } = useQuery(onedaySettingsAdminQueryOptions);
   const save = useServerFn(updateOnedaySettings);
   const qc = useQueryClient();
-  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day", maxApproved: null as number | null, maxTotal: null as number | null, registrationDeadline: "" });
+  const [form, setForm] = useState({ visible: false, isOpen: false, name: "", eventDate: "", venue: "", paymentDetails: "", menuLabel: "One-day", maxApproved: null as number | null, maxTotal: null as number | null, registrationDeadline: "", eligibilityNotice: "" });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (data) setForm(data);
@@ -167,7 +167,7 @@ function RegistrationsTab() {
           { header: "Email", width: 30 }, { header: "Phone", width: 16 }, { header: "Category / Level", width: 20 },
           { header: "Payment", width: 11 }, { header: "Status", width: 12 }, { header: "Registered", width: 17 },
         ],
-        rows: data.map((r, i) => [i + 1, r.team_name, r.player1_name, r.player2_name, r.email, r.phone, lvl(r), r.payment_status === "paid" ? "Paid" : "Unpaid", r.status.charAt(0).toUpperCase() + r.status.slice(1), stockholm(r.created_at)]),
+        rows: data.map((r, i) => [i + 1, r.team_name, r.player1_name, r.player2_name, [r.email, r.player2_email].filter(Boolean).join(" / "), [r.phone, r.player2_phone].filter(Boolean).join(" / "), lvl(r), r.payment_status === "paid" ? "Paid" : "Unpaid", r.status.charAt(0).toUpperCase() + r.status.slice(1), stockholm(r.created_at)]),
         paymentCol: 7,
       });
     } catch (e) {
@@ -255,8 +255,10 @@ function RegistrationsTab() {
                   </td>
                   <td className="px-3 py-2">{r.player1_name} &amp; {r.player2_name}</td>
                   <td className="px-3 py-2 text-xs">
-                    <div>{r.email}</div>
+                    <div>P1: {r.email}</div>
                     <div className="text-muted-foreground">{r.phone}</div>
+                    {r.player2_email ? <div>P2: {r.player2_email}</div> : null}
+                    {r.player2_phone ? <div className="text-muted-foreground">{r.player2_phone}</div> : null}
                   </td>
                   <td className="px-3 py-2 capitalize">
                     {r.category === "women" ? "Women" : `Men · ${r.level}`}
