@@ -97,6 +97,10 @@ function SettingsTab() {
         <input className={field} maxLength={80} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
       </div>
       <div>
+        <label className={labelCls}>Notice at the top of the page (e.g. who may take part — empty = hidden)</label>
+        <input className={field} maxLength={200} value={form.eligibilityNotice} onChange={(e) => setForm((f) => ({ ...f, eligibilityNotice: e.target.value }))} />
+      </div>
+      <div>
         <label className={labelCls}>Menu name (replaces "Register" in the menu while the event is shown)</label>
         <input className={field} maxLength={24} value={form.menuLabel} onChange={(e) => setForm((f) => ({ ...f, menuLabel: e.target.value }))} />
       </div>
