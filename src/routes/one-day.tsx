@@ -70,15 +70,20 @@ function OneDayPage() {
 
   return (
     <div className="space-y-8">
-      {info.eligibilityNotice ? (
-        <div role="note" className="flex items-center justify-center gap-3 rounded-2xl border-2 border-primary bg-primary/10 px-5 py-4 text-center">
-          <BadgeCheck className="size-6 shrink-0 text-primary" aria-hidden="true" />
-          <p className="font-display text-lg font-bold text-primary sm:text-xl">{info.eligibilityNotice}</p>
-        </div>
-      ) : null}
       <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/15 via-card to-accent/10 p-6 sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">One-day tournament</p>
-        <h1 className="mt-2 max-w-3xl font-display text-3xl font-bold leading-tight sm:text-5xl">{info.name}</h1>
+        <h1 className="mt-2 font-display font-bold leading-tight [font-size:clamp(1.5rem,3.9vw,3rem)] sm:whitespace-nowrap">
+          {info.name}
+        </h1>
+        {info.eligibilityNotice ? (
+          <p
+            role="note"
+            className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 font-display text-sm font-bold text-primary sm:text-base"
+          >
+            <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
+            <span>{info.eligibilityNotice}</span>
+          </p>
+        ) : null}
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {info.eventDate ? (
