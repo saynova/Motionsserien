@@ -330,3 +330,106 @@ export const setOnedayPayment = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+// ------------------------------------------------------------------ partner requests
+
+export type OnedayPartnerRequest = {
+  id: string; name: string; email: string; phone: string;
+  category: "men" | "women"; level: "intermediate" | "advanced";
+  note: string; status: "open" | "matched"; created_at: string;
+};
+
+export const getOnedayPartnerOpen = createServerFn({ method: "GET" }).handler(async () => {
+  const s = await readSettings();
+  const supabase = await db();
+  const { data } = s
+    ? await supabase.from("oneday_settings").select("partner_requests_open").eq("id", s.id).maybeSingle()
+    : { data: null };
+  return { open: !!s?.visible && !!s?.is_open && (data?.partner_requests_open ?? true) };
+});
+
+export const submitOnedayPartnerRequest = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z.object({
+      name: z.string().trim().min(2, "Enter your name").max(80),
+      email: hitachiEmail("Your email"),
+      phone: phoneField("you"),
+      category: z.enum(["men", "women"]),
+      level: z.enum(["intermediate", "advanced"]).optional(),
+      note: z.string().trim().max(500).default(""),
+      acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms" }) }),
+      website: z.string().max(0).optional().default(""),
+    }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const s = await readSettings();
+    const supabase = await db();
+    const { data: p } = s ? await supabase.from("oneday_settings").select("partner_requests_open").eq("id", s.id).maybeSingle() : { data: null };
+    if (!s?.visible || !s.is_open || p?.partner_requests_open === false) throw new Error("Partner requests are closed.");
+    const { error } = await supabase.from("oneday_partner_requests").insert({
+      name: data.name, email: data.email.toLowerCase(), phone: data.phone, category: data.category,
+      level: data.category === "women" ? "intermediate" : (data.level ?? "intermediate"), note: data.note,
+    });
+    if (error) throw new Error("Could not send your request. Please try again.");
+    return { ok: true as const };
+  });
+
+export const listOnedayPartnerRequests = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = await admin();
+  const s = await readSettings();
+  const [{ data, error }, { data: st }] = await Promise.all([
+    supabase.from("oneday_partner_requests").select("id, name, email, phone, category, level, note, status, created_at").order("created_at", { ascending: true }),
+    s ? supabase.from("oneday_settings").select("partner_requests_open").eq("id", s.id).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  if (error) throw new Error(error.message);
+  return { open: st?.partner_requests_open ?? true, requests: (data ?? []) as OnedayPartnerRequest[] };
+});
+
+export const setOnedayPartnerOpen = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ open: z.boolean() }).parse(data))
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const s = await readSettings();
+    if (!s) throw new Error("Save the event settings first.");
+    const { error } = await supabase.from("oneday_settings").update({ partner_requests_open: data.open }).eq("id", s.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const deleteOnedayPartnerRequest = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { error } = await supabase.from("oneday_partner_requests").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const matchOnedayPartners = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z.object({
+      firstId: z.string().uuid(), secondId: z.string().uuid(),
+      teamName: z.string().trim().min(2, "Team name is too short").max(60),
+    }).refine((d) => d.firstId !== d.secondId, { message: "Pick two different players" }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const supabase = await admin();
+    const { data: rows, error } = await supabase.from("oneday_partner_requests").select("*").in("id", [data.firstId, data.secondId]);
+    if (error) throw new Error(error.message);
+    const a = rows?.find((r) => r.id === data.firstId);
+    const b = rows?.find((r) => r.id === data.secondId);
+    if (!a || !b) throw new Error("Request not found.");
+    if (a.status !== "open" || b.status !== "open") throw new Error("One of these players is already matched.");
+    const category = a.category === "women" && b.category === "women" ? "women" : "men";
+    const level = a.level === "advanced" || b.level === "advanced" ? "advanced" : "intermediate";
+    const { data: reg, error: e2 } = await supabase.from("oneday_registrations").insert({
+      team_name: data.teamName, player1_name: a.name, player2_name: b.name,
+      email: a.email, phone: a.phone, player2_email: b.email, player2_phone: b.phone,
+      category, level, payment_status: "unpaid", seen_by_admin: true,
+    }).select("id").single();
+    if (e2) throw new Error(e2.code === "23505" ? "That team name is already registered." : e2.message);
+    const { error: e3 } = await supabase.from("oneday_partner_requests")
+      .update({ status: "matched", registration_id: reg.id }).in("id", [a.id, b.id]).eq("status", "open");
+    if (e3) throw new Error(e3.message);
+    return { ok: true as const };
+  });
