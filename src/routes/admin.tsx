@@ -1468,6 +1468,30 @@ function ShuttleAdmin() {
                 <span className="rounded border border-border bg-card px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {order.status}
                 </span>
+                <span
+                  className={`rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                    order.payment_status === "paid"
+                      ? "border border-up/40 bg-up/10 text-up"
+                      : "border border-destructive/40 bg-destructive/10 text-destructive"
+                  }`}
+                >
+                  {order.payment_status === "paid" ? "Paid" : "Unpaid"}
+                </span>
+                <button
+                  className={btnGhost}
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () =>
+                        setPaid({
+                          data: { orderId: order.id, paid: order.payment_status !== "paid" },
+                        }),
+                      order.payment_status === "paid" ? "Marked as unpaid." : "Marked as paid.",
+                    )
+                  }
+                >
+                  {order.payment_status === "paid" ? "Mark unpaid" : "Mark paid"}
+                </button>
                 {order.status === "pending" ? (
                   <button
                     className={btnGhost}

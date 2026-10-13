@@ -204,6 +204,15 @@ function ShuttlesPage() {
                     <p className="truncate font-semibold">{order.team_name}</p>
                     <p className="truncate text-xs text-muted-foreground">{order.buyer_name}</p>
                   </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                      order.payment_status === "paid"
+                        ? "border border-up/40 bg-up/10 text-up"
+                        : "border border-destructive/40 bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    {order.payment_status === "paid" ? "Paid" : "Unpaid"}
+                  </span>
                   <span className="tabnum shrink-0 rounded-full border border-border bg-secondary/60 px-2 py-0.5 text-[11px] font-bold">
                     {order.quantity} box{order.quantity === 1 ? "" : "es"}
                   </span>
