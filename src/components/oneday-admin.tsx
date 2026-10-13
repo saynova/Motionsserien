@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   deleteOnedayRegistration,
+  deleteOnedayPartnerRequest,
+  listOnedayPartnerRequests,
+  matchOnedayPartners,
+  setOnedayPartnerOpen,
   exportOnedayPdf,
   markOnedaySeen,
   setOnedayStatus,
@@ -44,7 +48,7 @@ export function OnedayAdmin() {
           </button>
         ))}
       </div>
-      {tab === "settings" ? <SettingsTab /> : <RegistrationsTab />}
+      {tab === "settings" ? <><SettingsTab /><PartnerRequestsAdmin /></> : <RegistrationsTab />}
     </div>
   );
 }
@@ -308,6 +312,71 @@ function RegistrationsTab() {
           </table>
         </div>
       )}
+    </section>
+  );
+}
+
+function PartnerRequestsAdmin() {
+  const qc = useQueryClient();
+  const list = useServerFn(listOnedayPartnerRequests);
+  const { data } = useQuery({ queryKey: ["oneday", "partners-admin"], queryFn: () => list() });
+  const setOpen = useServerFn(setOnedayPartnerOpen);
+  const match = useServerFn(matchOnedayPartners);
+  const remove = useServerFn(deleteOnedayPartnerRequest);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [teamName, setTeamName] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function act(fn: () => Promise<unknown>, msg: string) {
+    setBusy(true);
+    try {
+      await fn();
+      toast.success(msg);
+      void qc.invalidateQueries({ queryKey: ["oneday"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Action failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!data) return null;
+  const open = data.requests.filter((r) => r.status === "open");
+  const matched = data.requests.filter((r) => r.status === "matched");
+  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id].slice(-2)));
+  return (
+    <section className="space-y-4 rounded-lg border border-border bg-card p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="font-semibold">Find me a partner</p>
+          <p className="text-xs text-muted-foreground">Shows the "Find me a partner" form on the One-day page while registration is open.</p>
+        </div>
+        <Switch checked={data.open} disabled={busy} onCheckedChange={(v) => act(() => setOpen({ data: { open: v } }), v ? "Partner requests on" : "Partner requests off")} />
+      </div>
+      <p className="text-sm font-semibold">Waiting for a partner ({open.length})</p>
+      {open.length === 0 ? <p className="text-sm text-muted-foreground">No open requests.</p> : (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {open.map((r) => (
+            <li key={r.id} className={`rounded-md border p-3 text-sm ${picked.includes(r.id) ? "border-primary bg-primary/5" : "border-border"}`}>
+              <label className="flex items-start gap-2">
+                <input type="checkbox" className="mt-1" checked={picked.includes(r.id)} onChange={() => toggle(r.id)} />
+                <span className="min-w-0">
+                  <span className="block font-semibold">{r.name} <span className="text-xs font-normal text-muted-foreground">· {r.category === "women" ? "Women" : `Men · ${r.level}`}</span></span>
+                  <span className="block text-xs">{r.email} · {r.phone}</span>
+                  {r.note ? <span className="block text-xs text-muted-foreground">{r.note}</span> : null}
+                </span>
+              </label>
+              <Button size="sm" variant="ghost" className="mt-1" disabled={busy} onClick={() => { if (confirm(`Delete ${r.name}'s request?`)) void act(() => remove({ data: { id: r.id } }), "Request deleted"); }}>Delete request</Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex flex-wrap items-end gap-2 rounded-md border border-dashed border-border p-3">
+        <div className="min-w-48 flex-1">
+          <label className={labelCls}>Team name for the 2 selected players</label>
+          <input className={field} maxLength={60} value={teamName} onChange={(e) => setTeamName(e.target.value)} />
+        </div>
+        <Button disabled={busy || picked.length !== 2 || teamName.trim().length < 2} onClick={() => act(async () => { await match({ data: { firstId: picked[0], secondId: picked[1], teamName } }); setPicked([]); setTeamName(""); }, "Team created — approve it under Registrations")}>Create team</Button>
+      </div>
+      {matched.length ? <p className="text-xs text-muted-foreground">Matched: {matched.map((r) => r.name).join(", ")}</p> : null}
     </section>
   );
 }
