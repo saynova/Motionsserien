@@ -1399,6 +1399,7 @@ function ShuttleAdmin() {
   const orders = useQuery(adminShuttleOrdersQueryOptions);
   const approve = useServerFn(approveShuttleOrders);
   const remove = useServerFn(deleteShuttleOrder);
+  const setPaid = useServerFn(setShuttleOrderPaid);
   const [busy, setBusy] = useState(false);
 
   const rows = orders.data ?? [];
@@ -1406,6 +1407,7 @@ function ShuttleAdmin() {
   const approvedTotal = rows
     .filter((o) => o.status === "approved")
     .reduce((sum, o) => sum + o.quantity, 0);
+  const unpaidApproved = rows.filter((o) => o.status === "approved" && o.payment_status !== "paid").length;
 
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true);

@@ -111,6 +111,9 @@ function ShuttlesPage() {
 
           <form onSubmit={onSubmit} className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
             <h2 className="font-display text-lg font-bold">Order form</h2>
+            <p className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-semibold">
+              Please make the payment with Swish before placing the order.
+            </p>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Team name</label>
               <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} maxLength={60} required />
