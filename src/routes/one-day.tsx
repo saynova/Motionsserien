@@ -2,11 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { BadgeCheck, CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Wallet } from "lucide-react";
+import { BadgeCheck, CalendarDays, CheckCircle2, Clock, MapPin, Trophy, Users, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RegistrationEmailReminder } from "@/components/registration-email-reminder";
-import { ONEDAY_EMAIL_DOMAIN, submitOnedayRegistration } from "@/lib/oneday.functions";
+import { ONEDAY_EMAIL_DOMAIN, getOnedayPartnerOpen, submitOnedayPartnerRequest, submitOnedayRegistration } from "@/lib/oneday.functions";
 import { formatOnedayDate, onedayInfoQueryOptions, onedayTeamsQueryOptions } from "@/lib/oneday-query";
 import { formatDeadline } from "@/lib/xlsx-export";
 
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/one-day")({
     Promise.all([
       context.queryClient.ensureQueryData(onedayInfoQueryOptions),
       context.queryClient.ensureQueryData(onedayTeamsQueryOptions),
+      context.queryClient.ensureQueryData({ queryKey: ["oneday", "partner-open"], queryFn: () => getOnedayPartnerOpen() }),
     ]),
   errorComponent: () => <p className="p-6 text-sm text-muted-foreground">Could not load the event. Please refresh.</p>,
   notFoundComponent: () => <p className="p-6 text-sm text-muted-foreground">Page not found.</p>,
@@ -57,6 +58,8 @@ function OneDayPage() {
   const info = useSuspenseQuery(onedayInfoQueryOptions).data;
   const teams = useSuspenseQuery(onedayTeamsQueryOptions).data;
   const countdown = useCountdown(info.eventDate);
+  const partnerOpen = useSuspenseQuery({ queryKey: ["oneday", "partner-open"], queryFn: () => getOnedayPartnerOpen() }).data.open;
+  const [mode, setMode] = useState<"team" | "partner">("team");
 
   if (!info.visible) {
     return (
@@ -125,8 +128,16 @@ function OneDayPage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,32rem)_1fr]">
         <div className="space-y-4" id="register">
+          {info.isOpen && partnerOpen ? (
+            <div className="inline-flex rounded-lg border border-border bg-card p-1" role="tablist">
+              {([["team", "Register a team"], ["partner", "Find me a partner"]] as const).map(([id, l]) => (
+                <button key={id} type="button" role="tab" aria-selected={mode === id} onClick={() => setMode(id)}
+                  className={`rounded-md px-3 py-1.5 text-sm font-semibold ${mode === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}>{l}</button>
+              ))}
+            </div>
+          ) : null}
           {info.isOpen ? (
-            <RegistrationForm />
+            mode === "partner" && partnerOpen ? <OnedayPartnerForm /> : <RegistrationForm />
           ) : (
             <div className="rounded-xl border border-border bg-card p-6">
               <h2 className="font-display text-xl font-bold">Registration is closed</h2>
@@ -375,5 +386,94 @@ function Choice({
       </div>
       {note ? <p className="mt-1.5 text-xs text-muted-foreground">{note}</p> : null}
     </fieldset>
+  );
+}
+
+function OnedayPartnerForm() {
+  const submit = useServerFn(submitOnedayPartnerRequest);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", note: "" });
+  const [category, setCategory] = useState<"" | "men" | "women">("");
+  const [level, setLevel] = useState<"" | "intermediate" | "advanced">("");
+  const [terms, setTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!form.email.trim().toLowerCase().endsWith(ONEDAY_EMAIL_DOMAIN))
+      return setError(`Please use your Hitachi Energy work email ending in ${ONEDAY_EMAIL_DOMAIN}.`);
+    if (!category) return setError("Please choose Men or Women.");
+    if (category === "men" && !level) return setError("Please choose your level.");
+    if (!terms) return setError("Please accept the Terms & Conditions.");
+    setBusy(true);
+    try {
+      await submit({ data: { ...form, category, level: category === "men" ? level : undefined, acceptTerms: true } });
+      setDone(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      try {
+        const parsed = JSON.parse(msg);
+        setError(Array.isArray(parsed) ? parsed[0]?.message : msg);
+      } catch {
+        setError(msg);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="space-y-3 rounded-xl border border-up/40 bg-up/10 p-6 text-sm" role="status">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-up" aria-hidden="true" />
+          <div className="min-w-0 space-y-1">
+            <h2 className="font-display text-xl font-bold">Thanks — your request has been received</h2>
+            <p className="text-muted-foreground">The organiser will pair you with a partner and contact you by email.</p>
+          </div>
+        </div>
+        <RegistrationEmailReminder />
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4 rounded-xl border border-border bg-card p-5 sm:p-6">
+      <div>
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Users className="size-5 text-primary" aria-hidden="true" /> Find me a partner</h2>
+        <p className="mt-1 text-sm text-muted-foreground">No partner yet? Send a request and the organiser will match you with another player.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className={labelCls} htmlFor="odp-name">Your name</label>
+          <input id="odp-name" className={field} required maxLength={80} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+        </div>
+        <div>
+          <label className={labelCls} htmlFor="odp-phone">Phone</label>
+          <input id="odp-phone" type="tel" className={field} required maxLength={25} value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+        </div>
+        <div className="sm:col-span-2">
+          <label className={labelCls} htmlFor="odp-email">Work email</label>
+          <input id="odp-email" type="email" placeholder="name@hitachienergy.com" className={field} required maxLength={255} value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+        </div>
+      </div>
+      <Choice label="Category" value={category} onChange={(v) => setCategory(v as "men" | "women")} options={[{ value: "men", label: "Men" }, { value: "women", label: "Women" }]} />
+      {category === "men" ? (
+        <Choice label="Level" value={level} onChange={(v) => setLevel(v as "intermediate" | "advanced")} options={[{ value: "intermediate", label: "Intermediate" }, { value: "advanced", label: "Advanced" }]} />
+      ) : null}
+      <div>
+        <label className={labelCls} htmlFor="odp-note">Note (optional)</label>
+        <textarea id="odp-note" rows={3} maxLength={500} className={field} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} />
+      </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+        <span>I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.</span>
+      </label>
+      {error ? <p className="text-sm font-medium text-destructive" role="alert">{error}</p> : null}
+      <Button type="submit" className="w-full" disabled={busy}>{busy ? "Sending…" : "Send request"}</Button>
+      <p className="text-xs text-muted-foreground">Your details are private and only seen by the organiser.</p>
+    </form>
   );
 }
