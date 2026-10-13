@@ -225,9 +225,10 @@ export const getShuttleOrders = createServerFn({ method: "GET" }).handler(
 );
 
 export const submitShuttleOrder = createServerFn({ method: "POST" })
-  .inputValidator((data: { teamName: string; buyerName: string; quantity: number; paid: boolean }) => {
+  .inputValidator((data: { teamName: string; buyerName: string; email: string; quantity: number; paid: boolean }) => {
     const teamName = (data?.teamName ?? "").trim();
     const buyerName = (data?.buyerName ?? "").trim();
+    const email = (data?.email ?? "").trim().toLowerCase();
     const quantity = Number(data?.quantity);
     if (teamName.length < 2 || teamName.length > 60) {
       throw new Error("Enter a team name (2–60 characters).");
@@ -235,10 +236,13 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     if (buyerName.length < 2 || buyerName.length > 60) {
       throw new Error("Enter the buyer's name (2–60 characters).");
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
+      throw new Error("Enter a valid email address for the order confirmation.");
+    }
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1) {
       throw new Error("Maximum 1 shuttle box per team within one week.");
     }
-    return { teamName, buyerName, quantity, paid: data?.paid === true };
+    return { teamName, buyerName, email, quantity, paid: data?.paid === true };
   })
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
