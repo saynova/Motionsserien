@@ -284,13 +284,14 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     if (data.paid && inserted?.id) {
       try {
         const { sendTemplateEmail } = await import("./email-templates/send-email");
-        const { getSitePrices } = await import("./prices.functions");
         let price: number | undefined;
-        try {
-          price = (await getSitePrices()).shuttlePrice;
-        } catch {
-          price = undefined;
-        }
+        const priceRow = await supabase
+          .from("site_support_settings")
+          .select("shuttle_price")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        price = priceRow.data?.shuttle_price ?? 135;
         await sendTemplateEmail("shuttle-order-confirmation", data.email, {
           templateData: {
             teamName: data.teamName,
