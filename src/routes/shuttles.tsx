@@ -54,6 +54,7 @@ function ShuttlesPage() {
   const [teamName, setTeamName] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [quantity, setQuantity] = useState("1");
+  const [paid, setPaid] = useState(true);
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -61,7 +62,7 @@ function ShuttlesPage() {
     event.preventDefault();
     setBusy(true);
     try {
-      await send({ data: { teamName, buyerName, quantity: Number(quantity) } });
+      await send({ data: { teamName, buyerName, quantity: Number(quantity), paid } });
       toast.success("Order sent. It appears in the list once an admin approves it.");
       setTeamName("");
       setBuyerName("");
