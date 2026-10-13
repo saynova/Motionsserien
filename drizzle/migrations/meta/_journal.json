@@ -92,6 +92,13 @@
       "when": 1791881240585,
       "tag": "0012_add_shuttle_order_payment_status",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791895882921,
+      "tag": "0013_add_shuttle_order_buyer_email",
+      "breakpoints": true
     }
   ]
 }

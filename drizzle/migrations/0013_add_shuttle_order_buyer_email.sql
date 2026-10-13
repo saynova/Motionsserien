@@ -1,0 +1,1 @@
+ALTER TABLE public.shuttle_orders ADD COLUMN buyer_email text;
