@@ -72,6 +72,7 @@ import { sendScoreReminder } from "@/lib/reminders.functions";
 import {
   approveShuttleOrders,
   deleteShuttleOrder,
+  setShuttleOrderPaid,
   saveBanner,
   saveSupportSettings,
 } from "@/lib/extras.functions";
@@ -1398,6 +1399,7 @@ function ShuttleAdmin() {
   const orders = useQuery(adminShuttleOrdersQueryOptions);
   const approve = useServerFn(approveShuttleOrders);
   const remove = useServerFn(deleteShuttleOrder);
+  const setPaid = useServerFn(setShuttleOrderPaid);
   const [busy, setBusy] = useState(false);
 
   const rows = orders.data ?? [];
@@ -1405,6 +1407,7 @@ function ShuttleAdmin() {
   const approvedTotal = rows
     .filter((o) => o.status === "approved")
     .reduce((sum, o) => sum + o.quantity, 0);
+  const unpaidApproved = rows.filter((o) => o.status === "approved" && o.payment_status !== "paid").length;
 
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true);
@@ -1425,6 +1428,12 @@ function ShuttleAdmin() {
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Orders appear in the public list only after approval. Approved so far: {approvedTotal}{" "}
         shuttles.
+        {unpaidApproved > 0 ? (
+          <span className="font-semibold text-destructive">
+            {" "}
+            {unpaidApproved} approved order{unpaidApproved === 1 ? "" : "s"} still unpaid.
+          </span>
+        ) : null}
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -1459,6 +1468,30 @@ function ShuttleAdmin() {
                 <span className="rounded border border-border bg-card px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {order.status}
                 </span>
+                <span
+                  className={`rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                    order.payment_status === "paid"
+                      ? "border border-up/40 bg-up/10 text-up"
+                      : "border border-destructive/40 bg-destructive/10 text-destructive"
+                  }`}
+                >
+                  {order.payment_status === "paid" ? "Paid" : "Unpaid"}
+                </span>
+                <button
+                  className={btnGhost}
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () =>
+                        setPaid({
+                          data: { orderId: order.id, paid: order.payment_status !== "paid" },
+                        }),
+                      order.payment_status === "paid" ? "Marked as unpaid." : "Marked as paid.",
+                    )
+                  }
+                >
+                  {order.payment_status === "paid" ? "Mark unpaid" : "Mark paid"}
+                </button>
                 {order.status === "pending" ? (
                   <button
                     className={btnGhost}

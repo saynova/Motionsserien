@@ -23,6 +23,7 @@ export type ShuttleOrder = {
   buyer_name: string;
   quantity: number;
   status: string;
+  payment_status: string;
   created_at: string;
 };
 
@@ -33,12 +34,13 @@ export type PublicShuttleOrder = {
   buyer_name: string;
   quantity: number;
   status: string;
+  payment_status: string;
   created_at: string;
 };
 
 const BANNER_COLUMNS = "id, title, message, is_active";
-const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
-const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, created_at";
+const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, payment_status, created_at";
+const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, payment_status, created_at";
 const SUPPORT_COLUMNS = "id, donation_visible, sponsor_visible, sponsor_label, sponsor_details, qr_image_path";
 
 // ------------------------------------------------------------------- banner
@@ -309,6 +311,23 @@ export const deleteShuttleOrder = createServerFn({ method: "POST" })
     await requireAdmin();
     const { adminClient } = await import("./tournament.server");
     const { error } = await adminClient().from("shuttle_orders").delete().eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const setShuttleOrderPaid = createServerFn({ method: "POST" })
+  .inputValidator((data: { orderId: string; paid: boolean }) => ({
+    orderId: data?.orderId,
+    paid: data?.paid === true,
+  }))
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient()
+      .from("shuttle_orders")
+      .update({ payment_status: data.paid ? "paid" : "unpaid" })
+      .eq("id", data.orderId);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });

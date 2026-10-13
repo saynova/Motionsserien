@@ -999,6 +999,7 @@ export type Database = {
           buyer_name: string
           created_at: string
           id: string
+          payment_status: string
           quantity: number
           status: string
           team_name: string
@@ -1008,6 +1009,7 @@ export type Database = {
           buyer_name: string
           created_at?: string
           id?: string
+          payment_status?: string
           quantity?: number
           status?: string
           team_name: string
@@ -1017,6 +1019,7 @@ export type Database = {
           buyer_name?: string
           created_at?: string
           id?: string
+          payment_status?: string
           quantity?: number
           status?: string
           team_name?: string

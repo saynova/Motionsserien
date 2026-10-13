@@ -1,0 +1,2 @@
+ALTER TABLE public.shuttle_orders ADD COLUMN payment_status text not null default 'unpaid';
+ALTER TABLE public.shuttle_orders ADD CONSTRAINT shuttle_orders_payment_status_check CHECK (payment_status IN ('paid', 'unpaid'));

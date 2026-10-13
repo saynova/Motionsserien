@@ -111,6 +111,9 @@ function ShuttlesPage() {
 
           <form onSubmit={onSubmit} className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
             <h2 className="font-display text-lg font-bold">Order form</h2>
+            <p className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-semibold">
+              Please make the payment with Swish before placing the order.
+            </p>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Team name</label>
               <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} maxLength={60} required />
@@ -160,6 +163,9 @@ function ShuttlesPage() {
                 <dd className="tabnum font-display text-xl font-bold">1234785069</dd>
               </div>
             </dl>
+            <p className="mt-3 rounded-lg bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
+              Please make the payment before placing the order.
+            </p>
             <p className="mt-3 flex items-start gap-2 rounded-lg bg-card p-3 text-sm">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
               <span>
@@ -198,6 +204,15 @@ function ShuttlesPage() {
                     <p className="truncate font-semibold">{order.team_name}</p>
                     <p className="truncate text-xs text-muted-foreground">{order.buyer_name}</p>
                   </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                      order.payment_status === "paid"
+                        ? "border border-up/40 bg-up/10 text-up"
+                        : "border border-destructive/40 bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    {order.payment_status === "paid" ? "Paid" : "Unpaid"}
+                  </span>
                   <span className="tabnum shrink-0 rounded-full border border-border bg-secondary/60 px-2 py-0.5 text-[11px] font-bold">
                     {order.quantity} box{order.quantity === 1 ? "" : "es"}
                   </span>
