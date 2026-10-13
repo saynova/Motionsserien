@@ -314,3 +314,20 @@ export const deleteShuttleOrder = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+export const setShuttleOrderPaid = createServerFn({ method: "POST" })
+  .inputValidator((data: { orderId: string; paid: boolean }) => ({
+    orderId: data?.orderId,
+    paid: data?.paid === true,
+  }))
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient()
+      .from("shuttle_orders")
+      .update({ payment_status: data.paid ? "paid" : "unpaid" })
+      .eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
