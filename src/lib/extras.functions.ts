@@ -267,14 +267,43 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       );
     }
 
-    const { error } = await supabase.from("shuttle_orders").insert({
-      team_name: data.teamName,
-      buyer_name: data.buyerName,
-      quantity: data.quantity,
-      status: "pending",
-      payment_status: data.paid ? "paid" : "unpaid",
-    });
+    const { data: inserted, error } = await supabase
+      .from("shuttle_orders")
+      .insert({
+        team_name: data.teamName,
+        buyer_name: data.buyerName,
+        buyer_email: data.email,
+        quantity: data.quantity,
+        status: "pending",
+        payment_status: data.paid ? "paid" : "unpaid",
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
+
+    if (data.paid && inserted?.id) {
+      try {
+        const { sendTemplateEmail } = await import("./email-templates/send-email");
+        const { getSitePrices } = await import("./prices.functions");
+        let price: number | undefined;
+        try {
+          price = (await getSitePrices()).shuttlePrice;
+        } catch {
+          price = undefined;
+        }
+        await sendTemplateEmail("shuttle-order-confirmation", data.email, {
+          templateData: {
+            teamName: data.teamName,
+            buyerName: data.buyerName,
+            quantity: data.quantity,
+            price,
+          },
+          idempotencyKey: `shuttle-order-${inserted.id}`,
+        });
+      } catch (emailError) {
+        console.error("Shuttle order confirmation email failed:", emailError);
+      }
+    }
     return { ok: true as const };
   });
 
