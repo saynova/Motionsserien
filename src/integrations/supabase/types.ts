@@ -511,6 +511,56 @@ export type Database = {
         }
         Relationships: []
       }
+      oneday_partner_requests: {
+        Row: {
+          category: string
+          created_at: string
+          email: string
+          id: string
+          level: string
+          name: string
+          note: string
+          phone: string
+          registration_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          email: string
+          id?: string
+          level?: string
+          name: string
+          note?: string
+          phone: string
+          registration_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          email?: string
+          id?: string
+          level?: string
+          name?: string
+          note?: string
+          phone?: string
+          registration_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oneday_partner_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "oneday_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oneday_registrations: {
         Row: {
           category: string
@@ -576,6 +626,7 @@ export type Database = {
           max_total_registrations: number | null
           menu_label: string
           name: string
+          partner_requests_open: boolean
           payment_details: string
           registration_deadline: string | null
           updated_at: string
@@ -592,6 +643,7 @@ export type Database = {
           max_total_registrations?: number | null
           menu_label?: string
           name?: string
+          partner_requests_open?: boolean
           payment_details?: string
           registration_deadline?: string | null
           updated_at?: string
@@ -608,6 +660,7 @@ export type Database = {
           max_total_registrations?: number | null
           menu_label?: string
           name?: string
+          partner_requests_open?: boolean
           payment_details?: string
           registration_deadline?: string | null
           updated_at?: string
