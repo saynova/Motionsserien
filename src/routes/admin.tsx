@@ -72,6 +72,7 @@ import { sendScoreReminder } from "@/lib/reminders.functions";
 import {
   approveShuttleOrders,
   deleteShuttleOrder,
+  setShuttleOrderPaid,
   saveBanner,
   saveSupportSettings,
 } from "@/lib/extras.functions";
