@@ -204,9 +204,6 @@ function ShuttlesPage() {
                 <dd className="tabnum font-display text-xl font-bold">1234785069</dd>
               </div>
             </dl>
-            <p className="mt-3 rounded-lg bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
-              Please make the payment before placing the order.
-            </p>
             <p className="mt-3 flex items-start gap-2 rounded-lg bg-card p-3 text-sm">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
               <span>
