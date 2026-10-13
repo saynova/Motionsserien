@@ -224,7 +224,7 @@ export const getShuttleOrders = createServerFn({ method: "GET" }).handler(
 );
 
 export const submitShuttleOrder = createServerFn({ method: "POST" })
-  .inputValidator((data: { teamName: string; buyerName: string; quantity: number }) => {
+  .inputValidator((data: { teamName: string; buyerName: string; quantity: number; paid: boolean }) => {
     const teamName = (data?.teamName ?? "").trim();
     const buyerName = (data?.buyerName ?? "").trim();
     const quantity = Number(data?.quantity);
@@ -237,7 +237,7 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1) {
       throw new Error("Maximum 1 shuttle box per team within one week.");
     }
-    return { teamName, buyerName, quantity };
+    return { teamName, buyerName, quantity, paid: data?.paid === true };
   })
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
@@ -267,6 +267,7 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       buyer_name: data.buyerName,
       quantity: data.quantity,
       status: "pending",
+      payment_status: data.paid ? "paid" : "unpaid",
     });
     if (error) throw new Error(error.message);
     return { ok: true as const };

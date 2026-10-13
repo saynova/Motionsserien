@@ -54,6 +54,7 @@ function ShuttlesPage() {
   const [teamName, setTeamName] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [quantity, setQuantity] = useState("1");
+  const [paid, setPaid] = useState(true);
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -61,7 +62,7 @@ function ShuttlesPage() {
     event.preventDefault();
     setBusy(true);
     try {
-      await send({ data: { teamName, buyerName, quantity: Number(quantity) } });
+      await send({ data: { teamName, buyerName, quantity: Number(quantity), paid } });
       toast.success("Order sent. It appears in the list once an admin approves it.");
       setTeamName("");
       setBuyerName("");
@@ -125,6 +126,35 @@ function ShuttlesPage() {
             <div>
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Number of shuttle Box</label>
               <input className={`${field} tabnum`} type="number" min={1} max={1} value={quantity} onChange={() => setQuantity("1")} readOnly required />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Payment</label>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment status">
+                <button
+                  type="button"
+                  onClick={() => setPaid(true)}
+                  aria-pressed={paid}
+                  className={`rounded-lg border px-3 py-2 text-sm font-bold transition-all ${
+                    paid
+                      ? "border-up/50 bg-up/10 text-up"
+                      : "border-border bg-card text-muted-foreground hover:border-up/40"
+                  }`}
+                >
+                  Paid (Swish sent)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaid(false)}
+                  aria-pressed={!paid}
+                  className={`rounded-lg border px-3 py-2 text-sm font-bold transition-all ${
+                    !paid
+                      ? "border-destructive/50 bg-destructive/10 text-destructive"
+                      : "border-border bg-card text-muted-foreground hover:border-destructive/40"
+                  }`}
+                >
+                  Unpaid (will pay)
+                </button>
+              </div>
             </div>
             <label className="flex items-start gap-2 text-sm">
               <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
