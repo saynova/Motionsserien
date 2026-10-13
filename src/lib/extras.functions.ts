@@ -21,6 +21,7 @@ export type ShuttleOrder = {
   id: string;
   team_name: string;
   buyer_name: string;
+  buyer_email: string | null;
   quantity: number;
   status: string;
   payment_status: string;
@@ -39,7 +40,7 @@ export type PublicShuttleOrder = {
 };
 
 const BANNER_COLUMNS = "id, title, message, is_active";
-const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, payment_status, created_at";
+const ORDER_COLUMNS = "id, team_name, buyer_name, buyer_email, quantity, status, payment_status, created_at";
 const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, payment_status, created_at";
 const SUPPORT_COLUMNS = "id, donation_visible, sponsor_visible, sponsor_label, sponsor_details, qr_image_path";
 
@@ -224,9 +225,10 @@ export const getShuttleOrders = createServerFn({ method: "GET" }).handler(
 );
 
 export const submitShuttleOrder = createServerFn({ method: "POST" })
-  .inputValidator((data: { teamName: string; buyerName: string; quantity: number; paid: boolean }) => {
+  .inputValidator((data: { teamName: string; buyerName: string; email: string; quantity: number; paid: boolean }) => {
     const teamName = (data?.teamName ?? "").trim();
     const buyerName = (data?.buyerName ?? "").trim();
+    const email = (data?.email ?? "").trim().toLowerCase();
     const quantity = Number(data?.quantity);
     if (teamName.length < 2 || teamName.length > 60) {
       throw new Error("Enter a team name (2–60 characters).");
@@ -234,10 +236,13 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
     if (buyerName.length < 2 || buyerName.length > 60) {
       throw new Error("Enter the buyer's name (2–60 characters).");
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
+      throw new Error("Enter a valid email address for the order confirmation.");
+    }
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1) {
       throw new Error("Maximum 1 shuttle box per team within one week.");
     }
-    return { teamName, buyerName, quantity, paid: data?.paid === true };
+    return { teamName, buyerName, email, quantity, paid: data?.paid === true };
   })
   .handler(async ({ data }) => {
     const { adminClient } = await import("./tournament.server");
@@ -262,14 +267,44 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       );
     }
 
-    const { error } = await supabase.from("shuttle_orders").insert({
-      team_name: data.teamName,
-      buyer_name: data.buyerName,
-      quantity: data.quantity,
-      status: "pending",
-      payment_status: data.paid ? "paid" : "unpaid",
-    });
+    const { data: inserted, error } = await supabase
+      .from("shuttle_orders")
+      .insert({
+        team_name: data.teamName,
+        buyer_name: data.buyerName,
+        buyer_email: data.email,
+        quantity: data.quantity,
+        status: "pending",
+        payment_status: data.paid ? "paid" : "unpaid",
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
+
+    if (data.paid && inserted?.id) {
+      try {
+        const { sendTemplateEmail } = await import("./email-templates/send-email");
+        let price: number | undefined;
+        const priceRow = await supabase
+          .from("site_support_settings")
+          .select("shuttle_price")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        price = priceRow.data?.shuttle_price ?? 135;
+        await sendTemplateEmail("shuttle-order-confirmation", data.email, {
+          templateData: {
+            teamName: data.teamName,
+            buyerName: data.buyerName,
+            quantity: data.quantity,
+            price,
+          },
+          idempotencyKey: `shuttle-order-${inserted.id}`,
+        });
+      } catch (emailError) {
+        console.error("Shuttle order confirmation email failed:", emailError);
+      }
+    }
     return { ok: true as const };
   });
 

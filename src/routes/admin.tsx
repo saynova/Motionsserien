@@ -1462,6 +1462,9 @@ function ShuttleAdmin() {
               <div>
                 <span className="font-semibold">{order.team_name}</span>
                 <span className="text-muted-foreground"> · {order.buyer_name}</span>
+                {order.buyer_email ? (
+                  <span className="text-muted-foreground"> · {order.buyer_email}</span>
+                ) : null}
                 <span className="tabnum font-semibold"> · {order.quantity} shuttles</span>
               </div>
               <div className="flex items-center gap-2">

@@ -53,6 +53,7 @@ function ShuttlesPage() {
 
   const [teamName, setTeamName] = useState("");
   const [buyerName, setBuyerName] = useState("");
+  const [email, setEmail] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [paid, setPaid] = useState(true);
   const [accepted, setAccepted] = useState(false);
@@ -62,10 +63,15 @@ function ShuttlesPage() {
     event.preventDefault();
     setBusy(true);
     try {
-      await send({ data: { teamName, buyerName, quantity: Number(quantity), paid } });
-      toast.success("Order sent. It appears in the list once an admin approves it.");
+      await send({ data: { teamName, buyerName, email, quantity: Number(quantity), paid } });
+      toast.success(
+        paid
+          ? "Order sent. A confirmation email is on its way — show it to the General when collecting."
+          : "Order sent. It appears in the list once an admin approves it.",
+      );
       setTeamName("");
       setBuyerName("");
+      setEmail("");
       setQuantity("1");
       await queryClient.invalidateQueries({ queryKey: ["shuttle-orders"] });
     } catch (error) {
@@ -122,6 +128,11 @@ function ShuttlesPage() {
             <div>
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Buyer name</label>
               <input className={field} value={buyerName} onChange={(e) => setBuyerName(e.target.value)} maxLength={60} required />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Your email</label>
+              <input className={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={120} required />
+              <p className="mt-1 text-xs text-muted-foreground">Paid orders get a confirmation email — show it to the General when collecting.</p>
             </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Number of shuttle Box</label>

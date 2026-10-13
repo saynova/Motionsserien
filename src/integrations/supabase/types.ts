@@ -996,6 +996,7 @@ export type Database = {
       }
       shuttle_orders: {
         Row: {
+          buyer_email: string | null
           buyer_name: string
           created_at: string
           id: string
@@ -1006,6 +1007,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          buyer_email?: string | null
           buyer_name: string
           created_at?: string
           id?: string
@@ -1016,6 +1018,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          buyer_email?: string | null
           buyer_name?: string
           created_at?: string
           id?: string
