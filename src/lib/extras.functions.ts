@@ -21,6 +21,7 @@ export type ShuttleOrder = {
   id: string;
   team_name: string;
   buyer_name: string;
+  buyer_email: string | null;
   quantity: number;
   status: string;
   payment_status: string;
@@ -39,7 +40,7 @@ export type PublicShuttleOrder = {
 };
 
 const BANNER_COLUMNS = "id, title, message, is_active";
-const ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, payment_status, created_at";
+const ORDER_COLUMNS = "id, team_name, buyer_name, buyer_email, quantity, status, payment_status, created_at";
 const PUBLIC_ORDER_COLUMNS = "id, team_name, buyer_name, quantity, status, payment_status, created_at";
 const SUPPORT_COLUMNS = "id, donation_visible, sponsor_visible, sponsor_label, sponsor_details, qr_image_path";
 
