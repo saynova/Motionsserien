@@ -1428,6 +1428,12 @@ function ShuttleAdmin() {
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Orders appear in the public list only after approval. Approved so far: {approvedTotal}{" "}
         shuttles.
+        {unpaidApproved > 0 ? (
+          <span className="font-semibold text-destructive">
+            {" "}
+            {unpaidApproved} approved order{unpaidApproved === 1 ? "" : "s"} still unpaid.
+          </span>
+        ) : null}
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
