@@ -74,6 +74,8 @@ import {
   deleteShuttleOrder,
   setShuttleOrderPaid,
   adminCreateShuttleOrder,
+  listBlockedShuttleTeams,
+  unblockShuttleTeam,
   saveBanner,
   saveSupportSettings,
 } from "@/lib/extras.functions";
@@ -1402,6 +1404,8 @@ function ShuttleAdmin() {
   const remove = useServerFn(deleteShuttleOrder);
   const setPaid = useServerFn(setShuttleOrderPaid);
   const createOrder = useServerFn(adminCreateShuttleOrder);
+  const unblock = useServerFn(unblockShuttleTeam);
+  const blocked = useQuery({ queryKey: ["shuttle-orders", "blocked"], queryFn: () => listBlockedShuttleTeams() });
   const [busy, setBusy] = useState(false);
   const [newTeam, setNewTeam] = useState("");
   const [newBuyer, setNewBuyer] = useState("");
@@ -1454,6 +1458,36 @@ function ShuttleAdmin() {
         >
           Approve all pending ({pending.length})
         </button>
+      </div>
+
+      <div className="mt-4 rounded border border-destructive/40 bg-destructive/5 p-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-destructive">
+          Blocked teams (unpaid orders)
+        </p>
+        {(blocked.data ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No teams are blocked.</p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {(blocked.data ?? []).map((b) => (
+              <li key={b.team} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span>
+                  <span className="font-semibold">{b.team}</span>{" "}
+                  <span className="text-muted-foreground">
+                    — {b.orders} unpaid order{b.orders === 1 ? "" : "s"}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className={btnGhost}
+                  disabled={busy}
+                  onClick={() => run(() => unblock({ data: { team: b.team } }), `${b.team} unlocked.`)}
+                >
+                  Unlock
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <form

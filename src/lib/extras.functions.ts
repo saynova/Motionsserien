@@ -372,6 +372,49 @@ export const adminCreateShuttleOrder = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/** Admin: teams currently blocked by unpaid shuttle orders. */
+export const listBlockedShuttleTeams = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ team: string; orders: number }[]> => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { data, error } = await adminClient()
+      .from("shuttle_orders")
+      .select("team_name")
+      .eq("payment_status", "unpaid")
+      .eq("block_waived", false);
+    if (error) throw new Error(error.message);
+    const map = new Map<string, { team: string; orders: number }>();
+    for (const o of data ?? []) {
+      const key = o.team_name.trim().toLowerCase();
+      const cur = map.get(key) ?? { team: o.team_name, orders: 0 };
+      cur.orders += 1;
+      map.set(key, cur);
+    }
+    return [...map.values()].sort((a, b) => a.team.localeCompare(b.team));
+  },
+);
+
+/** Admin: unlock a team — its existing unpaid orders no longer block new purchases. */
+export const unblockShuttleTeam = createServerFn({ method: "POST" })
+  .inputValidator((data: { team: string }) => {
+    const team = (data?.team ?? "").trim();
+    if (!team) throw new Error("Missing team.");
+    return { team };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient()
+      .from("shuttle_orders")
+      .update({ block_waived: true })
+      .ilike("team_name", data.team)
+      .eq("payment_status", "unpaid");
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
 export const getAllShuttleOrders = createServerFn({ method: "GET" }).handler(
   async (): Promise<ShuttleOrder[]> => {
     const { requireAdmin } = await import("./admin-session.server");
