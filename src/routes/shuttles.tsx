@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Package, ShieldCheck, Smartphone, Truck } from "lucide-react";
-import { shuttleOrdersQueryOptions } from "@/lib/tournament-query";
+import { shuttleOrdersQueryOptions, shuttleTeamsQueryOptions } from "@/lib/tournament-query";
 import { submitShuttleOrder } from "@/lib/extras.functions";
 import { sitePricesQueryOptions } from "@/lib/prices.functions";
 
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/shuttles")({
     Promise.all([
       context.queryClient.ensureQueryData(shuttleOrdersQueryOptions),
       context.queryClient.ensureQueryData(sitePricesQueryOptions),
+      context.queryClient.ensureQueryData(shuttleTeamsQueryOptions),
     ]),
   component: ShuttlesPage,
 });
@@ -48,6 +49,7 @@ const field = "w-full rounded border border-input bg-card px-3 py-2 text-sm font
 function ShuttlesPage() {
   const { data } = useSuspenseQuery(shuttleOrdersQueryOptions);
   const prices = useSuspenseQuery(sitePricesQueryOptions).data;
+  const teams = useSuspenseQuery(shuttleTeamsQueryOptions).data;
   const queryClient = useQueryClient();
   const send = useServerFn(submitShuttleOrder);
 
@@ -58,6 +60,11 @@ function ShuttlesPage() {
   const [paid, setPaid] = useState(true);
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showList, setShowList] = useState(false);
+
+  const typed = teamName.trim().toLowerCase();
+  const selectedTeam = teams.find((t) => t.name.toLowerCase() === typed) ?? null;
+  const suggestions = typed ? teams.filter((t) => t.name.toLowerCase().includes(typed)).slice(0, 8) : teams.slice(0, 8);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -121,9 +128,50 @@ function ShuttlesPage() {
             <p className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-semibold">
               Please make the payment with Swish before placing the order.
             </p>
-            <div>
+            <div className="relative">
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Team name</label>
-              <input className={field} value={teamName} onChange={(e) => setTeamName(e.target.value)} maxLength={60} required />
+              <input
+                className={field}
+                value={teamName}
+                onChange={(e) => {
+                  setTeamName(e.target.value);
+                  setShowList(true);
+                }}
+                onFocus={() => setShowList(true)}
+                onBlur={() => setTimeout(() => setShowList(false), 150)}
+                placeholder="Start typing your team name"
+                autoComplete="off"
+                maxLength={60}
+                required
+              />
+              {showList && suggestions.length > 0 && !selectedTeam ? (
+                <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-border bg-card shadow-md">
+                  {suggestions.map((t) => (
+                    <li key={t.name}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setTeamName(t.name);
+                          setShowList(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-secondary"
+                      >
+                        {t.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {teamName.trim().length > 0 && !selectedTeam && !showList ? (
+                <p className="mt-1 text-xs font-semibold text-destructive">Please choose your team from the tournament list.</p>
+              ) : null}
+              {selectedTeam?.blocked ? (
+                <p className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+                  Your team is blocked from purchasing shuttles because of an unpaid order. Please{" "}
+                  <Link to="/ask" className="underline">contact the General</Link> if you think this is an error.
+                </p>
+              ) : null}
             </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-widest text-muted-foreground">Buyer name</label>
@@ -176,7 +224,7 @@ function ShuttlesPage() {
             </label>
             <button
               type="submit"
-              disabled={busy || !accepted}
+              disabled={busy || !accepted || !selectedTeam || selectedTeam.blocked}
               className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md disabled:translate-y-0 disabled:opacity-40"
             >
               {busy ? "Sending…" : "Order shuttles"}

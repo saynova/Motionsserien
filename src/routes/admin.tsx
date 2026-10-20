@@ -73,6 +73,7 @@ import {
   approveShuttleOrders,
   deleteShuttleOrder,
   setShuttleOrderPaid,
+  adminCreateShuttleOrder,
   saveBanner,
   saveSupportSettings,
 } from "@/lib/extras.functions";
@@ -1400,7 +1401,12 @@ function ShuttleAdmin() {
   const approve = useServerFn(approveShuttleOrders);
   const remove = useServerFn(deleteShuttleOrder);
   const setPaid = useServerFn(setShuttleOrderPaid);
+  const createOrder = useServerFn(adminCreateShuttleOrder);
   const [busy, setBusy] = useState(false);
+  const [newTeam, setNewTeam] = useState("");
+  const [newBuyer, setNewBuyer] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPaid, setNewPaid] = useState(true);
 
   const rows = orders.data ?? [];
   const pending = rows.filter((o) => o.status === "pending");
@@ -1449,6 +1455,31 @@ function ShuttleAdmin() {
           Approve all pending ({pending.length})
         </button>
       </div>
+
+      <form
+        className="mt-4 flex flex-wrap items-end gap-2 rounded border border-border bg-secondary/20 p-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          run(async () => {
+            await createOrder({ data: { teamName: newTeam, buyerName: newBuyer, email: newEmail, paid: newPaid } });
+            setNewTeam("");
+            setNewBuyer("");
+            setNewEmail("");
+          }, "Order added.");
+        }}
+      >
+        <p className="w-full text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          Add order (any team, also outside the tournament)
+        </p>
+        <input className={control} placeholder="Team name" value={newTeam} onChange={(e) => setNewTeam(e.target.value)} required />
+        <input className={control} placeholder="Buyer name" value={newBuyer} onChange={(e) => setNewBuyer(e.target.value)} required />
+        <input className={control} type="email" placeholder="Email (optional)" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+        <select className={control} value={newPaid ? "paid" : "unpaid"} onChange={(e) => setNewPaid(e.target.value === "paid")}>
+          <option value="paid">Paid</option>
+          <option value="unpaid">Unpaid</option>
+        </select>
+        <button type="submit" className={btn} disabled={busy}>Add order</button>
+      </form>
 
       {rows.length === 0 ? (
         <p className="mt-4 text-sm text-muted-foreground">No shuttle orders yet.</p>

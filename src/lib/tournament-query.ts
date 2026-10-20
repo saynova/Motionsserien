@@ -1,7 +1,12 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getAdminStatus, getTournament } from "./tournament.functions";
-import { getAllShuttleOrders, getBanner, getShuttleOrders, getSupportSettings } from "./extras.functions";
+import { getAllShuttleOrders, getBanner, getShuttleOrders, getShuttleTeamOptions, getSupportSettings } from "./extras.functions";
+
+export const shuttleTeamsQueryOptions = queryOptions({
+  queryKey: ["shuttle-orders", "teams"],
+  queryFn: () => getShuttleTeamOptions(),
+});
 import {
   getRegisteredTeams,
   getRegistrationInfo,

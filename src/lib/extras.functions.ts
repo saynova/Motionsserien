@@ -252,6 +252,25 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       throw new Error("Maximum 1 shuttle box per team in two weeks.");
     }
 
+    const teamRow = await supabase.from("teams").select("name").ilike("name", data.teamName).limit(1).maybeSingle();
+    if (teamRow.error) throw new Error(teamRow.error.message);
+    if (!teamRow.data) throw new Error("Please choose your team from the tournament list.");
+    data.teamName = teamRow.data.name;
+    const unpaidPrev = await supabase
+      .from("shuttle_orders")
+      .select("id")
+      .ilike("team_name", data.teamName)
+      .eq("payment_status", "unpaid")
+      .limit(1);
+    if (unpaidPrev.error) throw new Error(unpaidPrev.error.message);
+    if ((unpaidPrev.data ?? []).length > 0) {
+      throw new Error(
+        "Your team is blocked from purchasing shuttles because of an unpaid order. Please contact the General if you think this is an error.",
+      );
+    }
+
+
+
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const recent = await supabase
       .from("shuttle_orders")
@@ -305,6 +324,51 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
         console.error("Shuttle order confirmation email failed:", emailError);
       }
     }
+    return { ok: true as const };
+  });
+
+export const SHUTTLE_BLOCKED_MESSAGE =
+  "Your team is blocked from purchasing shuttles because of an unpaid order. Please contact the General if you think this is an error.";
+
+/** Public: tournament team names plus whether each is blocked by an unpaid order. */
+export const getShuttleTeamOptions = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ name: string; blocked: boolean }[]> => {
+    const { adminClient } = await import("./tournament.server");
+    const supabase = adminClient();
+    const [teams, unpaid] = await Promise.all([
+      supabase.from("teams").select("name").order("name"),
+      supabase.from("shuttle_orders").select("team_name").eq("payment_status", "unpaid"),
+    ]);
+    if (teams.error) throw new Error(teams.error.message);
+    if (unpaid.error) throw new Error(unpaid.error.message);
+    const blocked = new Set((unpaid.data ?? []).map((o) => o.team_name.trim().toLowerCase()));
+    return (teams.data ?? []).map((t) => ({ name: t.name, blocked: blocked.has(t.name.trim().toLowerCase()) }));
+  },
+);
+
+export const adminCreateShuttleOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: { teamName: string; buyerName: string; email?: string; paid: boolean }) => {
+    const teamName = (data?.teamName ?? "").trim();
+    const buyerName = (data?.buyerName ?? "").trim();
+    const email = (data?.email ?? "").trim().toLowerCase();
+    if (teamName.length < 2 || teamName.length > 60) throw new Error("Enter a team name (2–60 characters).");
+    if (buyerName.length < 2 || buyerName.length > 60) throw new Error("Enter the buyer's name (2–60 characters).");
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120)) throw new Error("Enter a valid email.");
+    return { teamName, buyerName, email: email || null, paid: data?.paid === true };
+  })
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("./admin-session.server");
+    await requireAdmin();
+    const { adminClient } = await import("./tournament.server");
+    const { error } = await adminClient().from("shuttle_orders").insert({
+      team_name: data.teamName,
+      buyer_name: data.buyerName,
+      buyer_email: data.email,
+      quantity: 1,
+      status: "approved",
+      payment_status: data.paid ? "paid" : "unpaid",
+    });
+    if (error) throw new Error(error.message);
     return { ok: true as const };
   });
 
