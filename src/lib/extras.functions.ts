@@ -260,7 +260,7 @@ export const submitShuttleOrder = createServerFn({ method: "POST" })
       .from("shuttle_orders")
       .select("id")
       .ilike("team_name", data.teamName)
-      .eq("payment_status", "unpaid")
+      .eq("payment_status", "unpaid").eq("block_waived", false)
       .limit(1);
     if (unpaidPrev.error) throw new Error(unpaidPrev.error.message);
     if ((unpaidPrev.data ?? []).length > 0) {
@@ -337,7 +337,7 @@ export const getShuttleTeamOptions = createServerFn({ method: "GET" }).handler(
     const supabase = adminClient();
     const [teams, unpaid] = await Promise.all([
       supabase.from("teams").select("name").order("name"),
-      supabase.from("shuttle_orders").select("team_name").eq("payment_status", "unpaid"),
+      supabase.from("shuttle_orders").select("team_name").eq("payment_status", "unpaid").eq("block_waived", false),
     ]);
     if (teams.error) throw new Error(teams.error.message);
     if (unpaid.error) throw new Error(unpaid.error.message);
