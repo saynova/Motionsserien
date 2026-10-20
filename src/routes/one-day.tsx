@@ -144,14 +144,6 @@ function OneDayPage() {
               <p className="mt-2 text-sm text-muted-foreground">Registration for this event is not open right now.</p>
             </div>
           )}
-          {info.paymentDetails ? (
-            <section className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-primary">
-                <Wallet className="size-5" aria-hidden="true" /> Fee &amp; payment
-              </h2>
-              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{info.paymentDetails}</p>
-            </section>
-          ) : null}
         </div>
 
         <section className="rounded-xl border border-border bg-card">
@@ -188,6 +180,19 @@ function OneDayPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function FeeBox() {
+  const info = useSuspenseQuery(onedayInfoQueryOptions).data;
+  if (!info.paymentDetails) return null;
+  return (
+    <section className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+      <h3 className="flex items-center gap-2 font-display text-base font-bold text-primary">
+        <Wallet className="size-5" aria-hidden="true" /> Fee &amp; payment
+      </h3>
+      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{info.paymentDetails}</p>
+    </section>
   );
 }
 
@@ -339,11 +344,12 @@ function RegistrationForm() {
           </>
         }
       />
+      <FeeBox />
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
         <span>
           I have read and accept the{" "}
-          <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
+          <Link to="/one-day-terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.
         </span>
       </label>
       {error ? <p className="text-sm font-medium text-destructive" role="alert">{error}</p> : null}
@@ -467,9 +473,10 @@ function OnedayPartnerForm() {
         <label className={labelCls} htmlFor="odp-note">Note (optional)</label>
         <textarea id="odp-note" rows={3} maxLength={500} className={field} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} />
       </div>
+      <FeeBox />
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
-        <span>I have read and accept the <Link to="/terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.</span>
+        <span>I have read and accept the <Link to="/one-day-terms" className="font-semibold text-primary underline">Terms &amp; Conditions</Link>.</span>
       </label>
       {error ? <p className="text-sm font-medium text-destructive" role="alert">{error}</p> : null}
       <Button type="submit" className="w-full" disabled={busy}>{busy ? "Sending…" : "Send request"}</Button>
