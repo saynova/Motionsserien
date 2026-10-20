@@ -1,0 +1,1 @@
+ALTER TABLE public.shuttle_orders ADD COLUMN IF NOT EXISTS block_waived boolean NOT NULL DEFAULT false;
