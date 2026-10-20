@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as OneDayRouteImport } from './routes/one-day'
+import { Route as OneDayTermsRouteImport } from './routes/one-day-terms'
 import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -75,6 +76,11 @@ const MemoriesRoute = MemoriesRouteImport.update({
 const OneDayRoute = OneDayRouteImport.update({
   id: '/one-day',
   path: '/one-day',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OneDayTermsRoute = OneDayTermsRouteImport.update({
+  id: '/one-day-terms',
+  path: '/one-day-terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PhotosRoute = PhotosRouteImport.update({
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/one-day': typeof OneDayRoute
+  '/one-day-terms': typeof OneDayTermsRoute
   '/photos': typeof PhotosRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/one-day': typeof OneDayRoute
+  '/one-day-terms': typeof OneDayTermsRoute
   '/photos': typeof PhotosRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/confirm': typeof ConfirmRoute
   '/memories': typeof MemoriesRoute
   '/one-day': typeof OneDayRoute
+  '/one-day-terms': typeof OneDayTermsRoute
   '/photos': typeof PhotosRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
     | '/confirm'
     | '/memories'
     | '/one-day'
+    | '/one-day-terms'
     | '/photos'
     | '/progress'
     | '/register'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/confirm'
     | '/memories'
     | '/one-day'
+    | '/one-day-terms'
     | '/photos'
     | '/progress'
     | '/register'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/confirm'
     | '/memories'
     | '/one-day'
+    | '/one-day-terms'
     | '/photos'
     | '/progress'
     | '/register'
@@ -372,6 +384,7 @@ export interface RootRouteChildren {
   ConfirmRoute: typeof ConfirmRoute
   MemoriesRoute: typeof MemoriesRoute
   OneDayRoute: typeof OneDayRoute
+  OneDayTermsRoute: typeof OneDayTermsRoute
   PhotosRoute: typeof PhotosRoute
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
@@ -449,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/one-day'
       fullPath: '/one-day'
       preLoaderRoute: typeof OneDayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/one-day-terms': {
+      id: '/one-day-terms'
+      path: '/one-day-terms'
+      fullPath: '/one-day-terms'
+      preLoaderRoute: typeof OneDayTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/photos': {
@@ -614,6 +634,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfirmRoute: ConfirmRoute,
   MemoriesRoute: MemoriesRoute,
   OneDayRoute: OneDayRoute,
+  OneDayTermsRoute: OneDayTermsRoute,
   PhotosRoute: PhotosRoute,
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
