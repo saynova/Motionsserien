@@ -996,6 +996,7 @@ export type Database = {
       }
       shuttle_orders: {
         Row: {
+          block_waived: boolean
           buyer_email: string | null
           buyer_name: string
           created_at: string
@@ -1007,6 +1008,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          block_waived?: boolean
           buyer_email?: string | null
           buyer_name: string
           created_at?: string
@@ -1018,6 +1020,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          block_waived?: boolean
           buyer_email?: string | null
           buyer_name?: string
           created_at?: string
